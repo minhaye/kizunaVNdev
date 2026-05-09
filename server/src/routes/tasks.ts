@@ -49,13 +49,19 @@ const uiToDbStatus = (status: UiStatus): DbStatus => {
 };
 
 const isPastDate = (value: string) => {
-  const parsed = new Date(`${value}T00:00:00`);
+  const trimmed = value.trim();
+  const parsed = trimmed.includes("T") ? new Date(trimmed) : new Date(`${trimmed}T23:59:59`);
   if (Number.isNaN(parsed.getTime())) return true;
 
-  const today = new Date();
+  const now = new Date();
+  const today = new Date(now);
   today.setHours(0, 0, 0, 0);
 
-  return parsed < today;
+  if (!trimmed.includes("T")) {
+    return parsed < today;
+  }
+
+  return parsed < now;
 };
 
 const verifyToken = (token: string) => {

@@ -35,6 +35,34 @@ type Task = {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000";
 
+const getDeadlineParts = (value: string | null) => {
+  if (!value) {
+    return { dateText: "-", timeText: "-" };
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return { dateText: value, timeText: "-" };
+  }
+
+  const dateText = parsed.toLocaleDateString("vi-VN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+
+  const hasTime = parsed.getHours() !== 0 || parsed.getMinutes() !== 0 || parsed.getSeconds() !== 0;
+  const timeText = hasTime
+    ? parsed.toLocaleTimeString("vi-VN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      })
+    : "-";
+
+  return { dateText, timeText };
+};
+
 const statusLabel: Record<TaskStatus, string> = {
   todo: "未着手 / To do",
   doing: "進行中 / Doing",
@@ -177,6 +205,7 @@ export default function TaskDetailPage() {
 
   const canClaim = task?.status === "todo" && (currentUser?.id === task.assignee_id || currentUser?.role === "admin");
   const canComplete = task?.status === "doing" && (currentUser?.id === task.assignee_id || currentUser?.role === "admin");
+  const deadlineParts = getDeadlineParts(task?.deadline ?? null);
 
   return (
     <main className="flex-1 overflow-auto p-8 bg-slate-50/50">
@@ -236,7 +265,8 @@ export default function TaskDetailPage() {
                 </div>
                 <div>
                   <p className="text-xs text-slate-500">Deadline</p>
-                  <p className="text-sm font-semibold text-slate-700">{task.deadline || "-"}</p>
+                  <p className="text-sm font-semibold text-slate-700">{deadlineParts.dateText}</p>
+                  <p className="text-xs text-slate-500 mt-1">Giờ: {deadlineParts.timeText}</p>
                 </div>
               </div>
 

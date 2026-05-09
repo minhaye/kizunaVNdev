@@ -46,6 +46,7 @@ type TaskDraft = {
   topic: string;
   content: string;
   deadline: string;
+  deadlineTime: string;
   assignerId: string;
   assigneeId: string;
 };
@@ -57,6 +58,30 @@ type TaskColumn = {
 };
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000";
+
+const formatDeadline = (value: string | null) => {
+  if (!value) return "-";
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value;
+
+  const dateText = parsed.toLocaleDateString("vi-VN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+
+  const hasTime = parsed.getHours() !== 0 || parsed.getMinutes() !== 0 || parsed.getSeconds() !== 0;
+  if (!hasTime) return dateText;
+
+  const timeText = parsed.toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+
+  return `${dateText} ${timeText}`;
+};
 
 const getTodayInputValue = () => {
   const now = new Date();
@@ -89,6 +114,7 @@ const emptyDraft = (userId = "", assigneeId = ""): TaskDraft => ({
   topic: "",
   content: "",
   deadline: "",
+  deadlineTime: "",
   assignerId: userId,
   assigneeId,
 });
@@ -309,6 +335,21 @@ export default function TaskBoardPage() {
       return;
     }
 
+    if (draft.deadline && draft.deadlineTime && draft.deadline === todayInputValue) {
+      const now = new Date();
+      const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+      if (draft.deadlineTime <= currentTime) {
+        setError("Deadline không được là thời gian trong quá khứ");
+        return;
+      }
+    }
+
+    const deadlineValue = draft.deadline
+      ? draft.deadlineTime
+        ? `${draft.deadline}T${draft.deadlineTime}:00`
+        : draft.deadline
+      : "";
+
     try {
       const response = await fetch(`${API_BASE_URL}/api/tasks`, {
         method: "POST",
@@ -322,7 +363,7 @@ export default function TaskBoardPage() {
           topic: draft.topic,
           title: draft.title,
           content: draft.content,
-          deadline: draft.deadline,
+          deadline: deadlineValue,
           status: "todo",
         }),
       });
@@ -361,6 +402,7 @@ export default function TaskBoardPage() {
                 topic: "",
                 content: "",
                 deadline: "",
+                deadlineTime: "",
                 assignerId: currentUser?.role === "admin" ? nextAssignee : currentUser?.id ?? "",
                 assigneeId: nextAssignee,
               });
@@ -442,7 +484,7 @@ export default function TaskBoardPage() {
                         <p className="text-xs text-slate-500 mt-2">Giao bởi: {task.assigner_name}</p>
                         <p className="text-xs text-slate-500">Nhận bởi: {task.assignee_name}</p>
                         {task.deadline && (
-                          <p className="text-xs text-slate-500 mt-1">Deadline: {task.deadline}</p>
+                          <p className="text-xs text-slate-500 mt-1">Deadline: {formatDeadline(task.deadline)}</p>
                         )}
                         {task.content && (
                           <p className="text-[11px] text-slate-600 mt-2 rounded-md bg-slate-50 px-2 py-1 border border-slate-200 line-clamp-3">
@@ -548,6 +590,15 @@ export default function TaskBoardPage() {
                     min={todayInputValue}
                     value={draft.deadline}
                     onChange={(event) => setDraft((prev) => ({ ...prev, deadline: event.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">Time</label>
+                  <input
+                    className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                    type="time"
+                    value={draft.deadlineTime}
+                    onChange={(event) => setDraft((prev) => ({ ...prev, deadlineTime: event.target.value }))}
                   />
                 </div>
               </div>
