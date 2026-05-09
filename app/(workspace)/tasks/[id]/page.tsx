@@ -212,15 +212,15 @@ export default function TaskDetailPage() {
       <div className="max-w-4xl mx-auto space-y-4">
         <header className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">Task detail</h2>
-            <p className="text-sm text-slate-500">Xem chi tiết, nhận task và chuyển sang done.</p>
+            <h2 className="text-xl font-bold text-slate-900">タスク詳細 / Task detail</h2>
+            <p className="text-sm text-slate-500">詳細を確認し、タスクを引き受けて完了へ進めます。</p>
           </div>
           <Link
             href="/tasks"
             className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
           >
             <ChevronLeft className="w-4 h-4" />
-            Quay lại board
+            ボードへ戻る / Quay lại board
           </Link>
         </header>
 
@@ -234,7 +234,7 @@ export default function TaskDetailPage() {
           {loading ? (
             <div className="flex items-center gap-2 text-sm text-slate-500">
               <Loader2 className="w-4 h-4 animate-spin" />
-              Đang tải task...
+              タスクを読み込み中... / Đang tải task...
             </div>
           ) : task ? (
             <>
@@ -246,34 +246,34 @@ export default function TaskDetailPage() {
               </div>
 
               <div>
-                <p className="text-xs text-slate-500">Task title</p>
+                <p className="text-xs text-slate-500">タスク名 / Task title</p>
                 <p className="font-semibold text-slate-800 text-lg">{task.title}</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs text-slate-500">Giao bởi</p>
+                  <p className="text-xs text-slate-500">依頼者 / Giao bởi</p>
                   <p className="text-sm font-semibold text-slate-700">{task.assigner_name}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500">Nhận bởi</p>
+                  <p className="text-xs text-slate-500">担当者 / Nhận bởi</p>
                   <p className="text-sm font-semibold text-slate-700">{task.assignee_name}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500">Topic</p>
+                  <p className="text-xs text-slate-500">トピック / Topic</p>
                   <p className="text-sm font-semibold text-slate-700">{task.topic || "-"}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500">Deadline</p>
+                  <p className="text-xs text-slate-500">期限 / Deadline</p>
                   <p className="text-sm font-semibold text-slate-700">{deadlineParts.dateText}</p>
-                  <p className="text-xs text-slate-500 mt-1">Giờ: {deadlineParts.timeText}</p>
+                  <p className="text-xs text-slate-500 mt-1">時刻 / Giờ: {deadlineParts.timeText}</p>
                 </div>
               </div>
 
               <div>
-                <p className="text-xs text-slate-500">Description</p>
+                <p className="text-xs text-slate-500">説明 / Description</p>
                 <p className="text-sm text-slate-700 whitespace-pre-line">
-                  {task.content || "Chưa có mô tả."}
+                  {task.content || "説明はまだありません。/ Chưa có mô tả."}
                 </p>
               </div>
 
@@ -286,7 +286,7 @@ export default function TaskDetailPage() {
                     className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
                   >
                     <CircleCheckBig className="w-4 h-4" />
-                    {mutating ? "Đang nhận..." : "Nhận task"}
+                    {mutating ? "受信中... / Đang nhận..." : "タスクを引き受ける / Nhận task"}
                   </button>
                 )}
 
@@ -298,25 +298,25 @@ export default function TaskDetailPage() {
                     className="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
                   >
                     <CheckCircle2 className="w-4 h-4" />
-                    {mutating ? "Đang cập nhật..." : "Hoàn thành task"}
+                    {mutating ? "更新中... / Đang cập nhật..." : "タスクを完了する / Hoàn thành task"}
                   </button>
                 )}
 
                 {task.status === "done" && (
                   <span className="rounded-md bg-emerald-100 px-4 py-2 text-sm font-semibold text-emerald-700">
-                    Task đã hoàn thành
+                    完了済みタスク / Task đã hoàn thành
                   </span>
                 )}
 
                 {!canClaim && !canComplete && task.status !== "done" && (
                   <span className="text-sm text-slate-500">
-                    Bạn có thể xem task này nhưng không phải người nhận được gán để thao tác.
+                    このタスクは閲覧のみ可能です。/ Bạn có thể xem task này nhưng không phải người nhận được gán để thao tác.
                   </span>
                 )}
               </div>
             </>
           ) : (
-            <div className="text-sm text-slate-500">Không tìm thấy task.</div>
+            <div className="text-sm text-slate-500">タスクが見つかりません。/ Không tìm thấy task.</div>
           )}
         </section>
       </div>

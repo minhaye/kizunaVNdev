@@ -95,17 +95,17 @@ const columns: TaskColumn[] = [
   {
     title: "未着手 / To do",
     status: "todo",
-    description: "Task đã giao nhưng chưa nhận",
+    description: "タスクは割り当て済みですが未着手 / Task đã giao nhưng chưa nhận",
   },
   {
     title: "進行中 / Doing",
     status: "doing",
-    description: "Task đang được xử lý",
+    description: "進行中のタスク / Task đang được xử lý",
   },
   {
     title: "完了 / Done",
     status: "done",
-    description: "Task đã hoàn thành",
+    description: "完了済みタスク / Task đã hoàn thành",
   },
 ];
 
@@ -388,10 +388,8 @@ export default function TaskBoardPage() {
       <div className="max-w-7xl mx-auto">
         <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">Task Board</h2>
-            <p className="text-xs text-slate-400 mt-1">
-              Xin chào, {currentUserName}.
-            </p>
+            <h2 className="text-xl font-bold text-slate-900">タスクボード / Task Board</h2>
+            <p className="text-xs text-slate-400 mt-1">こんにちは / Xin chào, {currentUserName}.</p>
           </div>
           <button
             type="button"
@@ -425,7 +423,7 @@ export default function TaskBoardPage() {
             <Search className="w-4 h-4 text-slate-400" />
             <input
               className="w-full text-sm outline-none"
-              placeholder="Tìm theo task, topic, người giao, người nhận..."
+              placeholder="タスク、トピック、依頼者、担当者で検索... / Tìm theo task, topic, người giao, người nhận..."
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
@@ -435,12 +433,12 @@ export default function TaskBoardPage() {
             onChange={(event) => setStatusFilter(event.target.value as TaskStatus | "all")}
             className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
           >
-            <option value="all">Tất cả</option>
+            <option value="all">すべて / Tất cả</option>
             <option value="todo">未着手 / To do</option>
             <option value="doing">進行中 / Doing</option>
             <option value="done">完了 / Done</option>
           </select>
-          <span className="text-xs text-slate-400">{totalVisibleTasks} tasks</span>
+          <span className="text-xs text-slate-400">{totalVisibleTasks} タスク / tasks</span>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -459,7 +457,7 @@ export default function TaskBoardPage() {
               <div className="space-y-3">
                 {column.cards.length === 0 ? (
                   <div className="rounded-lg border border-dashed border-slate-200 px-3 py-4 text-center text-xs text-slate-500">
-                    Chưa có task phù hợp.
+                    該当するタスクがありません。 / Chưa có task phù hợp.
                   </div>
                 ) : (
                   column.cards.map((task) => {
@@ -473,7 +471,7 @@ export default function TaskBoardPage() {
                           <div>
                             <p className="text-sm font-medium text-slate-800">{task.title}</p>
                             <p className="text-[11px] text-slate-500 mt-1">
-                              Topic: {task.topic || "-"}
+                              トピック / Topic: {task.topic || "-"}
                             </p>
                           </div>
                           <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${statusBadgeClass[task.status]}`}>
@@ -481,10 +479,10 @@ export default function TaskBoardPage() {
                           </span>
                         </div>
 
-                        <p className="text-xs text-slate-500 mt-2">Giao bởi: {task.assigner_name}</p>
-                        <p className="text-xs text-slate-500">Nhận bởi: {task.assignee_name}</p>
+                        <p className="text-xs text-slate-500 mt-2">依頼者 / Giao bởi: {task.assigner_name}</p>
+                        <p className="text-xs text-slate-500">担当者 / Nhận bởi: {task.assignee_name}</p>
                         {task.deadline && (
-                          <p className="text-xs text-slate-500 mt-1">Deadline: {formatDeadline(task.deadline)}</p>
+                          <p className="text-xs text-slate-500 mt-1">期限 / Deadline: {formatDeadline(task.deadline)}</p>
                         )}
                         {task.content && (
                           <p className="text-[11px] text-slate-600 mt-2 rounded-md bg-slate-50 px-2 py-1 border border-slate-200 line-clamp-3">
@@ -497,7 +495,7 @@ export default function TaskBoardPage() {
                             href={`/tasks/${task.id}`}
                             className="rounded-md border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
                           >
-                            Xem chi tiết
+                            詳細を見る / Xem chi tiết
                           </Link>
 
                           {canClaim && (
@@ -507,7 +505,7 @@ export default function TaskBoardPage() {
                               disabled={mutatingId === task.id}
                               className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
                             >
-                              {mutatingId === task.id ? "Đang nhận..." : "Nhận task"}
+                              {mutatingId === task.id ? "受信中... / Đang nhận..." : "タスクを引き受ける / Nhận task"}
                             </button>
                           )}
 
@@ -519,14 +517,14 @@ export default function TaskBoardPage() {
                               className="inline-flex items-center gap-1 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
                             >
                               <CheckCircle2 className="w-3.5 h-3.5" />
-                              {mutatingId === task.id ? "Đang cập nhật..." : "Hoàn thành"}
+                              {mutatingId === task.id ? "更新中... / Đang cập nhật..." : "完了にする / Hoàn thành"}
                             </button>
                           )}
 
                           {task.status === "done" && (
                             <span className="inline-flex items-center gap-1 rounded-md bg-emerald-100 px-3 py-1.5 text-xs font-semibold text-emerald-700">
                               <CircleArrowRight className="w-3.5 h-3.5" />
-                              Done
+                              完了 / Done
                             </span>
                           )}
                         </div>
@@ -549,7 +547,7 @@ export default function TaskBoardPage() {
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
-              <h3 className="text-base font-bold text-slate-900">Tạo task mới</h3>
+              <h3 className="text-base font-bold text-slate-900">新規タスク作成 / Tạo task mới</h3>
               <button
                 type="button"
                 onClick={closeCreateModal}
@@ -562,10 +560,10 @@ export default function TaskBoardPage() {
 
             <form className="px-5 py-4 space-y-4" onSubmit={(event) => void handleCreateSubmit(event)}>
               <div>
-                <label className="text-xs font-semibold text-slate-600">Task title</label>
+                <label className="text-xs font-semibold text-slate-600">タスク名 / Task title</label>
                 <input
                   className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
-                  placeholder="Tiêu đề task"
+                  placeholder="タイトルを入力 / Tiêu đề task"
                   value={draft.title}
                   onChange={(event) => setDraft((prev) => ({ ...prev, title: event.target.value }))}
                   required
@@ -574,16 +572,16 @@ export default function TaskBoardPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-slate-600">Topic</label>
+                  <label className="text-xs font-semibold text-slate-600">トピック / Topic</label>
                   <input
                     className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
-                    placeholder="VD: Frontend, API, Bug..."
+                    placeholder="例: Frontend, API, Bug... / VD: Frontend, API, Bug..."
                     value={draft.topic}
                     onChange={(event) => setDraft((prev) => ({ ...prev, topic: event.target.value }))}
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-slate-600">Deadline</label>
+                  <label className="text-xs font-semibold text-slate-600">期限 / Deadline</label>
                   <input
                     className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
                     type="date"
@@ -593,7 +591,7 @@ export default function TaskBoardPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-slate-600">Time</label>
+                  <label className="text-xs font-semibold text-slate-600">時刻 / Time</label>
                   <input
                     className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
                     type="time"
@@ -605,7 +603,7 @@ export default function TaskBoardPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-slate-600">Assignor</label>
+                  <label className="text-xs font-semibold text-slate-600">依頼者 / Assignor</label>
                   {currentUser?.role === "admin" ? (
                     <select
                       className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
@@ -627,14 +625,14 @@ export default function TaskBoardPage() {
                   )}
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-slate-600">Assignee</label>
+                  <label className="text-xs font-semibold text-slate-600">担当者 / Assignee</label>
                   <select
                     className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
                     value={draft.assigneeId}
                     onChange={(event) => setDraft((prev) => ({ ...prev, assigneeId: event.target.value }))}
                     required
                   >
-                    <option value="">Chọn người nhận task</option>
+                    <option value="">担当者を選択 / Chọn người nhận task</option>
                     {assigneeOptions.map((employee) => (
                       <option key={employee.id} value={employee.id}>
                         {employee.name}
@@ -645,11 +643,11 @@ export default function TaskBoardPage() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-600">Description</label>
+                <label className="text-xs font-semibold text-slate-600">説明 / Description</label>
                 <textarea
                   className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
                   rows={4}
-                  placeholder="Mô tả task"
+                  placeholder="タスクの説明 / Mô tả task"
                   value={draft.content}
                   onChange={(event) => setDraft((prev) => ({ ...prev, content: event.target.value }))}
                 />
@@ -661,13 +659,13 @@ export default function TaskBoardPage() {
                   onClick={closeCreateModal}
                   className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
                 >
-                  Hủy
+                  キャンセル / Hủy
                 </button>
                 <button
                   type="submit"
                   className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
                 >
-                  Tạo task
+                  タスクを作成 / Tạo task
                 </button>
               </div>
             </form>
