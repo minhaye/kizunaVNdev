@@ -240,7 +240,15 @@ export default function BoardPage() {
               </div>
             </div>
 
-            <div className="p-5 border-t border-slate-100 flex justify-end"></div>
+            <div className="p-5 border-t border-slate-100 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setSelectedPost(null)}
+                className="px-4 py-2 bg-teal-600 text-white font-medium rounded-lg hover:bg-teal-700 transition-colors"
+              >
+                Đóng
+              </button>
+            </div>
           </div>
         </div>
       )}
