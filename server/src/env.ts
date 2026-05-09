@@ -1,6 +1,6 @@
 import "dotenv/config";
 
-const required = ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"] as const;
+const required = ["SUPABASE_URL", "SUPABASE_ANON_KEY"] as const;
 
 for (const key of required) {
   if (!process.env[key]) {
@@ -11,5 +11,6 @@ for (const key of required) {
 export const env = {
   port: Number(process.env.PORT ?? 4000),
   supabaseUrl: process.env.SUPABASE_URL as string,
-  supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY as string,
+  supabaseAnonKey: process.env.SUPABASE_ANON_KEY as string,
+  authTokenSecret: process.env.AUTH_TOKEN_SECRET ?? "dev-local-secret-change-me",
 };
