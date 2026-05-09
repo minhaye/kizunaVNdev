@@ -3,6 +3,8 @@ import crypto from "node:crypto";
 import { env } from "../env.js";
 import { supabase } from "../supabase.js";
 
+type AuthRole = "employee" | "leader" | "admin";
+
 type EmployeeRow = {
   id: string;
   name: string;
@@ -14,6 +16,19 @@ type EmployeeRow = {
   last_online: string | null;
 };
 
+type AdminRow = {
+  id: string;
+  email: string;
+  password: string;
+};
+
+type AuthTokenPayload = {
+  sub: string;
+  exp: number;
+  role: AuthRole;
+  source: "employees" | "admins";
+};
+
 const toPublicEmployee = (employee: EmployeeRow) => ({
   id: employee.id,
   name: employee.name,
@@ -22,6 +37,12 @@ const toPublicEmployee = (employee: EmployeeRow) => ({
   avatar_url: employee.avatar_url,
   role: employee.role,
   last_online: employee.last_online,
+});
+
+const toPublicAdmin = (admin: AdminRow) => ({
+  id: admin.id,
+  email: admin.email,
+  role: "admin" as const,
 });
 
 const signToken = (payload: Record<string, unknown>) => {
@@ -45,10 +66,16 @@ const verifyToken = (token: string) => {
   if (signature !== expected) return null;
 
   const payloadRaw = Buffer.from(encodedPayload, "base64url").toString("utf8");
-  const payload = JSON.parse(payloadRaw) as { sub: string; exp: number };
-  if (!payload.sub || !payload.exp || payload.exp < Date.now()) return null;
+  const payload = JSON.parse(payloadRaw) as Partial<AuthTokenPayload>;
+  if (!payload.sub || !payload.exp || payload.exp < Date.now() || !payload.role || !payload.source) return null;
   return payload;
 };
+
+const fetchEmployeeByEmail = async (email: string) =>
+  supabase.from("employees").select("*").eq("email", email).maybeSingle<EmployeeRow>();
+
+const fetchAdminByEmail = async (email: string) =>
+  supabase.from("admins").select("*").eq("email", email).maybeSingle<AdminRow>();
 
 export const loginHandler = async (req: Request, res: Response) => {
   try {
@@ -60,35 +87,60 @@ export const loginHandler = async (req: Request, res: Response) => {
       });
     }
 
-    const { data: employee, error } = await supabase
-      .from("employees")
-      .select("*")
-      .eq("email", email)
-      .maybeSingle<EmployeeRow>();
+    const [employeeResult, adminResult] = await Promise.all([
+      fetchEmployeeByEmail(email),
+      fetchAdminByEmail(email),
+    ]);
 
-    if (error) {
+    if (employeeResult.error) {
       return res.status(500).json({ error: "Lỗi truy vấn dữ liệu đăng nhập." });
     }
 
-    if (!employee || employee.password !== password) {
-      return res.status(401).json({ error: "Email hoặc mật khẩu không đúng." });
+    if (adminResult.error) {
+      return res.status(500).json({ error: "Lỗi truy vấn dữ liệu đăng nhập." });
     }
 
-    const nowIso = new Date().toISOString();
-    await supabase.from("employees").update({ last_online: nowIso }).eq("id", employee.id);
+    const employee = employeeResult.data;
+    const admin = adminResult.data;
 
-    const token = signToken({
-      sub: employee.id,
-      email: employee.email,
-      exp: Date.now() + 7 * 24 * 60 * 60 * 1000,
-    });
+    if (employee && employee.password === password) {
+      const nowIso = new Date().toISOString();
+      await supabase.from("employees").update({ last_online: nowIso }).eq("id", employee.id);
 
-    return res.json({
-      success: true,
-      message: "Đăng nhập thành công",
-      session: { access_token: token },
-      user: { ...toPublicEmployee(employee), last_online: nowIso },
-    });
+      const token = signToken({
+        sub: employee.id,
+        email: employee.email,
+        role: employee.role,
+        source: "employees",
+        exp: Date.now() + 7 * 24 * 60 * 60 * 1000,
+      });
+
+      return res.json({
+        success: true,
+        message: "Đăng nhập thành công",
+        session: { access_token: token },
+        user: { ...toPublicEmployee(employee), last_online: nowIso },
+      });
+    }
+
+    if (admin && admin.password === password) {
+      const token = signToken({
+        sub: admin.id,
+        email: admin.email,
+        role: "admin",
+        source: "admins",
+        exp: Date.now() + 7 * 24 * 60 * 60 * 1000,
+      });
+
+      return res.json({
+        success: true,
+        message: "Đăng nhập thành công",
+        session: { access_token: token },
+        user: toPublicAdmin(admin),
+      });
+    }
+
+    return res.status(401).json({ error: "Email hoặc mật khẩu không đúng." });
   } catch (error) {
     return res.status(500).json({
       error: "Lỗi server",
@@ -167,11 +219,36 @@ export const getMeHandler = async (req: Request, res: Response) => {
       });
     }
 
+    if (payload.source === "admins") {
+      const { data: admin, error } = await supabase
+        .from("admins")
+        .select("id,email,password")
+        .eq("id", payload.sub)
+        .maybeSingle<AdminRow>();
+
+      if (error) {
+        return res.status(500).json({
+          error: "Lỗi truy vấn người dùng",
+        });
+      }
+
+      if (!admin) {
+        return res.status(401).json({
+          error: "Không tìm thấy người dùng",
+        });
+      }
+
+      return res.json({
+        success: true,
+        user: toPublicAdmin(admin),
+      });
+    }
+
     const { data: employee, error } = await supabase
       .from("employees")
       .select("id,name,nationality,email,avatar_url,role,last_online")
       .eq("id", payload.sub)
-      .maybeSingle();
+      .maybeSingle<EmployeeRow>();
 
     if (error) {
       return res.status(500).json({

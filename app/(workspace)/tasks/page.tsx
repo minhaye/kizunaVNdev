@@ -1,328 +1,496 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Plus, Search, X } from "lucide-react";
-import { useState, type FormEvent, type MouseEvent } from "react";
-
-type TaskCard = {
-  id: string;
-  title: string;
-  owner: string;
-  due: string;
-  horensou?: string;
-};
+import { Plus, Search, X, CheckCircle2, CircleArrowRight } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 type TaskStatus = "todo" | "doing" | "done";
 
-type TaskColumn = {
+type CurrentUser = {
+  id: string;
+  name?: string;
+  email?: string;
+  role?: "employee" | "leader" | "admin";
+  nationality?: "vn" | "jp";
+  avatar_url?: string | null;
+};
+
+type Employee = {
+  id: string;
+  name: string;
+  email: string;
+  avatar_url: string | null;
+  role: "employee" | "leader" | "admin";
+  nationality: "vn" | "jp";
+};
+
+type Task = {
+  id: string;
+  topic: string | null;
   title: string;
+  content: string | null;
+  created_at: string;
+  deadline: string | null;
   status: TaskStatus;
-  cards: TaskCard[];
+  status_db: string;
+  assigner_id: string;
+  assignee_id: string;
+  assigner_name: string;
+  assignee_name: string;
+  assigner_role: string | null;
+  assignee_role: string | null;
 };
 
 type TaskDraft = {
   title: string;
-  owner: string;
-  due: string;
+  topic: string;
+  content: string;
+  deadline: string;
+  assignerId: string;
+  assigneeId: string;
+};
+
+type TaskColumn = {
+  title: string;
   status: TaskStatus;
   description: string;
+};
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000";
+
+const getTodayInputValue = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 };
 
 const columns: TaskColumn[] = [
   {
     title: "未着手 / To do",
     status: "todo",
-    cards: [
-      {
-        id: "spec-review",
-        title: "要件定義書のレビュー",
-        owner: "Tanaka",
-        due: "今日 / Hôm nay",
-      },
-      {
-        id: "weekly-report",
-        title: "週次レポートの作成",
-        owner: "Nam",
-        due: "明日 / Ngày mai",
-      },
-      {
-        id: "bug-triage",
-        title: "不具合チケットの整理",
-        owner: "Hoa",
-        due: "水曜 / Thứ 4",
-      },
-      {
-        id: "mail-draft",
-        title: "顧客向けメール下書き",
-        owner: "Kaito",
-        due: "木曜 / Thứ 5",
-      },
-      {
-        id: "wiki-update",
-        title: "Wiki用語集の更新",
-        owner: "Linh",
-        due: "金曜 / Thứ 6",
-      },
-    ],
+    description: "Task đã giao nhưng chưa nhận",
   },
   {
     title: "進行中 / Doing",
     status: "doing",
-    cards: [
-      {
-        id: "api-test",
-        title: "API結合テスト",
-        owner: "Hoa",
-        due: "今日 / Hôm nay",
-        horensou: "報告: API test 70% / 連絡: test env ổn định",
-      },
-      {
-        id: "ui-polish",
-        title: "Dashboard UI微調整",
-        owner: "Minh",
-        due: "明日 / Ngày mai",
-        horensou: "相談: icon color consistency với design system",
-      },
-      {
-        id: "log-audit",
-        title: "翻訳ログ監査",
-        owner: "Nam",
-        due: "木曜 / Thứ 5",
-        horensou: "報告: đã rà soát 40 bản ghi",
-      },
-      {
-        id: "task-template",
-        title: "Task template標準化 / Chuẩn hóa Task template",
-        owner: "Tanaka",
-        due: "木曜 / Thứ 5",
-        horensou: "連絡: gửi bản nháp cho team review 15:00",
-      },
-    ],
+    description: "Task đang được xử lý",
   },
   {
     title: "完了 / Done",
     status: "done",
-    cards: [
-      {
-        id: "db-migration",
-        title: "DB移行スクリプト",
-        owner: "Minh",
-        due: "完了 / Done",
-        horensou: "完了報告: migration thành công, không lỗi",
-      },
-      {
-        id: "chat-history",
-        title: "履歴検索UI実装",
-        owner: "Khanh",
-        due: "完了 / Done",
-        horensou: "完了報告: search response < 300ms",
-      },
-      {
-        id: "permission-map",
-        title: "権限マッピング整理",
-        owner: "Huy",
-        due: "完了 / Done",
-        horensou: "連絡: tài liệu phân quyền đã bàn giao",
-      },
-      {
-        id: "board-news",
-        title: "掲示板新着表示",
-        owner: "Linh",
-        due: "完了 / Done",
-        horensou: "完了報告: deploy lên staging lúc 17:10",
-      },
-    ],
+    description: "Task đã hoàn thành",
   },
 ];
 
-const currentUserName = "Tanaka K.";
-
-const emptyDraft: TaskDraft = {
+const emptyDraft = (userId = "", assigneeId = ""): TaskDraft => ({
   title: "",
-  owner: currentUserName,
-  due: "",
-  status: "todo",
-  description: "",
+  topic: "",
+  content: "",
+  deadline: "",
+  assignerId: userId,
+  assigneeId,
+});
+
+const statusBadgeClass: Record<TaskStatus, string> = {
+  todo: "bg-slate-100 text-slate-700",
+  doing: "bg-amber-100 text-amber-700",
+  done: "bg-emerald-100 text-emerald-700",
 };
 
+const statusLabel: Record<TaskStatus, string> = {
+  todo: "未着手 / To do",
+  doing: "進行中 / Doing",
+  done: "完了 / Done",
+};
+
+const readStoredUser = (): CurrentUser | null => {
+  if (typeof window === "undefined") return null;
+
+  const rawUser = localStorage.getItem("user");
+  if (!rawUser) return null;
+
+  try {
+    return JSON.parse(rawUser) as CurrentUser;
+  } catch {
+    return null;
+  }
+};
+
+const getAuthToken = () => (typeof window === "undefined" ? null : localStorage.getItem("authToken"));
+
+const mapTask = (task: Task): Task => task;
+
 export default function TaskBoardPage() {
-  const router = useRouter();
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<TaskStatus | "all">("all");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [draft, setDraft] = useState<TaskDraft>(emptyDraft);
-  const [confirmTask, setConfirmTask] = useState<TaskCard | null>(null);
+  const [draft, setDraft] = useState<TaskDraft>(emptyDraft());
+  const [mutatingId, setMutatingId] = useState<string | null>(null);
+  const todayInputValue = useMemo(() => getTodayInputValue(), []);
+
+  const currentUserName = currentUser?.name ?? currentUser?.email?.split("@")[0] ?? "Người dùng";
   const normalizedQuery = query.trim().toLowerCase();
 
-  const visibleColumns = columns
-    .filter((col) => statusFilter === "all" || col.status === statusFilter)
-    .map((col) => ({
-      ...col,
-      cards: col.cards.filter((card) => {
-        if (normalizedQuery.length === 0) return true;
-        return [card.title, card.owner, card.due, card.horensou ?? ""].some(
-          (value) => value.toLowerCase().includes(normalizedQuery),
-        );
-      }),
-    }));
+  useEffect(() => {
+    const storedUser = readStoredUser();
+    setCurrentUser(storedUser);
+  }, []);
 
-  const totalVisibleTasks = visibleColumns.reduce(
-    (sum, col) => sum + col.cards.length,
-    0,
-  );
+  useEffect(() => {
+    if (!currentUser) return;
+    setDraft((prev) => ({
+      ...prev,
+      assignerId: prev.assignerId || currentUser.id,
+    }));
+  }, [currentUser]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      const token = getAuthToken();
+      if (!token) {
+        setError("Chưa có session đăng nhập. Vui lòng đăng nhập lại.");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError("");
+
+        const [tasksResponse, employeesResponse] = await Promise.all([
+          fetch(`${API_BASE_URL}/api/tasks`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch(`${API_BASE_URL}/api/employees`),
+        ]);
+
+        const tasksData = await tasksResponse.json();
+        const employeesData = await employeesResponse.json();
+
+        if (!tasksResponse.ok) {
+          throw new Error(tasksData.error || "Không thể tải task");
+        }
+
+        if (!employeesResponse.ok) {
+          throw new Error(employeesData.error || "Không thể tải danh sách nhân sự");
+        }
+
+        setTasks((tasksData.tasks ?? []).map(mapTask));
+        setEmployees(employeesData.employees ?? []);
+
+        const firstEmployeeId = employeesData.employees?.[0]?.id ?? "";
+        setDraft((prev) => ({
+          ...prev,
+          assignerId: currentUser?.role === "admin" ? prev.assignerId || firstEmployeeId : prev.assignerId || currentUser?.id || "",
+          assigneeId: prev.assigneeId || firstEmployeeId,
+        }));
+      } catch (loadError) {
+        setError(loadError instanceof Error ? loadError.message : "Có lỗi xảy ra khi tải task");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadData();
+  }, [currentUser]);
+
+  const visibleTasks = useMemo(() => {
+    return tasks
+      .filter((task) => statusFilter === "all" || task.status === statusFilter)
+      .filter((task) => {
+        if (normalizedQuery.length === 0) return true;
+        return [
+          task.title,
+          task.topic ?? "",
+          task.content ?? "",
+          task.assigner_name,
+          task.assignee_name,
+          task.deadline ?? "",
+        ].some((value) => value.toLowerCase().includes(normalizedQuery));
+      });
+  }, [tasks, statusFilter, normalizedQuery]);
+
+  const groupedTasks = useMemo(() => {
+    return columns.map((column) => ({
+      ...column,
+      cards: visibleTasks.filter((task) => task.status === column.status),
+    }));
+  }, [visibleTasks]);
+
+  const totalVisibleTasks = visibleTasks.length;
+
+  const refreshTask = (updatedTask: Task) => {
+    setTasks((currentTasks) =>
+      currentTasks.some((task) => task.id === updatedTask.id)
+        ? currentTasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))
+        : [updatedTask, ...currentTasks],
+    );
+  };
+
+  const claimTask = async (taskId: string) => {
+    const token = getAuthToken();
+    if (!token) return;
+
+    try {
+      setMutatingId(taskId);
+      const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}/claim`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Không thể nhận task");
+      }
+
+      refreshTask(data.task);
+    } catch (claimError) {
+      setError(claimError instanceof Error ? claimError.message : "Không thể nhận task");
+    } finally {
+      setMutatingId(null);
+    }
+  };
+
+  const completeTask = async (taskId: string) => {
+    const token = getAuthToken();
+    if (!token) return;
+
+    try {
+      setMutatingId(taskId);
+      const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: "done" }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Không thể cập nhật task");
+      }
+
+      refreshTask(data.task);
+    } catch (updateError) {
+      setError(updateError instanceof Error ? updateError.message : "Không thể cập nhật task");
+    } finally {
+      setMutatingId(null);
+    }
+  };
 
   const closeCreateModal = () => {
     setIsCreateOpen(false);
-    setDraft(emptyDraft);
+    setDraft(
+      emptyDraft(
+        currentUser?.role === "admin" ? draft.assignerId : currentUser?.id ?? "",
+        draft.assigneeId,
+      ),
+    );
   };
 
-  const handleCreateSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleCreateSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    closeCreateModal();
+    const token = getAuthToken();
+    if (!token) return;
+
+    if (draft.deadline && draft.deadline < todayInputValue) {
+      setError("Deadline không được là ngày trong quá khứ");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/tasks`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          assignerId: draft.assignerId || currentUser?.id,
+          assigneeId: draft.assigneeId,
+          topic: draft.topic,
+          title: draft.title,
+          content: draft.content,
+          deadline: draft.deadline,
+          status: "todo",
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Không thể tạo task");
+      }
+
+      refreshTask(data.task);
+      closeCreateModal();
+      setError("");
+    } catch (createError) {
+      setError(createError instanceof Error ? createError.message : "Không thể tạo task");
+    }
   };
 
-  const handleUpdateClick = (
-    event: MouseEvent<HTMLButtonElement>,
-    card: TaskCard,
-  ) => {
-    event.preventDefault();
-    event.stopPropagation();
-    router.push(`/tasks/${card.id}`);
-  };
-
-  const handleDoneClick = (
-    event: MouseEvent<HTMLButtonElement>,
-    card: TaskCard,
-  ) => {
-    event.preventDefault();
-    event.stopPropagation();
-    setConfirmTask(card);
-  };
-
-  const closeConfirmModal = () => setConfirmTask(null);
+  const assigneeOptions = employees.length > 0 ? employees : [];
 
   return (
     <main className="flex-1 overflow-auto p-8 bg-slate-50/50">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">
-              タスクボード（一覧）画面
-            </h2>
-            <p className="text-sm text-slate-500">
-              タスク一覧（カンバン） / Màn hình DS Task (Kanban)
+            <h2 className="text-xl font-bold text-slate-900">Task Board</h2>
+            <p className="text-xs text-slate-400 mt-1">
+              Xin chào, {currentUserName}.
             </p>
           </div>
           <button
             type="button"
-            onClick={() => setIsCreateOpen(true)}
+            onClick={() => {
+              const nextAssignee = employees[0]?.id ?? currentUser?.id ?? "";
+              setDraft({
+                title: "",
+                topic: "",
+                content: "",
+                deadline: "",
+                assignerId: currentUser?.role === "admin" ? nextAssignee : currentUser?.id ?? "",
+                assigneeId: nextAssignee,
+              });
+              setIsCreateOpen(true);
+            }}
             className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
           >
             <Plus className="w-4 h-4" /> タスク作成 / Tạo task
           </button>
         </div>
 
+        {error && (
+          <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+
         <div className="mb-5 flex flex-wrap items-center gap-3">
           <div className="flex flex-1 min-w-60 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2">
             <Search className="w-4 h-4 text-slate-400" />
             <input
               className="w-full text-sm outline-none"
-              placeholder="タスク名・担当・期限を検索 / Tìm theo task, owner, due..."
+              placeholder="Tìm theo task, topic, người giao, người nhận..."
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
           </div>
           <select
             value={statusFilter}
-            onChange={(event) =>
-              setStatusFilter(event.target.value as TaskStatus | "all")
-            }
+            onChange={(event) => setStatusFilter(event.target.value as TaskStatus | "all")}
             className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
           >
-            <option value="all">すべて / Tất cả</option>
+            <option value="all">Tất cả</option>
             <option value="todo">未着手 / To do</option>
             <option value="doing">進行中 / Doing</option>
             <option value="done">完了 / Done</option>
           </select>
-          <span className="text-xs text-slate-400">
-            {totalVisibleTasks} tasks
-          </span>
+          <span className="text-xs text-slate-400">{totalVisibleTasks} tasks</span>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {visibleColumns.map((col) => (
-            <section
-              key={col.title}
-              className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm"
-            >
-              <h3 className="text-sm font-bold text-slate-700 mb-3">
-                {col.title}
-              </h3>
+          {groupedTasks.map((column) => (
+            <section key={column.title} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+              <div className="mb-3 flex items-start justify-between gap-2">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-700">{column.title}</h3>
+                  <p className="text-[11px] text-slate-400">{column.description}</p>
+                </div>
+                <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${statusBadgeClass[column.status]}`}>
+                  {column.cards.length}
+                </span>
+              </div>
+
               <div className="space-y-3">
-                {col.cards.length === 0 ? (
+                {column.cards.length === 0 ? (
                   <div className="rounded-lg border border-dashed border-slate-200 px-3 py-4 text-center text-xs text-slate-500">
-                    該当するタスクがありません / Chưa có task phù hợp.
+                    Chưa có task phù hợp.
                   </div>
                 ) : (
-                  col.cards.map((card) => (
-                    <Link
-                      key={card.id}
-                      href={`/tasks/${card.id}`}
-                      className="block rounded-lg border border-slate-100 p-3 hover:border-blue-200 hover:bg-blue-50/40 transition-colors"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="text-sm font-medium text-slate-800">
-                          {card.title}
-                        </p>
-                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
-                          {card.due}
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-500 mt-1">
-                        Owner: {card.owner}
-                      </p>
-                      {(col.status === "doing" || col.status === "done") &&
-                        card.horensou && (
-                          <p className="text-[11px] text-slate-600 mt-1 rounded-md bg-slate-50 px-2 py-1 border border-slate-200">
-                            Hō-Ren-Sō: {card.horensou}
+                  column.cards.map((task) => {
+                    const isAssignee = currentUser?.id === task.assignee_id;
+                    const canClaim = task.status === "todo" && (isAssignee || currentUser?.role === "admin");
+                    const canComplete = task.status === "doing" && (isAssignee || currentUser?.role === "admin");
+
+                    return (
+                      <article key={task.id} className="rounded-lg border border-slate-100 p-3 hover:border-blue-200 hover:bg-blue-50/40 transition-colors">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <p className="text-sm font-medium text-slate-800">{task.title}</p>
+                            <p className="text-[11px] text-slate-500 mt-1">
+                              Topic: {task.topic || "-"}
+                            </p>
+                          </div>
+                          <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${statusBadgeClass[task.status]}`}>
+                            {statusLabel[task.status]}
+                          </span>
+                        </div>
+
+                        <p className="text-xs text-slate-500 mt-2">Giao bởi: {task.assigner_name}</p>
+                        <p className="text-xs text-slate-500">Nhận bởi: {task.assignee_name}</p>
+                        {task.deadline && (
+                          <p className="text-xs text-slate-500 mt-1">Deadline: {task.deadline}</p>
+                        )}
+                        {task.content && (
+                          <p className="text-[11px] text-slate-600 mt-2 rounded-md bg-slate-50 px-2 py-1 border border-slate-200 line-clamp-3">
+                            {task.content}
                           </p>
                         )}
-                      <div className="mt-2">
-                        {col.status === "todo" && (
-                          <button
-                            type="button"
-                            className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 transition-colors"
+
+                        <div className="mt-3 flex flex-wrap items-center gap-2">
+                          <Link
+                            href={`/tasks/${task.id}`}
+                            className="rounded-md border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
                           >
-                            詳細を見る / Xem chi tiết
-                          </button>
-                        )}
-                        {col.status === "doing" && (
-                          <div className="flex flex-wrap items-center gap-2">
+                            Xem chi tiết
+                          </Link>
+
+                          {canClaim && (
                             <button
                               type="button"
-                              onClick={(event) => handleUpdateClick(event, card)}
-                              className="rounded-md border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
+                              onClick={() => void claimTask(task.id)}
+                              disabled={mutatingId === task.id}
+                              className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
                             >
-                              更新 / Cập nhật
+                              {mutatingId === task.id ? "Đang nhận..." : "Nhận task"}
                             </button>
+                          )}
+
+                          {canComplete && (
                             <button
                               type="button"
-                              onClick={(event) => handleDoneClick(event, card)}
-                              className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 transition-colors"
+                              onClick={() => void completeTask(task.id)}
+                              disabled={mutatingId === task.id}
+                              className="inline-flex items-center gap-1 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
                             >
-                              完了にする / Xong task
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              {mutatingId === task.id ? "Đang cập nhật..." : "Hoàn thành"}
                             </button>
-                          </div>
-                        )}
-                        {col.status === "done" && (
-                          <span className="rounded-md bg-emerald-100 px-3 py-1.5 text-xs font-semibold text-emerald-700">
-                            完了 / Hoàn thành
-                          </span>
-                        )}
-                      </div>
-                    </Link>
-                  ))
+                          )}
+
+                          {task.status === "done" && (
+                            <span className="inline-flex items-center gap-1 rounded-md bg-emerald-100 px-3 py-1.5 text-xs font-semibold text-emerald-700">
+                              <CircleArrowRight className="w-3.5 h-3.5" />
+                              Done
+                            </span>
+                          )}
+                        </div>
+                      </article>
+                    );
+                  })
                 )}
               </div>
             </section>
@@ -331,20 +499,15 @@ export default function TaskBoardPage() {
       </div>
 
       {isCreateOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-slate-900/45 px-4 grid place-items-center"
-          onClick={closeCreateModal}
-        >
+        <div className="fixed inset-0 z-50 bg-slate-900/45 px-4 grid place-items-center" onClick={closeCreateModal}>
           <div
             role="dialog"
             aria-modal="true"
-            className="w-full max-w-xl rounded-2xl bg-white border border-slate-200 shadow-xl"
+            className="w-full max-w-2xl rounded-2xl bg-white border border-slate-200 shadow-xl"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
-              <h3 className="text-base font-bold text-slate-900">
-                タスク作成 / Tạo task
-              </h3>
+              <h3 className="text-base font-bold text-slate-900">Tạo task mới</h3>
               <button
                 type="button"
                 onClick={closeCreateModal}
@@ -355,93 +518,89 @@ export default function TaskBoardPage() {
               </button>
             </div>
 
-            <form className="px-5 py-4 space-y-4" onSubmit={handleCreateSubmit}>
+            <form className="px-5 py-4 space-y-4" onSubmit={(event) => void handleCreateSubmit(event)}>
               <div>
-                <label className="text-xs font-semibold text-slate-600">
-                  Task title
-                </label>
+                <label className="text-xs font-semibold text-slate-600">Task title</label>
                 <input
                   className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
-                  placeholder="タイトルを入力 / Nhập tiêu đề"
+                  placeholder="Tiêu đề task"
                   value={draft.title}
-                  onChange={(event) =>
-                    setDraft((prev) => ({
-                      ...prev,
-                      title: event.target.value,
-                    }))
-                  }
+                  onChange={(event) => setDraft((prev) => ({ ...prev, title: event.target.value }))}
                   required
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-slate-600">
-                    Owner
-                  </label>
+                  <label className="text-xs font-semibold text-slate-600">Topic</label>
                   <input
                     className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
-                    value={"Tanaka K."}
-                    disabled
+                    placeholder="VD: Frontend, API, Bug..."
+                    value={draft.topic}
+                    onChange={(event) => setDraft((prev) => ({ ...prev, topic: event.target.value }))}
                   />
-                  <p className="mt-1 text-[11px] text-slate-400">
-                    自分の名前で作成 / Tạo với tên của bạn
-                  </p>
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-slate-600">
-                    Due
-                  </label>
+                  <label className="text-xs font-semibold text-slate-600">Deadline</label>
                   <input
                     className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
-                    placeholder="期限 / Due date"
-                    value={draft.due}
-                    onChange={(event) =>
-                      setDraft((prev) => ({
-                        ...prev,
-                        due: event.target.value,
-                      }))
-                    }
-                    required
+                    type="date"
+                    min={todayInputValue}
+                    value={draft.deadline}
+                    onChange={(event) => setDraft((prev) => ({ ...prev, deadline: event.target.value }))}
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="text-xs font-semibold text-slate-600">
-                  Status
-                </label>
-                <select
-                  className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
-                  value={draft.status}
-                  onChange={(event) =>
-                    setDraft((prev) => ({
-                      ...prev,
-                      status: event.target.value as TaskStatus,
-                    }))
-                  }
-                >
-                  <option value="todo">未着手 / To do</option>
-                  <option value="doing">進行中 / Doing</option>
-                  <option value="done">完了 / Done</option>
-                </select>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">Assignor</label>
+                  {currentUser?.role === "admin" ? (
+                    <select
+                      className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
+                      value={draft.assignerId}
+                      onChange={(event) => setDraft((prev) => ({ ...prev, assignerId: event.target.value }))}
+                    >
+                      {assigneeOptions.map((employee) => (
+                        <option key={employee.id} value={employee.id}>
+                          {employee.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm bg-slate-50"
+                      value={currentUserName}
+                      disabled
+                    />
+                  )}
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">Assignee</label>
+                  <select
+                    className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
+                    value={draft.assigneeId}
+                    onChange={(event) => setDraft((prev) => ({ ...prev, assigneeId: event.target.value }))}
+                    required
+                  >
+                    <option value="">Chọn người nhận task</option>
+                    {assigneeOptions.map((employee) => (
+                      <option key={employee.id} value={employee.id}>
+                        {employee.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-600">
-                  Description
-                </label>
+                <label className="text-xs font-semibold text-slate-600">Description</label>
                 <textarea
                   className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
-                  rows={3}
-                  placeholder="内容を入力 / Mô tả ngắn"
-                  value={draft.description}
-                  onChange={(event) =>
-                    setDraft((prev) => ({
-                      ...prev,
-                      description: event.target.value,
-                    }))
-                  }
+                  rows={4}
+                  placeholder="Mô tả task"
+                  value={draft.content}
+                  onChange={(event) => setDraft((prev) => ({ ...prev, content: event.target.value }))}
                 />
               </div>
 
@@ -451,66 +610,16 @@ export default function TaskBoardPage() {
                   onClick={closeCreateModal}
                   className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
                 >
-                  キャンセル / Huy
+                  Hủy
                 </button>
                 <button
                   type="submit"
                   className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
                 >
-                  作成 / Tạo
+                  Tạo task
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {confirmTask && (
-        <div
-          className="fixed inset-0 z-50 bg-slate-900/45 px-4 grid place-items-center"
-          onClick={closeConfirmModal}
-        >
-          <div
-            role="dialog"
-            aria-modal="true"
-            className="w-full max-w-md rounded-2xl bg-white border border-slate-200 shadow-xl"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
-              <h3 className="text-base font-bold text-slate-900">
-                完了確認 / Xac nhan hoan thanh
-              </h3>
-              <button
-                type="button"
-                onClick={closeConfirmModal}
-                aria-label="Close"
-                className="rounded-full p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="px-5 py-4 text-sm text-slate-600">
-              <p className="font-semibold text-slate-800">{confirmTask.title}</p>
-              <p className="mt-1">
-                このタスクを完了にしますか？ / Ban co chac muon hoan thanh task nay?
-              </p>
-            </div>
-            <div className="flex items-center justify-end gap-2 border-t border-slate-100 px-5 py-4">
-              <button
-                type="button"
-                onClick={closeConfirmModal}
-                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
-              >
-                キャンセル / Huy
-              </button>
-              <button
-                type="button"
-                onClick={closeConfirmModal}
-                className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
-              >
-                完了にする / Xong task
-              </button>
-            </div>
           </div>
         </div>
       )}

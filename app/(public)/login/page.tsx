@@ -5,6 +5,8 @@ import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000";
+
 export default function LoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
@@ -21,7 +23,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:4000/api/auth/login", {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -44,9 +46,10 @@ export default function LoginPage() {
         localStorage.setItem("user", JSON.stringify(data.user));
       }
 
-      // Chuyển hướng sau 1 giây
+      const targetPath = data.user?.role === "admin" ? "/admin" : "/";
+
       setTimeout(() => {
-        router.push("/");
+        router.push(targetPath);
       }, 1000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Có lỗi xảy ra");
