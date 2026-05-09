@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { supabase } from "../supabase";
+import { supabase } from "../supabase.js";
 
 export const dbPingHandler = async (_req: Request, res: Response) => {
   const { data, error } = await supabase.from("employees").select("*").limit(1);

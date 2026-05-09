@@ -5,6 +5,7 @@
 1) Copy .env.example to .env and fill in values.
 2) Install deps: npm install
 3) Run: npm run dev
+4) In Supabase SQL Editor, run `employees.schema.sql` to create `employees` table.
 
 ## Health check
 

@@ -5,23 +5,36 @@ import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setSuccess("");
+
+    if (password !== confirmPassword) {
+      setError("Mật khẩu không khớp");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Mật khẩu phải có ít nhất 6 ký tự");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:4000/api/auth/login", {
+      const response = await fetch("http://localhost:4000/api/auth/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -32,22 +45,15 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Đăng nhập thất bại");
+        setError(data.error || "Đăng ký thất bại");
         return;
       }
 
-      setSuccess("Đăng nhập thành công! Đang chuyển hướng...");
-      
-      // Lưu session token
-      if (data.session) {
-        localStorage.setItem("authToken", data.session.access_token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-      }
+      setSuccess(data.message || "Đăng ký thành công! Vui lòng kiểm tra email để xác nhận.");
 
-      // Chuyển hướng sau 1 giây
       setTimeout(() => {
-        router.push("/");
-      }, 1000);
+        router.push("/login");
+      }, 2000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Có lỗi xảy ra");
     } finally {
@@ -60,9 +66,9 @@ export default function LoginPage() {
       <div className="w-full max-w-md bg-white rounded-2xl border-4 border-red-800 shadow-lg p-8">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">KizunaVN ログイン</h1>
+          <h1 className="text-3xl font-bold text-slate-900">KizunaVN 登録</h1>
           <p className="text-sm text-slate-500 mt-2">
-            Trang đăng nhập / ログインページへようこそ！
+            Trang đăng ký / 登録ページへようこそ！
           </p>
         </div>
 
@@ -79,7 +85,7 @@ export default function LoginPage() {
         )}
 
         {/* Form */}
-        <form onSubmit={handleLogin} className="mt-6 space-y-4">
+        <form onSubmit={handleSignup} className="mt-6 space-y-4">
           {/* Email Input */}
           <div>
             <input
@@ -106,7 +112,6 @@ export default function LoginPage() {
             />
             <button
               type="button"
-              aria-label={showPassword ? "Hide password" : "Show password"}
               onClick={() => setShowPassword((prev) => !prev)}
               disabled={loading}
               className="absolute inset-y-0 right-3 grid place-items-center text-slate-500 hover:text-slate-700 disabled:opacity-50"
@@ -115,32 +120,42 @@ export default function LoginPage() {
             </button>
           </div>
 
-          {/* Forgot Password */}
-          <div className="text-right pt-2">
-            <Link
-              href="/forgot-password"
-              className="text-sm text-blue-600 hover:text-blue-700 hover:underline"
+          {/* Confirm Password Input */}
+          <div className="relative">
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              disabled={loading}
+              required
+              className="w-full border-2 border-red-800 rounded-lg px-4 py-3 pr-12 text-base text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-red-400/60 disabled:bg-gray-100"
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword((prev) => !prev)}
+              disabled={loading}
+              className="absolute inset-y-0 right-3 grid place-items-center text-slate-500 hover:text-slate-700 disabled:opacity-50"
             >
-              Quên mật khẩu? <br />
-              <span className="text-xs">パスワードを忘れた方はこちら</span>
-            </Link>
+              {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
           </div>
 
-          {/* Login Button */}
+          {/* Signup Button */}
           <button
             type="submit"
             disabled={loading}
             className="w-full bg-blue-600 text-white rounded-lg py-3 text-base font-semibold hover:bg-blue-700 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            {loading ? "Đang đăng nhập..." : "ログイン / Đăng nhập"}
+            {loading ? "Đang đăng ký..." : "登録 / Đăng ký"}
           </button>
         </form>
 
-        {/* Sign Up Link */}
+        {/* Login Link */}
         <p className="mt-6 text-center text-sm text-slate-600">
-          Chưa có tài khoản?{" "}
-          <Link href="/signup" className="text-blue-600 hover:underline font-medium">
-            Đăng ký ngay
+          Đã có tài khoản?{" "}
+          <Link href="/login" className="text-blue-600 hover:underline font-medium">
+            Đăng nhập ngay
           </Link>
         </p>
       </div>
