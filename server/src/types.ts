@@ -14,4 +14,11 @@ export type Post = {
     employee_id: string;
     reaction_type: "like" | "heart" | "useful";
   }>;
+  reaction_counts?: {
+    like: number;
+    heart: number;
+    useful: number;
+  };
 };
+
+export type ReactionType = "like" | "heart" | "useful";

@@ -13,18 +13,46 @@ type Post = {
   content: string;
 };
 
+type ReactionType = "like" | "heart" | "useful";
+
+type ReactionSummary = {
+  counts: Record<ReactionType, number>;
+  myReaction: {
+    id: string;
+    employee_id: string;
+    reaction_type: ReactionType;
+  } | null;
+};
+
+const reactionMeta: Record<
+  ReactionType,
+  { label: string; icon: typeof ThumbsUp }
+> = {
+  like: { label: "Thích / いいね", icon: ThumbsUp },
+  heart: { label: "Thả tim / お気に入り", icon: Heart },
+  useful: { label: "Hữu ích / 参考になった", icon: Sparkles },
+};
+
+const apiBase =
+  (process.env.NEXT_PUBLIC_API_BASE as string) || "http://localhost:4000";
+
+const getAuthToken = () => {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("authToken");
+};
+
 
 
 export default function BoardPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
 
   useEffect(() => {
     let mounted = true;
     setLoading(true);
-    const base = (process.env.NEXT_PUBLIC_API_BASE as string) || "http://localhost:4000";
-    fetch(`${base}/api/posts`)
+    fetch(`${apiBase}/api/posts`)
       .then((r) => r.json())
       .then((payload) => {
         if (!mounted) return;
@@ -68,9 +96,7 @@ export default function BoardPage() {
     };
   }, []);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  const [activeReaction, setActiveReaction] = useState<
-    "like" | "love" | "insight" | null
-  >(null);
+  const [selectedPostReactions, setSelectedPostReactions] = useState<ReactionSummary | null>(null);
   const [query, setQuery] = useState("");
   const [authorFilter, setAuthorFilter] = useState("all");
   const normalizedQuery = query.trim().toLowerCase();
@@ -86,14 +112,87 @@ export default function BoardPage() {
     return matchesQuery && matchesAuthor;
   });
 
-  const reactionButtonClass = (reaction: "like" | "love" | "insight") =>
-    activeReaction === reaction
+  const reactionButtonClass = (reaction: ReactionType) =>
+    selectedPostReactions?.myReaction?.reaction_type === reaction
       ? "flex items-center gap-2 rounded-full border border-blue-300 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700"
       : "flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50";
 
-  const openPostDetail = (post: Post) => {
+  const fetchPostReactions = async (postId: string) => {
+    const headers: HeadersInit = { "Content-Type": "application/json" };
+    const token = getAuthToken();
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${apiBase}/api/posts/${postId}/reactions`, {
+      headers,
+    });
+    const payload = await response.json();
+
+    if (!response.ok || !payload?.ok) {
+      throw new Error(payload?.error || "Failed to fetch reactions");
+    }
+
+    setSelectedPostReactions(payload.data);
+  };
+
+  const openPostDetail = async (post: Post) => {
     setSelectedPost(post);
-    setActiveReaction(null);
+    setSelectedPostReactions(null);
+    setDetailLoading(true);
+    try {
+      await fetchPostReactions(post.id);
+    } catch (fetchError) {
+      console.error(fetchError);
+      setSelectedPostReactions({
+        counts: { like: 0, heart: 0, useful: 0 },
+        myReaction: null,
+      });
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  const submitReaction = async (reactionType: ReactionType) => {
+    if (!selectedPost) return;
+
+    const currentReaction = selectedPostReactions?.myReaction?.reaction_type ?? null;
+    const headers: HeadersInit = { "Content-Type": "application/json" };
+    const token = getAuthToken();
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const endpoint = `${apiBase}/api/posts/${selectedPost.id}/reactions`;
+
+    try {
+      let response: Response;
+
+      if (currentReaction === reactionType) {
+        response = await fetch(endpoint, {
+          method: "DELETE",
+          headers,
+          body: JSON.stringify({}),
+        });
+      } else {
+        response = await fetch(endpoint, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ reaction_type: reactionType }),
+        });
+      }
+
+      const payload = await response.json();
+
+      if (!response.ok || !payload?.ok) {
+        throw new Error(payload?.error || "Failed to update reaction");
+      }
+
+      await fetchPostReactions(selectedPost.id);
+    } catch (reactionError) {
+      console.error(reactionError);
+      alert(reactionError instanceof Error ? reactionError.message : "Có lỗi khi thả reaction");
+    }
   };
 
   return (
@@ -146,7 +245,7 @@ export default function BoardPage() {
                 <button
                   key={post.title}
                   type="button"
-                  onClick={() => openPostDetail(post)}
+                    onClick={() => void openPostDetail(post)}
                   className="w-full text-left p-5 hover:bg-slate-50 transition-colors"
                 >
                   <h3 className="font-semibold text-slate-800">{post.title}</h3>
@@ -203,40 +302,25 @@ export default function BoardPage() {
             </div>
 
             <div className="px-5 pb-5">
+              <div className="mb-3 text-xs text-slate-500">
+                {detailLoading ? "Đang tải reaction..." : ""}
+              </div>
               <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  className={reactionButtonClass("like")}
-                  onClick={() =>
-                    setActiveReaction((prev) =>
-                      prev === "like" ? null : "like",
-                    )
-                  }
-                >
-                  <ThumbsUp size={14} /> Thích / いいね
-                </button>
-                <button
-                  type="button"
-                  className={reactionButtonClass("love")}
-                  onClick={() =>
-                    setActiveReaction((prev) =>
-                      prev === "love" ? null : "love",
-                    )
-                  }
-                >
-                  <Heart size={14} /> Thả tim / お気に入り
-                </button>
-                <button
-                  type="button"
-                  className={reactionButtonClass("insight")}
-                  onClick={() =>
-                    setActiveReaction((prev) =>
-                      prev === "insight" ? null : "insight",
-                    )
-                  }
-                >
-                  <Sparkles size={14} /> Hữu ích / 参考になった
-                </button>
+                {(Object.keys(reactionMeta) as ReactionType[]).map((reaction) => {
+                  const meta = reactionMeta[reaction];
+                  const Icon = meta.icon;
+                  const count = selectedPostReactions?.counts?.[reaction] ?? 0;
+                  return (
+                    <button
+                      key={reaction}
+                      type="button"
+                      className={reactionButtonClass(reaction)}
+                      onClick={() => void submitReaction(reaction)}
+                    >
+                      <Icon size={14} /> {meta.label} ({count})
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
