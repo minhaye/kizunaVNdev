@@ -103,6 +103,12 @@ export default function TaskDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [mutating, setMutating] = useState(false);
+  const [reportText, setReportText] = useState("");
+  const [informText, setInformText] = useState("");
+  const [consultText, setConsultText] = useState("");
+  const [mutatingReport, setMutatingReport] = useState(false);
+  const [reportError, setReportError] = useState("");
+  const [reports, setReports] = useState<any[]>([]);
 
   useEffect(() => {
     setCurrentUser(readStoredUser());
@@ -124,10 +130,19 @@ export default function TaskDetailPage() {
         const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        const data = await response.json();
+
+        // Be defensive: server may return HTML (dev server) when API not available
+        const contentType = response.headers.get("content-type") ?? "";
+        let data: any = null;
+        if (contentType.includes("application/json")) {
+          data = await response.json();
+        } else {
+          const text = await response.text();
+          throw new Error(text || `Unexpected response (${response.status})`);
+        }
 
         if (!response.ok) {
-          throw new Error(data.error || "Không thể tải task");
+          throw new Error(data?.error || "Không thể tải task");
         }
 
         setTask(data.task);
@@ -204,8 +219,34 @@ export default function TaskDetailPage() {
   };
 
   const canClaim = task?.status === "todo" && (currentUser?.id === task.assignee_id || currentUser?.role === "admin");
-  const canComplete = task?.status === "doing" && (currentUser?.id === task.assignee_id || currentUser?.role === "admin");
   const deadlineParts = getDeadlineParts(task?.deadline ?? null);
+
+  useEffect(() => {
+    const loadReports = async () => {
+      if (!task) return;
+      if (!currentUser) return;
+      // Show reports when task is doing or done (after claiming)
+      if (task.status === "todo") return;
+
+      const token = getAuthToken();
+      if (!token) return;
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/tasks/${task.id}/reports`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const ct = res.headers.get("content-type") ?? "";
+        if (!ct.includes("application/json")) return;
+        const data = await res.json();
+        if (!res.ok) return;
+        setReports(data.reports ?? []);
+      } catch {
+        // ignore
+      }
+    };
+
+    void loadReports();
+  }, [task, currentUser]);
 
   return (
     <main className="flex-1 overflow-auto p-8 bg-slate-50/50">
@@ -290,17 +331,7 @@ export default function TaskDetailPage() {
                   </button>
                 )}
 
-                {canComplete && (
-                  <button
-                    type="button"
-                    onClick={() => void completeTask()}
-                    disabled={mutating}
-                    className="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
-                  >
-                    <CheckCircle2 className="w-4 h-4" />
-                    {mutating ? "更新中... / Đang cập nhật..." : "タスクを完了する / Hoàn thành task"}
-                  </button>
-                )}
+                {/* 完了ボタンはUI要件で削除 */}
 
                 {task.status === "done" && (
                   <span className="rounded-md bg-emerald-100 px-4 py-2 text-sm font-semibold text-emerald-700">
@@ -308,12 +339,148 @@ export default function TaskDetailPage() {
                   </span>
                 )}
 
-                {!canClaim && !canComplete && task.status !== "done" && (
+                {!canClaim && task.status !== "done" && (
                   <span className="text-sm text-slate-500">
                     このタスクは閲覧のみ可能です。/ Bạn có thể xem task này nhưng không phải người nhận được gán để thao tác.
                   </span>
                 )}
               </div>
+
+              {/* Ho-Ren-So report UI — show for doing/done tasks */}
+              {(task.status === "doing" || task.status === "done") && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white border border-slate-200 rounded-xl p-4">
+                  <h3 className="text-sm font-semibold text-slate-800 mb-3">報連相・進捗報告 (Ho-Ren-Sô)</h3>
+                  {reports.length === 0 ? (
+                    <div className="text-sm text-slate-500">Chưa có báo cáo nào. / まだ報告がありません。</div>
+                  ) : (
+                    <div className="space-y-3 max-h-96 overflow-y-auto">
+                      {reports.map((r) => (
+                        <div key={r.id} className="rounded-md border border-slate-100 p-3 bg-slate-50">
+                          <div className="text-xs text-slate-500">{r.sender_name ?? r.sender_id} • {new Date(r.created_at).toLocaleString()}</div>
+                          <div className="text-sm font-medium mt-1">報告 (Báo cáo): <span className="font-normal">{r.what_done}</span></div>
+                          <div className="text-sm font-medium mt-1">連絡 (Liên lạc): <span className="font-normal">{r.what_next}</span></div>
+                          {r.issues && <div className="text-sm font-medium mt-1">相談 (Tương đàm): <span className="font-normal">{r.issues}</span></div>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Report form — only for assignee when task is doing */}
+                {task.status === "doing" && currentUser?.id === task.assignee_id ? (
+                <div className="bg-white border border-slate-200 rounded-xl p-4">
+                  <h3 className="text-sm font-semibold text-slate-800 mb-3">Hô‑Ren‑Soを書く / Viết Ho‑Ren‑So</h3>
+
+                  <div>
+                    <label className="text-xs text-slate-500">報告 / Báo cáo (Report) *</label>
+                    <textarea
+                      value={reportText}
+                      onChange={(e) => setReportText(e.target.value)}
+                      rows={4}
+                      className="w-full mt-1 rounded-md border border-slate-200 p-2 text-sm"
+                      placeholder="報告を入力 / Nhập nội dung báo cáo"
+                      disabled={mutatingReport}
+                    />
+                  </div>
+
+                  <div className="mt-3">
+                    <label className="text-xs text-slate-500">連絡 / Liên lạc (Inform) *</label>
+                    <textarea
+                      value={informText}
+                      onChange={(e) => setInformText(e.target.value)}
+                      rows={3}
+                      className="w-full mt-1 rounded-md border border-slate-200 p-2 text-sm"
+                      placeholder="連絡事項を入力 / Nhập thông tin liên lạc"
+                      disabled={mutatingReport}
+                    />
+                  </div>
+
+                  <div className="mt-3">
+                    <label className="text-xs text-slate-500">相談 / Tương đàm (Consult)</label>
+                    <textarea
+                      value={consultText}
+                      onChange={(e) => setConsultText(e.target.value)}
+                      rows={3}
+                      className="w-full mt-1 rounded-md border border-slate-200 p-2 text-sm"
+                      placeholder="相談・課題を入力 / Nhập vấn đề cần trao đổi"
+                      disabled={mutatingReport}
+                    />
+                  </div>
+
+                  <div className="pt-3">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setReportError("");
+                        if (!currentUser || currentUser.id !== task?.assignee_id) {
+                          setReportError("Chỉ người nhận task mới được gửi báo cáo.");
+                          return;
+                        }
+                        if (!reportText.trim() || !informText.trim()) {
+                          setReportError("Vui lòng điền báo cáo và liên lạc.");
+                          return;
+                        }
+
+                        const token = getAuthToken();
+                        if (!token) {
+                          setReportError("Không có token xác thực");
+                          return;
+                        }
+
+                        try {
+                          setMutatingReport(true);
+                          const res = await fetch(`${API_BASE_URL}/api/tasks/${task?.id}/report`, {
+                            method: "POST",
+                            headers: {
+                              "Content-Type": "application/json",
+                              Authorization: `Bearer ${token}`,
+                            },
+                            body: JSON.stringify({ reportType: "daily", whatDone: reportText, whatNext: informText, issues: consultText }),
+                          });
+
+                          const ct = res.headers.get("content-type") ?? "";
+                          let data: any = null;
+                          if (ct.includes("application/json")) {
+                            data = await res.json();
+                          } else {
+                            const text = await res.text();
+                            throw new Error(text || `Unexpected response (${res.status})`);
+                          }
+
+                          if (!res.ok) throw new Error(data?.error || "Lỗi khi gửi báo cáo");
+
+                          // reload reports and clear inputs
+                          setReportText("");
+                          setInformText("");
+                          setConsultText("");
+                          setReports((prev) => [data.report, ...prev]);
+                        } catch (e) {
+                          setReportError(e instanceof Error ? e.message : String(e));
+                        } finally {
+                          setMutatingReport(false);
+                        }
+                      }}
+                      disabled={mutatingReport}
+                      className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+                    >
+                      {mutatingReport ? "Đang lưu..." : "報連相を送る / Gửi Ho-Ren-So"}
+                    </button>
+                    {reportError && <div className="mt-2 text-sm text-red-600">{reportError}</div>}
+                  </div>
+                </div>
+                ) : (
+                  <div className="bg-white border border-slate-200 rounded-xl p-4">
+                    <h3 className="text-sm font-semibold text-slate-800 mb-2">報連相記録 / Hồ sơ Ho-Ren-So</h3>
+                    <p className="text-xs text-slate-500">
+                      {task.status === "done"
+                        ? "このタスクは完了しました。報連相の記録は左側にあります。 / Task đã hoàn thành. Lịch sử báo cáo nằm bên trái."
+                        : "担当者のみが報連相を送ることができます。 / Chỉ người nhận task mới được gửi báo cáo."}
+                    </p>
+                  </div>
+                )}
+                </div>
+              )}
             </>
           ) : (
             <div className="text-sm text-slate-500">タスクが見つかりません。/ Không tìm thấy task.</div>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Plus, Search, X, CheckCircle2, CircleArrowRight } from "lucide-react";
+import { Plus, Search, X, CheckCircle2, CircleArrowRight, FileText } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 type TaskStatus = "todo" | "doing" | "done";
@@ -39,6 +39,8 @@ type Task = {
   assignee_name: string;
   assigner_role: string | null;
   assignee_role: string | null;
+  report_count: number;
+  latest_report_at: string | null;
 };
 
 type TaskDraft = {
@@ -488,6 +490,16 @@ export default function TaskBoardPage() {
                           <p className="text-[11px] text-slate-600 mt-2 rounded-md bg-slate-50 px-2 py-1 border border-slate-200 line-clamp-3">
                             {task.content}
                           </p>
+                        )}
+
+                        {/* HoRenSo indicator */}
+                        {(task.status === "doing" || task.status === "done") && (
+                          <div className="mt-2 inline-flex items-center gap-1.5 rounded-md bg-indigo-50 border border-indigo-100 px-2 py-1">
+                            <FileText className="w-3.5 h-3.5 text-indigo-500" />
+                            <span className="text-[11px] font-medium text-indigo-700">
+                              報連相 / HoRenSo: {task.report_count > 0 ? `${task.report_count} 件 / báo cáo` : "未報告 / Chưa có"}
+                            </span>
+                          </div>
                         )}
 
                         <div className="mt-3 flex flex-wrap items-center gap-2">
