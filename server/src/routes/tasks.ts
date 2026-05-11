@@ -192,7 +192,35 @@ export const listTasksHandler = async (req: Request, res: Response) => {
       return matchesStatus && matchesAssignee;
     });
 
-    res.json({ success: true, tasks: visibleTasks, session });
+    // Fetch report counts per task from task_reports
+    const taskIds = visibleTasks.map((t) => t.id);
+    let reportCountMap: Record<string, { count: number; latest_at: string | null }> = {};
+
+    if (taskIds.length > 0) {
+      const { data: reportRows } = await supabase
+        .from("task_reports")
+        .select("task_id,created_at")
+        .in("task_id", taskIds)
+        .order("created_at", { ascending: false });
+
+      if (reportRows && reportRows.length > 0) {
+        for (const row of reportRows) {
+          const tid = row.task_id as string;
+          if (!reportCountMap[tid]) {
+            reportCountMap[tid] = { count: 0, latest_at: row.created_at as string };
+          }
+          reportCountMap[tid].count += 1;
+        }
+      }
+    }
+
+    const enrichedTasks = visibleTasks.map((task) => ({
+      ...task,
+      report_count: reportCountMap[task.id]?.count ?? 0,
+      latest_report_at: reportCountMap[task.id]?.latest_at ?? null,
+    }));
+
+    res.json({ success: true, tasks: enrichedTasks, session });
   } catch (error) {
     res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
   }

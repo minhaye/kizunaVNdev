@@ -17,6 +17,10 @@ import {
   postsListHandler,
   postReactionsHandler,
 } from "./posts.js";
+import {
+  createTaskReportHandler,
+  listTaskReportsHandler,
+} from "./report.js";
 
 export const registerRoutes = (router: Router) => {
   router.get("/health", healthHandler);
@@ -27,6 +31,8 @@ export const registerRoutes = (router: Router) => {
   router.post("/tasks", createTaskHandler);
   router.post("/tasks/:id/claim", claimTaskHandler);
   router.patch("/tasks/:id/status", updateTaskStatusHandler);
+  router.get("/tasks/:id/reports", listTaskReportsHandler);
+  router.post("/tasks/:id/report", createTaskReportHandler);
   
   // Auth routes
   router.post("/auth/login", loginHandler);

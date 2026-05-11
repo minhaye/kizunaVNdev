@@ -225,9 +225,8 @@ export default function TaskDetailPage() {
     const loadReports = async () => {
       if (!task) return;
       if (!currentUser) return;
-      // hide reports and form if task is done or current user is not assignee
-      if (task.status === "done") return;
-      if (currentUser.id !== task.assignee_id) return;
+      // Show reports when task is doing or done (after claiming)
+      if (task.status === "todo") return;
 
       const token = getAuthToken();
       if (!token) return;
@@ -347,63 +346,65 @@ export default function TaskDetailPage() {
                 )}
               </div>
 
-              {/* Ho-Ren-So report UI (left: history, right: input) — only show for assignee and when task not done */}
-              {task.status !== "done" && currentUser?.id === task.assignee_id && (
+              {/* Ho-Ren-So report UI — show for doing/done tasks */}
+              {(task.status === "doing" || task.status === "done") && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-white border border-slate-200 rounded-xl p-4">
                   <h3 className="text-sm font-semibold text-slate-800 mb-3">報連相・進捗報告 (Ho-Ren-Sô)</h3>
                   {reports.length === 0 ? (
-                    <div className="text-sm text-slate-500">Chưa có báo cáo nào.</div>
+                    <div className="text-sm text-slate-500">Chưa có báo cáo nào. / まだ報告がありません。</div>
                   ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-3 max-h-96 overflow-y-auto">
                       {reports.map((r) => (
                         <div key={r.id} className="rounded-md border border-slate-100 p-3 bg-slate-50">
                           <div className="text-xs text-slate-500">{r.sender_name ?? r.sender_id} • {new Date(r.created_at).toLocaleString()}</div>
-                          <div className="text-sm font-medium mt-1">報告: <span className="font-normal">{r.what_done}</span></div>
-                          <div className="text-sm font-medium mt-1">連絡: <span className="font-normal">{r.what_next}</span></div>
-                          {r.issues && <div className="text-sm font-medium mt-1">相談: <span className="font-normal">{r.issues}</span></div>}
+                          <div className="text-sm font-medium mt-1">報告 (Báo cáo): <span className="font-normal">{r.what_done}</span></div>
+                          <div className="text-sm font-medium mt-1">連絡 (Liên lạc): <span className="font-normal">{r.what_next}</span></div>
+                          {r.issues && <div className="text-sm font-medium mt-1">相談 (Tương đàm): <span className="font-normal">{r.issues}</span></div>}
                         </div>
                       ))}
                     </div>
                   )}
                 </div>
 
+                {/* Report form — only for assignee when task is doing */}
+                {task.status === "doing" && currentUser?.id === task.assignee_id ? (
                 <div className="bg-white border border-slate-200 rounded-xl p-4">
                   <h3 className="text-sm font-semibold text-slate-800 mb-3">Hô‑Ren‑Soを書く / Viết Ho‑Ren‑So</h3>
 
                   <div>
-                    <label className="text-xs text-slate-500">報告 (Report)</label>
+                    <label className="text-xs text-slate-500">報告 / Báo cáo (Report) *</label>
                     <textarea
                       value={reportText}
                       onChange={(e) => setReportText(e.target.value)}
                       rows={4}
                       className="w-full mt-1 rounded-md border border-slate-200 p-2 text-sm"
-                      placeholder="報告を入力"
-                      disabled={mutatingReport || !(currentUser?.id === task?.assignee_id)}
+                      placeholder="報告を入力 / Nhập nội dung báo cáo"
+                      disabled={mutatingReport}
                     />
                   </div>
 
                   <div className="mt-3">
-                    <label className="text-xs text-slate-500">連絡 (Inform)</label>
+                    <label className="text-xs text-slate-500">連絡 / Liên lạc (Inform) *</label>
                     <textarea
                       value={informText}
                       onChange={(e) => setInformText(e.target.value)}
                       rows={3}
                       className="w-full mt-1 rounded-md border border-slate-200 p-2 text-sm"
-                      placeholder="連絡事項を入力"
-                      disabled={mutatingReport || !(currentUser?.id === task?.assignee_id)}
+                      placeholder="連絡事項を入力 / Nhập thông tin liên lạc"
+                      disabled={mutatingReport}
                     />
                   </div>
 
                   <div className="mt-3">
-                    <label className="text-xs text-slate-500">相談 (Consult)</label>
+                    <label className="text-xs text-slate-500">相談 / Tương đàm (Consult)</label>
                     <textarea
                       value={consultText}
                       onChange={(e) => setConsultText(e.target.value)}
                       rows={3}
                       className="w-full mt-1 rounded-md border border-slate-200 p-2 text-sm"
-                      placeholder="相談・課題を入力"
-                      disabled={mutatingReport || !(currentUser?.id === task?.assignee_id)}
+                      placeholder="相談・課題を入力 / Nhập vấn đề cần trao đổi"
+                      disabled={mutatingReport}
                     />
                   </div>
 
@@ -460,14 +461,24 @@ export default function TaskDetailPage() {
                           setMutatingReport(false);
                         }
                       }}
-                      disabled={mutatingReport || !(currentUser?.id === task?.assignee_id)}
+                      disabled={mutatingReport}
                       className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
                     >
-                      {mutatingReport ? "Đang lưu..." : "Lưu Ho-Ren-Sô"}
+                      {mutatingReport ? "Đang lưu..." : "報連相を送る / Gửi Ho-Ren-So"}
                     </button>
                     {reportError && <div className="mt-2 text-sm text-red-600">{reportError}</div>}
                   </div>
                 </div>
+                ) : (
+                  <div className="bg-white border border-slate-200 rounded-xl p-4">
+                    <h3 className="text-sm font-semibold text-slate-800 mb-2">報連相記録 / Hồ sơ Ho-Ren-So</h3>
+                    <p className="text-xs text-slate-500">
+                      {task.status === "done"
+                        ? "このタスクは完了しました。報連相の記録は左側にあります。 / Task đã hoàn thành. Lịch sử báo cáo nằm bên trái."
+                        : "担当者のみが報連相を送ることができます。 / Chỉ người nhận task mới được gửi báo cáo."}
+                    </p>
+                  </div>
+                )}
                 </div>
               )}
             </>
