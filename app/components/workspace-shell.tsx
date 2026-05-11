@@ -14,7 +14,7 @@ import {
   LogOut,
   LayoutDashboard,
 } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 type MenuItem = {
   href: string;
@@ -72,6 +72,45 @@ const menuItems: MenuItem[] = [
 export default function WorkspaceShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [displayName, setDisplayName] = useState("Tanaka K.");
+  const [displayRole, setDisplayRole] = useState("日本人スタッフ");
+  const [avatarSeed, setAvatarSeed] = useState("Tanaka");
+
+  useEffect(() => {
+    const rawUser = localStorage.getItem("user");
+
+    if (!rawUser) {
+      return;
+    }
+
+    try {
+      const user = JSON.parse(rawUser) as {
+        name?: string;
+        role?: string;
+        nationality?: string;
+        email?: string;
+      };
+
+      const nextName = user.name || user.email?.split("@")[0] || "Người dùng";
+      setDisplayName(nextName);
+      setAvatarSeed(nextName);
+
+      if (user.role === "admin") {
+        setDisplayRole("管理者 / Quản trị viên");
+      } else if (user.nationality === "jp") {
+        setDisplayRole("日本人スタッフ");
+      } else if (user.nationality === "vn") {
+        setDisplayRole("日越スタッフ");
+      } else {
+        setDisplayRole("Nhân viên");
+      }
+    } catch {
+      // Keep the fallback greeting if localStorage data is invalid.
+    }
+  }, []);
+
+  const greetingName = displayName.endsWith("さん") ? displayName : `${displayName}さん`;
+  const friendlyName = displayName.includes(" ") ? displayName : displayName;
 
   return (
     <div className="flex h-screen bg-slate-50 font-sans text-slate-800">
@@ -143,10 +182,10 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shadow-sm z-10">
           <div>
             <h1 className="text-lg font-semibold text-slate-800">
-              こんにちは、Tanakaさん！
+              こんにちは、{greetingName}！
             </h1>
             <p className="text-xs text-slate-500">
-              Xin chào, anh Tanaka! Chúc một ngày làm việc hiệu quả.
+              Xin chào, {friendlyName}! Chúc một ngày làm việc hiệu quả.
             </p>
           </div>
 
@@ -164,16 +203,16 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
                 className="flex items-center space-x-3 p-1 pr-2 rounded-full border border-slate-200 hover:bg-slate-50 transition-colors"
               >
                 <img
-                  src="https://api.dicebear.com/7.x/avataaars/svg?seed=Tanaka&backgroundColor=e2e8f0"
+                  src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(avatarSeed)}&backgroundColor=e2e8f0`}
                   alt="User avatar"
                   className="w-8 h-8 rounded-full bg-slate-200"
                 />
                 <div className="hidden md:block text-left">
                   <div className="text-sm font-medium leading-tight">
-                    Tanaka K.
+                    {displayName}
                   </div>
                   <div className="text-[10px] text-slate-500">
-                    日本人スタッフ
+                    {displayRole}
                   </div>
                 </div>
                 <ChevronDown className="w-4 h-4 text-slate-400" />
