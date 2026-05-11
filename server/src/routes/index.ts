@@ -10,6 +10,7 @@ import {
   listTasksHandler,
   updateTaskStatusHandler,
 } from "./tasks.js";
+import { createTaskReportHandler, listTaskReportsHandler } from "./reports.js";
 import {
   deletePostReactionHandler,
   getPostReactionsHandler,
@@ -24,7 +25,9 @@ export const registerRoutes = (router: Router) => {
   router.get("/employees", employeesHandler);
   router.get("/tasks", listTasksHandler);
   router.get("/tasks/:id", getTaskHandler);
+  router.get("/tasks/:id/reports", listTaskReportsHandler);
   router.post("/tasks", createTaskHandler);
+  router.post("/tasks/:id/reports", createTaskReportHandler);
   router.post("/tasks/:id/claim", claimTaskHandler);
   router.patch("/tasks/:id/status", updateTaskStatusHandler);
   

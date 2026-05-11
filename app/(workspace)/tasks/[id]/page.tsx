@@ -33,6 +33,19 @@ type Task = {
   assignee_role: string | null;
 };
 
+type Report = {
+  id: string;
+  task_id: string;
+  report_type: string;
+  what_done: string | null;
+  what_next: string | null;
+  issues: string | null;
+  created_at: string;
+  sender_id: string;
+  sender_name: string;
+  sender_email?: string | null;
+};
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000";
 
 const getDeadlineParts = (value: string | null) => {
@@ -103,6 +116,11 @@ export default function TaskDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [mutating, setMutating] = useState(false);
+  const [reports, setReports] = useState<Report[]>([]);
+  const [showReportForm, setShowReportForm] = useState(false);
+  const [reportMutating, setReportMutating] = useState(false);
+  const [reportError, setReportError] = useState("");
+  const [reportForm, setReportForm] = useState({ reportType: "daily", whatDone: "", whatNext: "", issues: "" });
 
   useEffect(() => {
     setCurrentUser(readStoredUser());
@@ -142,6 +160,27 @@ export default function TaskDetailPage() {
       void loadTask();
     }
   }, [taskId]);
+
+  useEffect(() => {
+    const loadReports = async () => {
+      if (!task) return;
+      const token = getAuthToken();
+      if (!token) return;
+
+      try {
+        const resp = await fetch(`${API_BASE_URL}/api/tasks/${task.id}/reports`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || "Không thể tải báo cáo");
+        setReports(data.reports ?? []);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    void loadReports();
+  }, [task?.id]);
 
   const refreshTask = (nextTask: Task) => {
     setTask(nextTask);
@@ -200,6 +239,50 @@ export default function TaskDetailPage() {
       setError(updateError instanceof Error ? updateError.message : "Không thể hoàn thành task");
     } finally {
       setMutating(false);
+    }
+  };
+
+  const submitReport = async () => {
+    if (!task) return;
+    if (!reportForm.whatDone.trim() || !reportForm.whatNext.trim()) {
+      setReportError("何をしたか (whatDone) と 次にすること (whatNext) は必須です。 / Các trường whatDone và whatNext là bắt buộc.");
+      return;
+    }
+
+    const token = getAuthToken();
+    if (!token) {
+      setReportError("Chưa đăng nhập");
+      return;
+    }
+
+    try {
+      setReportMutating(true);
+      setReportError("");
+
+      const resp = await fetch(`${API_BASE_URL}/api/tasks/${task.id}/reports`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          reportType: reportForm.reportType,
+          whatDone: reportForm.whatDone,
+          whatNext: reportForm.whatNext,
+          issues: reportForm.issues,
+        }),
+      });
+
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || "Không thể gửi báo cáo");
+
+      setReports((prev) => [data.report, ...prev]);
+      setShowReportForm(false);
+      setReportForm({ reportType: "daily", whatDone: "", whatNext: "", issues: "" });
+    } catch (e) {
+      setReportError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setReportMutating(false);
     }
   };
 
@@ -313,6 +396,109 @@ export default function TaskDetailPage() {
                     このタスクは閲覧のみ可能です。/ Bạn có thể xem task này nhưng không phải người nhận được gán để thao tác.
                   </span>
                 )}
+              </div>
+              <div className="border-t pt-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold">進捗報告 / Ho-Ren-So</h3>
+                  <button
+                    type="button"
+                    onClick={() => setShowReportForm((s) => !s)}
+                    className="text-sm rounded-md border px-3 py-1 bg-white hover:bg-slate-50"
+                  >
+                    {showReportForm ? "フォームを閉じる / Đóng form" : "報告を作成 / Tạo báo cáo"}
+                  </button>
+                </div>
+
+                {showReportForm && (
+                  <div className="mt-3 space-y-3">
+                    {reportError && (
+                      <div className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{reportError}</div>
+                    )}
+                    <div>
+                      <label className="text-xs text-slate-500">報告タイプ / Report type</label>
+                      <select
+                        value={reportForm.reportType}
+                        onChange={(e) => setReportForm((p) => ({ ...p, reportType: e.target.value }))}
+                        className="mt-1 block w-full rounded-md border px-3 py-2 text-sm"
+                      >
+                        <option value="daily">日次 / Daily</option>
+                        <option value="weekly">週次 / Weekly</option>
+                        <option value="ad-hoc">臨時 / Ad-hoc</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="text-xs text-slate-500">何を実施したか (必須)</label>
+                      <textarea
+                        rows={3}
+                        value={reportForm.whatDone}
+                        onChange={(e) => setReportForm((p) => ({ ...p, whatDone: e.target.value }))}
+                        className="mt-1 block w-full rounded-md border px-3 py-2 text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs text-slate-500">次に行うこと (必須)</label>
+                      <textarea
+                        rows={2}
+                        value={reportForm.whatNext}
+                        onChange={(e) => setReportForm((p) => ({ ...p, whatNext: e.target.value }))}
+                        className="mt-1 block w-full rounded-md border px-3 py-2 text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs text-slate-500">課題 / Vấn đề (任意)</label>
+                      <textarea
+                        rows={2}
+                        value={reportForm.issues}
+                        onChange={(e) => setReportForm((p) => ({ ...p, issues: e.target.value }))}
+                        className="mt-1 block w-full rounded-md border px-3 py-2 text-sm"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => void submitReport()}
+                        disabled={reportMutating}
+                        className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+                      >
+                        {reportMutating ? "送信中..." : "送信 / Gửi"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setShowReportForm(false); setReportError(''); }}
+                        className="text-sm rounded-md border px-3 py-2 bg-white hover:bg-slate-50"
+                      >
+                        キャンセル / Hủy
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="mt-4 space-y-3">
+                  <h4 className="text-sm font-medium">履歴 / Lịch sử báo cáo</h4>
+                  {reports.length === 0 ? (
+                    <div className="text-sm text-slate-500">まだ報告はありません / Chưa có báo cáo</div>
+                  ) : (
+                    reports.map((r) => {
+                      const created = new Date(r.created_at);
+                      return (
+                        <div key={r.id} className="rounded-md border border-slate-100 px-3 py-2 bg-slate-50">
+                          <div className="flex items-center justify-between text-xs text-slate-600">
+                            <div>{r.sender_name}</div>
+                            <div>{created.toLocaleString("vi-VN")}</div>
+                          </div>
+                          <div className="mt-2 text-sm font-semibold">{r.report_type}</div>
+                          <div className="mt-1 text-sm whitespace-pre-line"><strong>何を実施:</strong> {r.what_done || "-"}</div>
+                          <div className="mt-1 text-sm whitespace-pre-line"><strong>次に行う:</strong> {r.what_next || "-"}</div>
+                          {r.issues && <div className="mt-1 text-sm whitespace-pre-line text-amber-700"><strong>課題:</strong> {r.issues}</div>}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
               </div>
             </>
           ) : (
