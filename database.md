@@ -137,3 +137,19 @@
 
 * UNIQUE (`employee_id`, `post_id`)
   → One employee can react only once per post.
+
+---
+
+### wiki_articles
+
+Bảng lưu các bài viết wiki nội bộ, dùng để chia sẻ kiến thức, quy trình hoặc tài liệu hướng dẫn trong hệ thống.
+
+| Field | Type | Description |
+|---|---|---|
+| id | UUID | ID bài viết wiki |
+| topic | VARCHAR(100) | Chủ đề bài viết |
+| title | VARCHAR(100) | Tên bài viết |
+| content | TEXT | Nội dung bài viết |
+| created_by | UUID | ID nhân viên tạo bài viết |
+| created_at | TIMESTAMP | Thời gian tạo |
+| updated_at | TIMESTAMP | Thời gian cập nhật |
