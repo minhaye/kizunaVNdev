@@ -21,6 +21,10 @@ import {
   createTaskReportHandler,
   listTaskReportsHandler,
 } from "./report.js";
+import {
+  getWikiArticleDetailHandler,
+  listWikiArticlesHandler,
+} from "./wiki.js";
 
 export const registerRoutes = (router: Router) => {
   router.get("/health", healthHandler);
@@ -46,4 +50,8 @@ export const registerRoutes = (router: Router) => {
   router.get("/posts/:id/reactions", getPostReactionsHandler);
   router.post("/posts/:id/reactions", postReactionsHandler);
   router.delete("/posts/:id/reactions", deletePostReactionHandler);
+
+  // Wiki routes
+  router.get("/wiki", listWikiArticlesHandler);
+  router.get("/wiki/:slug", getWikiArticleDetailHandler);
 };
