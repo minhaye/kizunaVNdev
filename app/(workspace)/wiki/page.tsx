@@ -2,53 +2,84 @@
 
 import Link from "next/link";
 import { Search } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-const articles = [
-  {
-    slug: "ho-ren-so-basic",
-    title: "報連相（ホウレンソウ）の基本",
-    tag: "Business",
-  },
-  { slug: "meeting-manner", title: "会議マナー（日越共通）", tag: "Manner" },
-  {
-    slug: "email-tone",
-    title: "ビジネスメールの丁寧表現",
-    tag: "Communication",
-  },
-  { slug: "report-format", title: "進捗報告フォーマット集", tag: "Template" },
-  { slug: "qa-glossary", title: "QA用語の日越対訳", tag: "Glossary" },
-  {
-    slug: "onboarding-vn",
-    title: "新メンバー向けオンボーディング",
-    tag: "Onboarding",
-  },
-  {
-    slug: "conflict-resolution",
-    title: "意見の違いを解決する会話例",
-    tag: "Culture",
-  },
-  {
-    slug: "meeting-minutes",
-    title: "議事録テンプレート（日本語/ベトナム語）",
-    tag: "Meeting",
-  },
-];
+type WikiArticle = {
+  slug: string;
+  title: string;
+  tag: string;
+};
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ??
+  process.env.NEXT_PUBLIC_API_BASE ??
+  "http://localhost:4000";
 
 export default function WikiListPage() {
+  const [articles, setArticles] = useState<WikiArticle[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const [tagFilter, setTagFilter] = useState("all");
+
+  useEffect(() => {
+    let active = true;
+
+    const loadArticles = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const response = await fetch(`${API_BASE_URL}/api/wiki`);
+        const payload = await response.json();
+
+        if (!response.ok || !payload?.ok) {
+          throw new Error(payload?.error || "Không thể tải danh sách wiki");
+        }
+
+        if (!active) return;
+
+        const mapped = Array.isArray(payload.data)
+          ? payload.data.map((article: { slug?: string; title?: string; tag?: string }) => ({
+              slug: article.slug ?? "",
+              title: article.title ?? "",
+              tag: article.tag ?? "General",
+            }))
+          : [];
+
+        setArticles(mapped.filter((article) => article.slug && article.title));
+      } catch (loadError) {
+        if (!active) return;
+        setError(loadError instanceof Error ? loadError.message : "Có lỗi khi tải dữ liệu wiki");
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    void loadArticles();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const normalizedQuery = query.trim().toLowerCase();
-  const tags = Array.from(new Set(articles.map((article) => article.tag)));
-  const filteredArticles = articles.filter((article) => {
-    const matchesQuery =
-      normalizedQuery.length === 0 ||
-      [article.title, article.tag, article.slug].some((value) =>
-        value.toLowerCase().includes(normalizedQuery),
-      );
-    const matchesTag = tagFilter === "all" || article.tag === tagFilter;
-    return matchesQuery && matchesTag;
-  });
+
+  const tags = useMemo(() => Array.from(new Set(articles.map((article) => article.tag))), [articles]);
+
+  const filteredArticles = useMemo(
+    () =>
+      articles.filter((article) => {
+        const matchesQuery =
+          normalizedQuery.length === 0 ||
+          [article.title, article.tag, article.slug].some((value) =>
+            value.toLowerCase().includes(normalizedQuery),
+          );
+        const matchesTag = tagFilter === "all" || article.tag === tagFilter;
+        return matchesQuery && matchesTag;
+      }),
+    [articles, normalizedQuery, tagFilter],
+  );
 
   return (
     <main className="flex-1 overflow-auto p-8 bg-slate-50/50">
@@ -90,7 +121,15 @@ export default function WikiListPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredArticles.length === 0 ? (
+          {loading ? (
+            <div className="col-span-full rounded-xl border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500">
+              Đang tải dữ liệu wiki...
+            </div>
+          ) : error ? (
+            <div className="col-span-full rounded-xl border border-dashed border-red-200 bg-white p-6 text-center text-sm text-red-500">
+              {error}
+            </div>
+          ) : filteredArticles.length === 0 ? (
             <div className="col-span-full rounded-xl border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500">
               該当する記事がありません / Không có bài viết phù hợp.
             </div>
