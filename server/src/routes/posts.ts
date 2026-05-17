@@ -57,6 +57,14 @@ const mapReactionCounts = (reactions: Array<{ reaction_type: ReactionType }>) =>
   );
 };
 
+const firstRelatedEmployee = (value: unknown) => {
+  if (Array.isArray(value)) {
+    return value[0] ?? null;
+  }
+
+  return value ?? null;
+};
+
 // GET /posts - Lấy danh sách bài đăng (sắp xếp mới nhất trước)
 export const postsListHandler = async (_req: Request, res: Response) => {
   try {
@@ -93,16 +101,23 @@ export const postsListHandler = async (_req: Request, res: Response) => {
     }
 
     // Map dữ liệu từ DB sang format frontend cần
-    const posts: Post[] = data.map((post: any) => ({
+    const posts: Post[] = data.map((post: any) => {
+      const employee = firstRelatedEmployee(post.employees) as {
+        name?: string;
+        avatar_url?: string;
+      } | null;
+
+      return {
       id: post.id,
       topic: post.topic,
       title: post.title,
-      author: post.employees?.name || "Unknown",
-      avatar: post.employees?.avatar_url || "",
+      author: employee?.name || "Unknown",
+      avatar: employee?.avatar_url || "",
       content: post.content,
       created_by: post.created_by,
       created_at: post.created_at,
-    }));
+      };
+    });
 
     res.json({ ok: true, data: posts });
   } catch (err) {
@@ -175,12 +190,17 @@ export const postsDetailHandler = async (req: Request, res: Response) => {
       return;
     }
 
+    const employee = firstRelatedEmployee(data.employees) as {
+      name?: string;
+      avatar_url?: string;
+    } | null;
+
     const post: Post = {
       id: data.id,
       topic: data.topic,
       title: data.title,
-      author: data.employees?.name || "Unknown",
-      avatar: data.employees?.avatar_url || "",
+      author: employee?.name || "Unknown",
+      avatar: employee?.avatar_url || "",
       content: data.content,
       created_by: data.created_by,
       created_at: data.created_at,

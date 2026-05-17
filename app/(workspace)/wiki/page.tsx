@@ -47,7 +47,9 @@ export default function WikiListPage() {
             }))
           : [];
 
-        setArticles(mapped.filter((article) => article.slug && article.title));
+        setArticles(
+          mapped.filter((article: WikiArticle) => article.slug && article.title),
+        );
       } catch (loadError) {
         if (!active) return;
         setError(loadError instanceof Error ? loadError.message : "Có lỗi khi tải dữ liệu wiki");
