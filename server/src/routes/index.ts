@@ -18,6 +18,13 @@ import {
   postReactionsHandler,
 } from "./posts.js";
 import {
+  createChatMessageHandler,
+  getChatRoomDetailHandler,
+  listChatRoomsHandler,
+  pinChatRoomHandler,
+  unpinChatRoomHandler,
+} from "./chat.js";
+import {
   createTaskReportHandler,
   listTaskReportsHandler,
 } from "./report.js";
@@ -50,6 +57,13 @@ export const registerRoutes = (router: Router) => {
   router.get("/posts/:id/reactions", getPostReactionsHandler);
   router.post("/posts/:id/reactions", postReactionsHandler);
   router.delete("/posts/:id/reactions", deletePostReactionHandler);
+
+  // Chat routes
+  router.get("/chat/rooms", listChatRoomsHandler);
+  router.get("/chat/rooms/:id", getChatRoomDetailHandler);
+  router.post("/chat/rooms/:id/messages", createChatMessageHandler);
+  router.post("/chat/rooms/:id/pin", pinChatRoomHandler);
+  router.delete("/chat/rooms/:id/pin", unpinChatRoomHandler);
 
   // Wiki routes
   router.get("/wiki", listWikiArticlesHandler);

@@ -2,126 +2,52 @@
 
 import Link from "next/link";
 import { MessageCircleHeart, Search, Users } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  fetchChatRooms,
+  formatRoomTime,
+  getAvatarClass,
+  getAvatarInitials,
+  getAvatarSeed,
+  type ChatRoomSummary,
+} from "./chat-api";
 
 type ChatFilter = "all" | "unread" | "pinned" | "online";
 
-const chats = [
-  {
-    id: "team-dev",
-    name: "開発チーム / Team Dev",
-    unread: 2,
-    latest: "APIの実装が完了しました",
-    time: "10:21",
-    topic: "#backend",
-    avatar: "Dev",
-    avatarClass: "bg-indigo-100 text-indigo-700",
-    online: true,
-    pinned: true,
-  },
-  {
-    id: "nam",
-    name: "Nguyen Van Nam",
-    unread: 1,
-    latest: "仕様について確認したいことがあります",
-    time: "10:04",
-    topic: "#spec",
-    avatar: "N",
-    avatarClass: "bg-orange-100 text-orange-700",
-    online: true,
-    pinned: true,
-  },
-  {
-    id: "project-a",
-    name: "Project A",
-    unread: 0,
-    latest: "進捗は80%です",
-    time: "09:58",
-    topic: "#project-a",
-    avatar: "PA",
-    avatarClass: "bg-blue-100 text-blue-700",
-    online: false,
-    pinned: false,
-  },
-  {
-    id: "support-jp",
-    name: "日本語サポート",
-    unread: 4,
-    latest: "用語集を更新しました。",
-    time: "09:45",
-    topic: "#translation",
-    avatar: "JP",
-    avatarClass: "bg-pink-100 text-pink-700",
-    online: false,
-    pinned: false,
-  },
-  {
-    id: "client-alpha",
-    name: "Client Alpha",
-    unread: 0,
-    latest: "議事録を送信しました / Meeting minutes đã được gửi.",
-    time: "09:10",
-    topic: "#client",
-    avatar: "CA",
-    avatarClass: "bg-cyan-100 text-cyan-700",
-    online: false,
-    pinned: false,
-  },
-  {
-    id: "hr-notify",
-    name: "HR Notice",
-    unread: 3,
-    latest: "17:00までにtimesheet提出 / Nhắc nộp timesheet trước 17:00.",
-    time: "08:42",
-    topic: "#notice",
-    avatar: "HR",
-    avatarClass: "bg-rose-100 text-rose-700",
-    online: false,
-    pinned: false,
-  },
-  {
-    id: "qa-room",
-    name: "QA Room",
-    unread: 2,
-    latest: "回帰テストケース完了 / Test case regression đã hoàn tất.",
-    time: "08:30",
-    topic: "#qa",
-    avatar: "QA",
-    avatarClass: "bg-emerald-100 text-emerald-700",
-    online: true,
-    pinned: false,
-  },
-  {
-    id: "infra-room",
-    name: "Infra Team",
-    unread: 0,
-    latest: "今夜22:00にVPNメンテ / VPN maintenance tối nay 22:00.",
-    time: "08:15",
-    topic: "#infra",
-    avatar: "IF",
-    avatarClass: "bg-slate-200 text-slate-700",
-    online: false,
-    pinned: false,
-  },
-  {
-    id: "design-room",
-    name: "Design Team",
-    unread: 1,
-    latest: "UI kitを最新版に更新 / Đã update UI kit phiên bản mới.",
-    time: "07:56",
-    topic: "#uiux",
-    avatar: "UX",
-    avatarClass: "bg-violet-100 text-violet-700",
-    online: true,
-    pinned: false,
-  },
-];
-
 export default function ChatListPage() {
+  const [rooms, setRooms] = useState<ChatRoomSummary[]>([]);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<ChatFilter>("all");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    const loadRooms = async () => {
+      try {
+        setLoading(true);
+        setError("");
+        const data = await fetchChatRooms();
+        if (!active) return;
+        setRooms(data);
+      } catch (loadError) {
+        if (!active) return;
+        setError(loadError instanceof Error ? loadError.message : "Failed to load chat rooms");
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    void loadRooms();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const normalizedQuery = query.trim().toLowerCase();
-  const filteredChats = chats.filter((chat) => {
+  const filteredChats = useMemo(() => rooms.filter((chat) => {
     const matchesQuery =
       normalizedQuery.length === 0 ||
       [chat.name, chat.latest, chat.topic].some((value) =>
@@ -135,9 +61,9 @@ export default function ChatListPage() {
           ? chat.pinned
           : chat.online);
     return matchesQuery && matchesFilter;
-  });
+  }), [rooms, normalizedQuery, filter]);
   const pinnedRooms = filteredChats.filter((room) => room.pinned);
-  const allUnread = chats.reduce((sum, room) => sum + room.unread, 0);
+  const allUnread = rooms.reduce((sum, room) => sum + room.unread, 0);
 
   return (
     <main className="flex-1 overflow-auto p-8 bg-slate-50/50">
@@ -197,7 +123,17 @@ export default function ChatListPage() {
               </span>
             </div>
 
-            {pinnedRooms.length > 0 && (
+              {loading ? (
+                <div className="rounded-xl border border-dashed border-slate-200 px-4 py-6 text-center text-sm text-slate-500">
+                  Đang tải dữ liệu chat...
+                </div>
+              ) : error ? (
+                <div className="rounded-xl border border-dashed border-red-200 px-4 py-6 text-center text-sm text-red-500">
+                  {error}
+                </div>
+              ) : null}
+
+              {!loading && !error && pinnedRooms.length > 0 && (
               <div className="mb-3">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">
                   固定 / Pinned
@@ -220,7 +156,7 @@ export default function ChatListPage() {
             )}
 
             <div className="overflow-auto pr-1 space-y-2">
-              {filteredChats.length === 0 ? (
+              {!loading && !error && filteredChats.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-slate-200 px-4 py-6 text-center text-sm text-slate-500">
                   該当するチャットがありません / Không tìm thấy phòng chat phù
                   hợp.
@@ -234,9 +170,9 @@ export default function ChatListPage() {
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <div
-                        className={`relative w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold ${chat.avatarClass}`}
+                        className={`relative w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold ${getAvatarClass(getAvatarSeed(chat.name))}`}
                       >
-                        {chat.avatar}
+                        {getAvatarInitials(chat.name)}
                         {chat.online && (
                           <span className="absolute right-0 bottom-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white" />
                         )}
@@ -262,7 +198,7 @@ export default function ChatListPage() {
                     </div>
                     <div className="text-right shrink-0 pl-2">
                       <div className="text-[11px] text-slate-400">
-                        {chat.time}
+                        {formatRoomTime(chat.latest_at)}
                       </div>
                       {chat.unread > 0 ? (
                         <div className="mt-1 inline-flex rounded-full bg-red-100 text-red-600 text-[11px] px-2 py-0.5 font-semibold">
