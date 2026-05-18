@@ -15,6 +15,7 @@ import {
   LayoutDashboard,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
+import Avatar from "./avatar";
 
 type MenuItem = {
   href: string;
@@ -70,44 +71,83 @@ const menuItems: MenuItem[] = [
 ];
 
 export default function WorkspaceShell({ children }: { children: ReactNode }) {
+  const API_BASE_URL =
+    process.env.NEXT_PUBLIC_API_BASE_URL ??
+    process.env.NEXT_PUBLIC_API_BASE ??
+    "http://localhost:4000";
   const pathname = usePathname();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [displayName, setDisplayName] = useState("Tanaka K.");
   const [displayRole, setDisplayRole] = useState("日本人スタッフ");
   const [avatarSeed, setAvatarSeed] = useState("Tanaka");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+  const applyUser = (user: {
+    name?: string;
+    role?: string;
+    nationality?: string;
+    email?: string;
+    avatar_url?: string | null;
+  }) => {
+    const nextName = user.name || user.email?.split("@")[0] || "Người dùng";
+    setDisplayName(nextName);
+    setAvatarSeed(nextName);
+    setAvatarUrl(user.avatar_url ?? null);
+
+    if (user.role === "admin") {
+      setDisplayRole("管理者 / Quản trị viên");
+    } else if (user.nationality === "jp") {
+      setDisplayRole("日本人スタッフ");
+    } else if (user.nationality === "vn") {
+      setDisplayRole("日越スタッフ");
+    } else {
+      setDisplayRole("Nhân viên");
+    }
+  };
 
   useEffect(() => {
+    let active = true;
     const rawUser = localStorage.getItem("user");
+    const token = localStorage.getItem("authToken");
 
-    if (!rawUser) {
-      return;
-    }
-
-    try {
-      const user = JSON.parse(rawUser) as {
-        name?: string;
-        role?: string;
-        nationality?: string;
-        email?: string;
-      };
-
-      const nextName = user.name || user.email?.split("@")[0] || "Người dùng";
-      setDisplayName(nextName);
-      setAvatarSeed(nextName);
-
-      if (user.role === "admin") {
-        setDisplayRole("管理者 / Quản trị viên");
-      } else if (user.nationality === "jp") {
-        setDisplayRole("日本人スタッフ");
-      } else if (user.nationality === "vn") {
-        setDisplayRole("日越スタッフ");
-      } else {
-        setDisplayRole("Nhân viên");
+    if (rawUser) {
+      try {
+        const user = JSON.parse(rawUser) as {
+          name?: string;
+          role?: string;
+          nationality?: string;
+          email?: string;
+          avatar_url?: string | null;
+        };
+        applyUser(user);
+      } catch {
+        // Ignore invalid localStorage data.
       }
-    } catch {
-      // Keep the fallback greeting if localStorage data is invalid.
     }
-  }, []);
+
+    const refreshUser = async () => {
+      if (!token) return;
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await response.json();
+        if (!response.ok || !data?.user) return;
+        if (!active) return;
+        applyUser(data.user);
+        localStorage.setItem("user", JSON.stringify(data.user));
+      } catch {
+        // Ignore refresh errors.
+      }
+    };
+
+    void refreshUser();
+
+    return () => {
+      active = false;
+    };
+  }, [API_BASE_URL]);
 
   const greetingName = displayName.endsWith("さん") ? displayName : `${displayName}さん`;
   const friendlyName = displayName.includes(" ") ? displayName : displayName;
@@ -202,10 +242,10 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                 className="flex items-center space-x-3 p-1 pr-2 rounded-full border border-slate-200 hover:bg-slate-50 transition-colors"
               >
-                <img
-                  src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(avatarSeed)}&backgroundColor=e2e8f0`}
-                  alt="User avatar"
-                  className="w-8 h-8 rounded-full bg-slate-200"
+                <Avatar
+                  name={avatarSeed}
+                  src={avatarUrl}
+                  className="w-8 h-8"
                 />
                 <div className="hidden md:block text-left">
                   <div className="text-sm font-medium leading-tight">
