@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import Avatar from "../../components/avatar";
 import { Heart, ThumbsUp, Sparkles, X, Search } from "lucide-react";
 
 type Post = {
@@ -48,6 +50,7 @@ export default function BoardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     let mounted = true;
@@ -152,6 +155,16 @@ export default function BoardPage() {
       setDetailLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (loading || !posts.length) return;
+    const postId = searchParams?.get("postId");
+    if (!postId) return;
+    const matched = posts.find((post) => post.id === postId);
+    if (matched) {
+      void openPostDetail(matched);
+    }
+  }, [loading, posts, searchParams]);
 
   const submitReaction = async (reactionType: ReactionType) => {
     if (!selectedPost) return;
@@ -272,10 +285,10 @@ export default function BoardPage() {
           >
             <div className="flex items-start justify-between gap-4 p-5 border-b border-slate-100">
               <div className="flex items-start gap-3">
-                <img
+                <Avatar
+                  name={selectedPost.author}
                   src={selectedPost.avatar}
-                  alt={`${selectedPost.author} avatar`}
-                  className="w-11 h-11 rounded-full bg-slate-200"
+                  className="w-11 h-11"
                 />
                 <div>
                   <h3 className="text-lg font-bold text-slate-900">
