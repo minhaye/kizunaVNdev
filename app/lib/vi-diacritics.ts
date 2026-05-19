@@ -1,45 +1,44 @@
 type RestorerOptions = {
   apiKey?: string;
-  model: string;
+  host?: string;
 };
 
 export class VietnameseDiacriticsRestorer {
   private apiKey?: string;
-  private model: string;
+  private host: string;
 
   constructor(options: RestorerOptions) {
     this.apiKey = options.apiKey;
-    this.model = options.model;
+    this.host = options.host ?? "https://api-free.deepl.com";
   }
 
   async restore(text: string): Promise<string> {
     const input = text.trim();
     if (!this.apiKey || !input) return input;
 
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: this.model,
-        temperature: 0,
-        messages: [
-          {
-            role: "system",
-            content:
-              "You restore Vietnamese diacritics. Return only the corrected Vietnamese text with proper accents. Do not add extra commentary.",
-          },
-          { role: "user", content: input },
-        ],
-      }),
-    });
+    // Use DeepL translate endpoint to attempt restoring Vietnamese diacritics.
+    // This is a best-effort approach: we send the text and request Vietnamese output.
+    const params = new URLSearchParams();
+    params.append("text", input);
+    params.append("target_lang", "VI");
 
-    const payload = await response.json();
-    if (!response.ok) return input;
+    try {
+      const res = await fetch(`${this.host}/v2/translate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `DeepL-Auth-Key ${this.apiKey}`,
+        },
+        body: params.toString(),
+      });
 
-    const content = payload?.choices?.[0]?.message?.content;
-    return typeof content === "string" && content.trim().length > 0 ? content.trim() : input;
+      const payload = await res.json();
+      if (!res.ok) return input;
+
+      const translated = payload?.translations?.[0]?.text;
+      return typeof translated === "string" && translated.trim().length > 0 ? translated.trim() : input;
+    } catch {
+      return input;
+    }
   }
 }
