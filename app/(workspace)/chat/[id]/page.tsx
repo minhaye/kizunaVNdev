@@ -22,6 +22,14 @@ import {
   type ChatRoomDetail,
 } from "../chat-api";
 
+type TranslationEntry = {
+  status: "idle" | "loading" | "ready" | "error";
+  translated?: string;
+  detected?: "ja" | "vi";
+  target?: "ja" | "vi";
+  error?: string;
+};
+
 export default function ChatDetailPage() {
   const params = useParams<{ id: string }>();
   const roomId = Array.isArray(params?.id) ? params.id[0] : params?.id;
@@ -30,6 +38,7 @@ export default function ChatDetailPage() {
   const [sending, setSending] = useState(false);
   const [draft, setDraft] = useState("");
   const [error, setError] = useState("");
+  const [translations, setTranslations] = useState<Record<string, TranslationEntry>>({});
   const actorEmployeeId = useMemo(() => getStoredEmployeeId(), []);
 
   useEffect(() => {
@@ -76,6 +85,45 @@ export default function ChatDetailPage() {
       setError(sendError instanceof Error ? sendError.message : "Failed to send message");
     } finally {
       setSending(false);
+    }
+  };
+
+  const handleTranslate = async (messageId: string, text: string) => {
+    const current = translations[messageId];
+    setTranslations((prev) => ({
+      ...prev,
+      [messageId]: { status: "loading" },
+    }));
+
+    try {
+      const response = await fetch("/api/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      const payload = await response.json();
+
+      if (!response.ok || !payload?.ok) {
+        throw new Error(payload?.error || "Failed to translate message");
+      }
+
+      setTranslations((prev) => ({
+        ...prev,
+        [messageId]: {
+          status: "ready",
+          translated: payload.data.translated as string,
+          detected: payload.data.detected_language as "ja" | "vi",
+          target: payload.data.target_language as "ja" | "vi",
+        },
+      }));
+    } catch (translateError) {
+      setTranslations((prev) => ({
+        ...prev,
+        [messageId]: {
+          status: "error",
+          error: translateError instanceof Error ? translateError.message : "Failed to translate",
+        },
+      }));
     }
   };
 
@@ -142,6 +190,7 @@ export default function ChatDetailPage() {
                 const mine = message.sender_id === actorEmployeeId;
                 const sender = room.members.find((member) => member.employee_id === message.sender_id);
                 const senderName = sender?.employees?.name ?? "Unknown";
+                const translation = translations[message.id];
 
                 return (
                   <div key={message.id} className={`flex ${mine ? "justify-end" : "items-end gap-2"}`}>
@@ -161,9 +210,38 @@ export default function ChatDetailPage() {
                         </p>
                       )}
                       <p className="whitespace-pre-wrap">{message.content}</p>
-                      <p className={`mt-1 text-[10px] ${mine ? "text-blue-100" : "text-slate-400"}`}>
-                        {formatRoomTime(message.sent_at)}
-                      </p>
+                      {translation?.status === "ready" && translation.translated && (
+                        <div className="mt-2 rounded-xl border border-slate-200/70 bg-slate-50/70 px-3 py-2">
+                          <p className="text-[10px] font-semibold text-slate-400">
+                            翻訳 / Dịch
+                          </p>
+                          <p className="whitespace-pre-wrap text-[13px] text-slate-700">
+                            {translation.translated}
+                          </p>
+                        </div>
+                      )}
+                      <div className="mt-1 flex items-center gap-2">
+                        <button
+                          type="button"
+                          className={`text-[10px] font-semibold ${mine ? "text-blue-100" : "text-slate-400"} hover:underline disabled:opacity-60`}
+                          onClick={() => void handleTranslate(message.id, message.content)}
+                          disabled={translation?.status === "loading"}
+                        >
+                          {translation?.status === "loading"
+                            ? "翻訳中... / Đang dịch..."
+                            : translation?.status === "ready"
+                              ? "翻訳済み / Đã dịch"
+                              : "翻訳 / Dịch"}
+                        </button>
+                        <p className={`text-[10px] ${mine ? "text-blue-100" : "text-slate-400"}`}>
+                          {formatRoomTime(message.sent_at)}
+                        </p>
+                      </div>
+                      {translation?.status === "error" && (
+                        <p className={`mt-1 text-[10px] ${mine ? "text-blue-100" : "text-red-400"}`}>
+                          {translation.error}
+                        </p>
+                      )}
                     </div>
                   </div>
                 );
