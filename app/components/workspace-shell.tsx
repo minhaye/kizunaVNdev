@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Bell,
   MessageSquare,
@@ -14,7 +14,7 @@ import {
   LogOut,
   LayoutDashboard,
 } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Avatar from "./avatar";
 
 type MenuItem = {
@@ -76,11 +76,16 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
     process.env.NEXT_PUBLIC_API_BASE ??
     "http://localhost:4000";
   const pathname = usePathname();
+  const router = useRouter();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [displayName, setDisplayName] = useState("Tanaka K.");
   const [displayRole, setDisplayRole] = useState("日本人スタッフ");
   const [avatarSeed, setAvatarSeed] = useState("Tanaka");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [notifCount, setNotifCount] = useState(0);
+  const [notifications, setNotifications] = useState<{ id: string; created_at: string; topic: string; title: string; content: string }[]>([]);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const notifRef = useRef<HTMLDivElement>(null);
 
   const applyUser = (user: {
     name?: string;
@@ -144,10 +149,47 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
 
     void refreshUser();
 
+    const fetchNotifications = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/notifications`);
+        const data = await res.json() as { notifications?: { id: string; created_at: string; topic: string; title: string; content: string }[] };
+        if (!active) return;
+        const list = data.notifications ?? [];
+        setNotifications(list);
+        setNotifCount(list.length);
+      } catch {
+        // Keep default 0 on error.
+      }
+    };
+
+    void fetchNotifications();
+
     return () => {
       active = false;
     };
   }, [API_BASE_URL]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setIsNotifOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const topicRoute: Record<string, string> = {
+    Task: "/tasks",
+    Chat: "/chat",
+    News: "/board",
+  };
+
+  const handleNotifClick = (topic: string) => {
+    setIsNotifOpen(false);
+    const route = topicRoute[topic];
+    if (route) router.push(route);
+  };
 
   const greetingName = displayName.endsWith("さん") ? displayName : `${displayName}さん`;
   const friendlyName = displayName.includes(" ") ? displayName : displayName;
@@ -230,12 +272,54 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
           </div>
 
           <div className="flex items-center space-x-6">
-            <button className="relative p-2 text-slate-400 hover:text-slate-600 transition-colors rounded-full hover:bg-slate-100">
-              <Bell className="w-6 h-6" />
-              <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white border-2 border-white">
-                3
-              </span>
-            </button>
+            <div className="relative" ref={notifRef}>
+              <button
+                onClick={() => setIsNotifOpen(!isNotifOpen)}
+                className="relative p-2 text-slate-400 hover:text-slate-600 transition-colors rounded-full hover:bg-slate-100"
+              >
+                <Bell className="w-6 h-6" />
+                {notifCount > 0 && (
+                  <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white border-2 border-white">
+                    {notifCount > 9 ? "9+" : notifCount}
+                  </span>
+                )}
+              </button>
+
+              {isNotifOpen && (
+                <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-slate-100 z-50">
+                  <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+                    <span className="text-sm font-semibold text-slate-800">通知 / Thông báo</span>
+                    <span className="text-xs text-slate-400">{notifCount} mới</span>
+                  </div>
+                  <ul className="max-h-80 overflow-y-auto divide-y divide-slate-50">
+                    {notifications.length === 0 ? (
+                      <li className="px-4 py-6 text-center text-sm text-slate-400">Không có thông báo</li>
+                    ) : (
+                      notifications.map((n) => (
+                        <li
+                          key={n.id}
+                          onClick={() => handleNotifClick(n.topic)}
+                          className="px-4 py-3 hover:bg-slate-50 transition-colors cursor-pointer"
+                        >
+                          <div className="flex items-start gap-3">
+                            <span className="mt-0.5 shrink-0 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-medium text-blue-600">
+                              {n.topic}
+                            </span>
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-slate-800 truncate">{n.title}</p>
+                              <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{n.content}</p>
+                              <p className="text-[10px] text-slate-400 mt-1">
+                                {new Date(n.created_at).toLocaleDateString("vi-VN")}
+                              </p>
+                            </div>
+                          </div>
+                        </li>
+                      ))
+                    )}
+                  </ul>
+                </div>
+              )}
+            </div>
 
             <div className="relative">
               <button

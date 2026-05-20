@@ -32,6 +32,7 @@ import {
   getWikiArticleDetailHandler,
   listWikiArticlesHandler,
 } from "./wiki.js";
+import { listNotificationsHandler } from "./notifications.js";
 
 export const registerRoutes = (router: Router) => {
   router.get("/health", healthHandler);
@@ -68,4 +69,7 @@ export const registerRoutes = (router: Router) => {
   // Wiki routes
   router.get("/wiki", listWikiArticlesHandler);
   router.get("/wiki/:slug", getWikiArticleDetailHandler);
+
+  // Notifications routes
+  router.get("/notifications", listNotificationsHandler);
 };
