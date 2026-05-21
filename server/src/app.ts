@@ -20,6 +20,24 @@ const router = express.Router();
 registerRoutes(router);
 app.use('/api', router);
 
+// Dev debug: decode signed token payload (only in non-production)
+if (process.env.NODE_ENV !== 'production') {
+    app.post('/debug/decode-token', async (req, res) => {
+        const { token } = req.body || {};
+        if (!token || typeof token !== 'string') return res.status(400).json({ error: 'token required' });
+        try {
+            const [encoded, signature] = token.split('.');
+            const payloadRaw = Buffer.from(encoded, 'base64url').toString('utf8');
+            const expected = (await import('./env.js')).env.authTokenSecret;
+            const crypto = (await import('node:crypto'));
+            const expectedSig = crypto.createHmac('sha256', expected).update(encoded).digest('base64url');
+            return res.json({ decoded: JSON.parse(payloadRaw), signature, expectedSig });
+        } catch (err) {
+            return res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
+        }
+    });
+}
+
 // Health check endpoint
 app.get('/check-db', async (req, res) => {
     const { data, error } = await supabase.from('employees').select('*').limit(1);

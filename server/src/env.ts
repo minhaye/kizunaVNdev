@@ -12,5 +12,6 @@ export const env = {
   port: Number(process.env.PORT ?? 4000),
   supabaseUrl: process.env.SUPABASE_URL as string,
   supabaseAnonKey: process.env.SUPABASE_ANON_KEY as string,
+  supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY ?? "",
   authTokenSecret: process.env.AUTH_TOKEN_SECRET ?? "dev-local-secret-change-me",
 };

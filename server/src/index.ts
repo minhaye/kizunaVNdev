@@ -28,6 +28,9 @@ async function startServer() {
     console.log(`📡 API endpoints:`);
     console.log(`   POST   http://localhost:${env.port}/api/auth/login`);
     console.log(`   POST   http://localhost:${env.port}/api/auth/signup`);
+    console.log(`   POST   http://localhost:${env.port}/api/auth/forgot-password/request`);
+    console.log(`   POST   http://localhost:${env.port}/api/auth/forgot-password/verify`);
+    console.log(`   POST   http://localhost:${env.port}/api/auth/forgot-password/reset`);
     console.log(`   POST   http://localhost:${env.port}/api/auth/logout`);
     console.log(`   GET    http://localhost:${env.port}/api/auth/me`);
   });
