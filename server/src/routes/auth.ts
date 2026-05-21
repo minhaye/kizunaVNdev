@@ -22,19 +22,6 @@ type AdminRow = {
   password: string;
 };
 
-type PasswordResetAccountType = "employee" | "admin";
-
-type PasswordResetRequestRow = {
-  id: string;
-  email: string;
-  account_type: PasswordResetAccountType;
-  otp_hash: string;
-  attempts: number;
-  expires_at: string;
-  verified_at: string | null;
-  consumed_at: string | null;
-  created_at: string;
-};
 
 type AuthTokenPayload = {
   sub: string;
@@ -43,17 +30,7 @@ type AuthTokenPayload = {
   source: "employees" | "admins";
 };
 
-type PasswordResetTokenPayload = {
-  exp: number;
-  email: string;
-  accountType: PasswordResetAccountType;
-  requestId: string;
-  kind: "password_reset";
-};
-
-const PASSWORD_RESET_OTP_TTL_MS = 10 * 60 * 1000;
-const PASSWORD_RESET_TOKEN_TTL_MS = 15 * 60 * 1000;
-const PASSWORD_RESET_MAX_ATTEMPTS = 5;
+// (password-reset handlers were removed per user's request)
 
 const toPublicEmployee = (employee: EmployeeRow) => ({
   id: employee.id,
@@ -107,22 +84,7 @@ const fetchEmployeeByEmail = async (email: string) =>
 const fetchAdminByEmail = async (email: string) =>
   supabase.from("admins").select("*").eq("email", email).maybeSingle<AdminRow>();
 
-const fetchResetRequestById = async (requestId: string) =>
-  supabase
-    .from("password_reset_requests")
-    .select("*")
-    .eq("id", requestId)
-    .maybeSingle<PasswordResetRequestRow>();
-
-const fetchLatestResetRequest = async (email: string, accountType: PasswordResetAccountType) =>
-  supabase
-    .from("password_reset_requests")
-    .select("*")
-    .eq("email", email)
-    .eq("account_type", accountType)
-    .is("consumed_at", null)
-    .order("created_at", { ascending: false })
-    .limit(1);
+// password-reset DB helpers removed
 
 const isStrongPassword = (pw: string) => {
   // At least 8 chars, with lower, upper, number
@@ -131,49 +93,9 @@ const isStrongPassword = (pw: string) => {
 
 const normalizeEmail = (value: unknown) => (typeof value === "string" ? value.trim().toLowerCase() : "");
 
-const createOtp = () => String(crypto.randomInt(0, 1_000_000)).padStart(6, "0");
+// password-reset token helpers removed
 
-const hashOtp = (requestId: string, otp: string) =>
-  crypto.createHash("sha256").update(`${requestId}:${otp}:${env.authTokenSecret}`).digest("hex");
-const signResetToken = (payload: PasswordResetTokenPayload) => signToken(payload);
-
-const verifyResetToken = (token: string) => {
-  const payload = verifySignedPayload(token) as Partial<PasswordResetTokenPayload> | null;
-  if (
-    !payload ||
-    payload.kind !== "password_reset" ||
-    !payload.accountType ||
-    !payload.requestId ||
-    !payload.email ||
-    !payload.exp ||
-    payload.exp < Date.now()
-  ) {
-    return null;
-  }
-
-  return payload as PasswordResetTokenPayload;
-};
-
-const getAccountByEmail = async (email: string) => {
-  const [employeeResult, adminResult] = await Promise.all([
-    fetchEmployeeByEmail(email),
-    fetchAdminByEmail(email),
-  ]);
-
-  if (employeeResult.error || adminResult.error) {
-    return { error: true as const };
-  }
-
-  if (employeeResult.data) {
-    return { error: false as const, accountType: "employee" as const, account: employeeResult.data };
-  }
-
-  if (adminResult.data) {
-    return { error: false as const, accountType: "admin" as const, account: adminResult.data };
-  }
-
-  return { error: false as const, accountType: null, account: null };
-};
+// simplified: direct fetch helpers are used by other auth handlers
 
 export const loginHandler = async (req: Request, res: Response) => {
   try {
@@ -315,230 +237,7 @@ export const signUpHandler = async (req: Request, res: Response) => {
   }
 };
 
-export const requestPasswordResetHandler = async (req: Request, res: Response) => {
-  try {
-    const email = normalizeEmail(req.body?.email);
-
-    if (!email) {
-      return res.status(400).json({ error: "Email là bắt buộc" });
-    }
-
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-      return res.status(400).json({ error: "Email không hợp lệ" });
-    }
-
-    const accountResult = await getAccountByEmail(email);
-
-    if (accountResult.error) {
-      return res.status(500).json({ error: "Lỗi truy vấn cơ sở dữ liệu." });
-    }
-
-    if (!accountResult.account || !accountResult.accountType) {
-      return res.status(404).json({ error: "Email này không tồn tại trong hệ thống." });
-    }
-
-    const now = new Date();
-    const expiresAt = new Date(now.getTime() + PASSWORD_RESET_OTP_TTL_MS).toISOString();
-    const otp = createOtp();
-    const requestId = crypto.randomUUID();
-
-    await supabase
-      .from("password_reset_requests")
-      .update({ consumed_at: now.toISOString() })
-      .eq("email", email)
-      .eq("account_type", accountResult.accountType)
-      .is("consumed_at", null);
-
-    const { data: createdRequest, error } = await supabase
-      .from("password_reset_requests")
-      .insert({
-        id: requestId,
-        email,
-        account_type: accountResult.accountType,
-        otp_hash: hashOtp(requestId, otp),
-        attempts: 0,
-        expires_at: expiresAt,
-      })
-      .select("id,email,account_type,otp_hash,attempts,expires_at,verified_at,consumed_at,created_at")
-      .single<PasswordResetRequestRow>();
-
-    if (error || !createdRequest) {
-      return res.status(500).json({
-        error: "Không thể tạo yêu cầu đặt lại mật khẩu.",
-        details: error?.message ?? "Không có dữ liệu trả về từ Supabase.",
-      });
-    }
-
-    // Dev-friendly fallback: log the OTP because this project has no mail provider yet.
-    console.info(`[password-reset] OTP for ${email}: ${otp}`);
-
-    return res.json({
-      success: true,
-      message: "Mã xác nhận đã được gửi tới email của bạn.",
-      expiresAt,
-      ...(process.env.NODE_ENV !== "production" ? { debugOtp: otp } : {}),
-    });
-  } catch (error) {
-    return res.status(500).json({
-      error: "Lỗi server",
-      details: error instanceof Error ? error.message : String(error),
-    });
-  }
-};
-
-export const verifyPasswordResetOtpHandler = async (req: Request, res: Response) => {
-  try {
-    const email = normalizeEmail(req.body?.email);
-    const otp = typeof req.body?.otp === "string" ? req.body.otp.trim() : "";
-
-    if (!email || !otp) {
-      return res.status(400).json({ error: "Email và mã OTP là bắt buộc" });
-    }
-
-    const accountResult = await getAccountByEmail(email);
-
-    if (accountResult.error) {
-      return res.status(500).json({ error: "Lỗi truy vấn cơ sở dữ liệu." });
-    }
-
-    if (!accountResult.account || !accountResult.accountType) {
-      return res.status(404).json({ error: "Email này không tồn tại trong hệ thống." });
-    }
-
-    const requestResult = await fetchLatestResetRequest(email, accountResult.accountType);
-
-    if (requestResult.error) {
-      return res.status(500).json({ error: "Không thể xác minh mã OTP." });
-    }
-
-    const request = requestResult.data?.[0];
-
-    if (!request) {
-      return res.status(400).json({ error: "Chưa có yêu cầu đặt lại mật khẩu hợp lệ." });
-    }
-
-    if (request.consumed_at) {
-      return res.status(400).json({ error: "Mã xác nhận đã được sử dụng." });
-    }
-
-    if (new Date(request.expires_at).getTime() < Date.now()) {
-      return res.status(400).json({ error: "Mã xác nhận đã hết hạn." });
-    }
-
-    if (request.attempts >= PASSWORD_RESET_MAX_ATTEMPTS) {
-      return res.status(429).json({ error: "Bạn đã nhập sai quá nhiều lần. Vui lòng yêu cầu mã mới." });
-    }
-
-    if (hashOtp(request.id, otp) !== request.otp_hash) {
-      await supabase
-        .from("password_reset_requests")
-        .update({ attempts: request.attempts + 1 })
-        .eq("id", request.id);
-
-      return res.status(400).json({ error: "Mã OTP không đúng." });
-    }
-
-    const verifiedAt = new Date().toISOString();
-    await supabase
-      .from("password_reset_requests")
-      .update({ verified_at: verifiedAt })
-      .eq("id", request.id);
-
-    const resetToken = signResetToken({
-      email: request.email,
-      accountType: request.account_type,
-      requestId: request.id,
-      kind: "password_reset",
-      exp: Date.now() + PASSWORD_RESET_TOKEN_TTL_MS,
-    });
-
-    return res.json({
-      success: true,
-      message: "Xác thực OTP thành công.",
-      resetToken,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      error: "Lỗi server",
-      details: error instanceof Error ? error.message : String(error),
-    });
-  }
-};
-
-export const resetPasswordHandler = async (req: Request, res: Response) => {
-  try {
-    const resetToken = typeof req.body?.resetToken === "string" ? req.body.resetToken.trim() : "";
-    const password = typeof req.body?.password === "string" ? req.body.password : "";
-    const confirmPassword = typeof req.body?.confirmPassword === "string" ? req.body.confirmPassword : "";
-
-    if (!resetToken || !password) {
-      return res.status(400).json({ error: "Token đặt lại và mật khẩu mới là bắt buộc" });
-    }
-
-    if (password !== confirmPassword) {
-      return res.status(400).json({ error: "Mật khẩu xác nhận không khớp" });
-    }
-
-    if (!isStrongPassword(password)) {
-      return res.status(400).json({
-        error:
-          "Mật khẩu không hợp lệ. Mật khẩu cần ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số.",
-      });
-    }
-
-    const tokenPayload = verifyResetToken(resetToken);
-
-    if (!tokenPayload) {
-      return res.status(400).json({ error: "Token đặt lại không hợp lệ hoặc đã hết hạn." });
-    }
-
-    const requestResult = await fetchResetRequestById(tokenPayload.requestId);
-
-    if (requestResult.error) {
-      return res.status(500).json({ error: "Không thể xác minh yêu cầu đặt lại mật khẩu." });
-    }
-
-    const request = requestResult.data;
-
-    if (!request || request.consumed_at) {
-      return res.status(400).json({ error: "Yêu cầu đặt lại mật khẩu không còn hiệu lực." });
-    }
-
-    if (request.email !== tokenPayload.email || request.account_type !== tokenPayload.accountType) {
-      return res.status(400).json({ error: "Token đặt lại không khớp với yêu cầu." });
-    }
-
-    if (new Date(request.expires_at).getTime() < Date.now()) {
-      return res.status(400).json({ error: "Yêu cầu đặt lại mật khẩu đã hết hạn." });
-    }
-
-    const targetTable = tokenPayload.accountType === "employee" ? "employees" : "admins";
-    const updateResult = await supabase
-      .from(targetTable)
-      .update({ password })
-      .eq("email", tokenPayload.email);
-
-    if (updateResult.error) {
-      return res.status(500).json({ error: "Không thể cập nhật mật khẩu mới." });
-    }
-
-    const consumedAt = new Date().toISOString();
-    await supabase
-      .from("password_reset_requests")
-      .update({ consumed_at: consumedAt, verified_at: request.verified_at ?? consumedAt })
-      .eq("id", request.id);
-
-    return res.json({
-      success: true,
-      message: "Đổi mật khẩu thành công. Bạn có thể đăng nhập bằng mật khẩu mới.",
-    });
-  } catch (error) {
-    return res.status(500).json({
-      error: "Lỗi server",
-      details: error instanceof Error ? error.message : String(error),
-    });
-  }
-};
+// password-reset handlers removed per user's request
 
 export const logoutHandler = async (_req: Request, res: Response) => {
   return res.json({

@@ -5,10 +5,8 @@ import {
   getMeHandler,
   loginHandler,
   logoutHandler,
-  requestPasswordResetHandler,
-  resetPasswordHandler,
   signUpHandler,
-  verifyPasswordResetOtpHandler,
+  
 } from "./auth.js";
 import { employeesHandler } from "./employees.js";
 import {
@@ -57,9 +55,7 @@ export const registerRoutes = (router: Router) => {
   // Auth routes
   router.post("/auth/login", loginHandler);
   router.post("/auth/signup", signUpHandler);
-  router.post("/auth/forgot-password/request", requestPasswordResetHandler);
-  router.post("/auth/forgot-password/verify", verifyPasswordResetOtpHandler);
-  router.post("/auth/forgot-password/reset", resetPasswordHandler);
+  // Forgot-password backend routes removed per request (frontend-only push)
   router.post("/auth/logout", logoutHandler);
   router.get("/auth/me", getMeHandler);
   
