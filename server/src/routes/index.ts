@@ -3,6 +3,7 @@ import { healthHandler } from "./health.js";
 import { dbPingHandler } from "./db.js";
 import { loginHandler, signUpHandler, logoutHandler, getMeHandler } from "./auth.js";
 import { employeesHandler } from "./employees.js";
+import { createUserHandler, usersHandler } from "./users.js";
 import {
   claimTaskHandler,
   createTaskHandler,
@@ -32,12 +33,15 @@ import {
   getWikiArticleDetailHandler,
   listWikiArticlesHandler,
 } from "./wiki.js";
-import { listNotificationsHandler } from "./notifications.js";
+import { listNotificationsHandler, markNotificationsReadHandler } from "./notifications.js";
+import { heartbeatHandler, getMySettingsHandler, updateMySettingsHandler } from "./settings.js";
 
 export const registerRoutes = (router: Router) => {
   router.get("/health", healthHandler);
   router.get("/db/ping", dbPingHandler);
   router.get("/employees", employeesHandler);
+  router.get("/users", usersHandler);
+  router.post("/users", createUserHandler);
   router.get("/tasks", listTasksHandler);
   router.get("/tasks/:id", getTaskHandler);
   router.post("/tasks", createTaskHandler);
@@ -72,4 +76,8 @@ export const registerRoutes = (router: Router) => {
 
   // Notifications routes
   router.get("/notifications", listNotificationsHandler);
+  router.post("/notifications/read-all", markNotificationsReadHandler);
+  router.patch("/settings/me", updateMySettingsHandler);
+  router.get("/settings/me", getMySettingsHandler);
+  router.post("/presence/heartbeat", heartbeatHandler);
 };

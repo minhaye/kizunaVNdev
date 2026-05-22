@@ -6,6 +6,7 @@
 2) Install deps: npm install
 3) Run: npm run dev
 4) In Supabase SQL Editor, run `employees.schema.sql` to create `employees` table.
+5) Also run `settings.schema.sql` and `user_notifications.schema.sql` to enable per-account settings, presence, and notification feeds.
 
 ## Health check
 

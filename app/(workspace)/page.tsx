@@ -386,9 +386,9 @@ export default function DashboardPage() {
                         className={`relative w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${msg.avatarClass}`}
                       >
                         {msg.avatar}
-                        {msg.online && (
-                          <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
-                        )}
+                        <div
+                          className={`absolute bottom-0 right-0 w-3 h-3 border-2 border-white rounded-full ${msg.online ? "bg-emerald-500" : "bg-amber-400"}`}
+                        />
                       </div>
                       <div className="ml-3 flex-1">
                         <div className="flex justify-between items-baseline">

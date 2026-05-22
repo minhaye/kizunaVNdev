@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import crypto from "node:crypto";
 import { env } from "../env.js";
 import { supabase } from "../supabase.js";
+import { loadAccountSettings, touchAccountHeartbeat } from "../lib/account-settings.js";
 
 type AuthRole = "employee" | "leader" | "admin";
 
@@ -132,11 +133,15 @@ export const loginHandler = async (req: Request, res: Response) => {
         exp: Date.now() + 7 * 24 * 60 * 60 * 1000,
       });
 
+      const nowIso = new Date().toISOString();
+      await touchAccountHeartbeat({ sub: admin.id, exp: Date.now() + 7 * 24 * 60 * 60 * 1000, role: "admin", source: "admins" }).catch(() => null);
+      const adminSettings = await loadAccountSettings({ sub: admin.id, exp: Date.now() + 7 * 24 * 60 * 60 * 1000, role: "admin", source: "admins" }).catch(() => null);
+
       return res.json({
         success: true,
         message: "Đăng nhập thành công",
         session: { access_token: token },
-        user: toPublicAdmin(admin),
+        user: { ...toPublicAdmin(admin), last_online: adminSettings?.last_online ?? nowIso },
       });
     }
 
@@ -238,9 +243,16 @@ export const getMeHandler = async (req: Request, res: Response) => {
         });
       }
 
+      const adminSettings = await loadAccountSettings({
+        sub: payload.sub!,
+        exp: payload.exp!,
+        role: "admin",
+        source: "admins",
+      }).catch(() => null);
+
       return res.json({
         success: true,
-        user: toPublicAdmin(admin),
+        user: { ...toPublicAdmin(admin), last_online: adminSettings?.last_online ?? null },
       });
     }
 

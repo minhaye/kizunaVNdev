@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import crypto from "node:crypto";
 import { supabase } from "../supabase.js";
 import { env } from "../env.js";
+import { insertUserNotifications } from "../lib/notifications.js";
 
 type DbStatus = "pending" | "in_progress" | "completed";
 type UiStatus = "todo" | "doing" | "done";
@@ -308,6 +309,18 @@ export const createTaskHandler = async (req: Request, res: Response) => {
     }
 
     const hydrated = hydrateTasks([data], employees)[0];
+
+    await insertUserNotifications([
+      {
+        source: "employees",
+        subject_id: assignee.id,
+        topic: "Task",
+        title: "Có task mới được giao",
+        content: `${assigner.name} đã giao task: ${title.trim()}`,
+        link: `/tasks/${hydrated.id}`,
+      },
+    ]).catch(() => null);
+
     return res.status(201).json({ success: true, task: hydrated });
   } catch (error) {
     return res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
@@ -350,6 +363,19 @@ export const claimTaskHandler = async (req: Request, res: Response) => {
 
     const refreshedTasks = await loadTasks();
     const hydrated = hydrateTasks(refreshedTasks, employees).find((task) => task.id === id);
+
+    if (currentTask.assigner_id !== session.sub) {
+      await insertUserNotifications([
+        {
+          source: "employees",
+          subject_id: currentTask.assigner_id,
+          topic: "Task",
+          title: "Task đã được nhận",
+          content: `${currentEmployee?.name ?? "Một thành viên"} đã nhận task: ${currentTask.title}`,
+          link: `/tasks/${currentTask.id}`,
+        },
+      ]).catch(() => null);
+    }
 
     return res.json({ success: true, task: hydrated });
   } catch (error) {
@@ -395,6 +421,20 @@ export const updateTaskStatusHandler = async (req: Request, res: Response) => {
 
     const refreshedTasks = await loadTasks();
     const hydrated = hydrateTasks(refreshedTasks, employees).find((task) => task.id === id);
+
+    const recipients = new Set([currentTask.assigner_id, currentTask.assignee_id]);
+    recipients.delete(session.sub);
+
+    await insertUserNotifications(
+      Array.from(recipients).map((recipientId) => ({
+        source: "employees",
+        subject_id: recipientId,
+        topic: "Task",
+        title: "Task vừa được cập nhật",
+        content: `Task "${currentTask.title}" đã chuyển sang trạng thái ${status}`,
+        link: `/tasks/${currentTask.id}`,
+      })),
+    ).catch(() => null);
 
     return res.json({ success: true, task: hydrated });
   } catch (error) {

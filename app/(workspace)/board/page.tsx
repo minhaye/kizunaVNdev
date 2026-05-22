@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Avatar from "../../components/avatar";
 import { Heart, ThumbsUp, Sparkles, X, Search } from "lucide-react";
@@ -45,7 +45,7 @@ const getAuthToken = () => {
 
 
 
-export default function BoardPage() {
+function BoardContent() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -350,5 +350,13 @@ export default function BoardPage() {
         </div>
       )}
     </>
+  );
+}
+
+export default function BoardPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <BoardContent />
+    </Suspense>
   );
 }

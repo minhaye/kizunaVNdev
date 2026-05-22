@@ -173,9 +173,9 @@ export default function ChatListPage() {
                         className={`relative w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold ${getAvatarClass(getAvatarSeed(chat.name))}`}
                       >
                         {getAvatarInitials(chat.name)}
-                        {chat.online && (
-                          <span className="absolute right-0 bottom-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white" />
-                        )}
+                        <span
+                          className={`absolute right-0 bottom-0 w-3 h-3 rounded-full border-2 border-white ${chat.online ? "bg-emerald-500" : "bg-amber-400"}`}
+                        />
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5">
