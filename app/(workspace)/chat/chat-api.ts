@@ -36,6 +36,13 @@ export type ChatMessage = {
   deleted_at: string | null;
 };
 
+export type ChatFeedback = {
+  id: string;
+  receiver_id: string;
+  sender_id: string;
+  content: string;
+};
+
 export type ChatRoomDetail = {
   id: string;
   room_type: "direct" | "group";
@@ -88,6 +95,22 @@ const buildHeaders = () => {
 const buildEmployeeIdQuery = () => {
   const user = getStoredUser();
   return user?.id ? `?employee_id=${encodeURIComponent(user.id)}` : "";
+};
+
+const buildQueryString = (params: Record<string, string>) => {
+  const query = new URLSearchParams();
+  const employeeId = getStoredEmployeeId();
+
+  if (employeeId) {
+    query.set("employee_id", employeeId);
+  }
+
+  Object.entries(params).forEach(([key, value]) => {
+    query.set(key, value);
+  });
+
+  const search = query.toString();
+  return search.length > 0 ? `?${search}` : "";
 };
 
 export const fetchChatRooms = async () => {
@@ -204,7 +227,49 @@ export const getAvatarInitials = (value: string) => {
 export const formatRoomTime = (value: string) => {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "--:--";
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+  date.setHours(date.getHours() + 7);
+  return date.toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
 };
 
 export const getStoredEmployeeId = () => getStoredUser()?.id ?? null;
+
+export const fetchChatFeedback = async (roomId: string, receiverId: string) => {
+  const response = await fetch(
+    `${getApiBaseUrl()}/api/chat/rooms/${encodeURIComponent(roomId)}/feedback${buildQueryString({
+      receiver_id: receiverId,
+    })}`,
+    {
+      headers: buildHeaders(),
+    },
+  );
+  const payload = await response.json();
+
+  if (!response.ok || !payload?.ok) {
+    throw new Error(payload?.error || "Failed to fetch chat feedback");
+  }
+
+  return (payload.data ?? null) as ChatFeedback | null;
+};
+
+export const saveChatFeedback = async (roomId: string, receiverId: string, content: string) => {
+  const response = await fetch(`${getApiBaseUrl()}/api/chat/rooms/${encodeURIComponent(roomId)}/feedback`, {
+    method: "POST",
+    headers: buildHeaders(),
+    body: JSON.stringify({
+      receiver_id: receiverId,
+      content,
+      employee_id: getStoredEmployeeId(),
+    }),
+  });
+  const payload = await response.json();
+
+  if (!response.ok || !payload?.ok) {
+    throw new Error(payload?.error || "Failed to save chat feedback");
+  }
+
+  return payload.data as ChatFeedback;
+};

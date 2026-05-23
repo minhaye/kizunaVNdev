@@ -46,6 +46,13 @@ type MessageRow = {
   } | null;
 };
 
+type FeedbackRow = {
+  id: string;
+  receiver_id: string;
+  sender_id: string;
+  content: string;
+};
+
 const firstEmployee = (value: unknown) => {
   if (Array.isArray(value)) {
     return value[0] ?? null;
@@ -202,6 +209,21 @@ const loadMessagesForRooms = async (roomIds: string[]) => {
     ...message,
     employees: firstEmployee(message.employees) as MessageRow["employees"],
   })) as MessageRow[];
+};
+
+const loadExistingFeedback = async (receiverId: string, senderId: string) => {
+  const { data, error } = await supabase
+    .from("feedbacks")
+    .select("id,receiver_id,sender_id,content")
+    .eq("receiver_id", receiverId)
+    .eq("sender_id", senderId)
+    .limit(1);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return ((data ?? [])[0] ?? null) as FeedbackRow | null;
 };
 
 const getRoomActorMembership = (members: ChatMemberRow[], actorEmployeeId: string | null) => {
@@ -587,6 +609,153 @@ export const unpinChatRoomHandler = async (req: Request, res: Response) => {
     }
 
     return res.json({ ok: true, action: "unpinned" });
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      error: "Internal server error",
+      details: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
+
+export const getChatFeedbackHandler = async (req: Request, res: Response) => {
+  try {
+    const actorEmployeeId = getActorEmployeeId(req);
+    if (!actorEmployeeId) {
+      return res.status(401).json({ ok: false, error: "employee_id or Bearer token is required" });
+    }
+
+    const { id } = req.params;
+    if (!id || typeof id !== "string") {
+      return res.status(400).json({ ok: false, error: "Invalid chat room ID" });
+    }
+
+    const receiverId = typeof req.query.receiver_id === "string" ? req.query.receiver_id.trim() : "";
+    if (!receiverId) {
+      return res.status(400).json({ ok: false, error: "receiver_id is required" });
+    }
+
+    const { data: memberships, error: membershipError } = await supabase
+      .from("chat_members")
+      .select("employee_id")
+      .eq("chat_room_id", id)
+      .in("employee_id", [actorEmployeeId, receiverId]);
+
+    if (membershipError) {
+      return res.status(500).json({ ok: false, error: membershipError.message });
+    }
+
+    const memberIds = new Set((memberships ?? []).map((membership: { employee_id: string }) => membership.employee_id));
+    if (!memberIds.has(actorEmployeeId)) {
+      return res.status(403).json({ ok: false, error: "You are not a member of this chat room" });
+    }
+
+    if (!memberIds.has(receiverId)) {
+      return res.status(404).json({ ok: false, error: "Feedback target is not in this chat room" });
+    }
+
+    const feedback = await loadExistingFeedback(receiverId, actorEmployeeId);
+
+    return res.json({
+      ok: true,
+      data: feedback,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      error: "Internal server error",
+      details: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
+
+export const saveChatFeedbackHandler = async (req: Request, res: Response) => {
+  try {
+    const actorEmployeeId = getActorEmployeeId(req);
+    if (!actorEmployeeId) {
+      return res.status(401).json({ ok: false, error: "employee_id or Bearer token is required" });
+    }
+
+    const { id } = req.params;
+    if (!id || typeof id !== "string") {
+      return res.status(400).json({ ok: false, error: "Invalid chat room ID" });
+    }
+
+    const receiverId = typeof req.body?.receiver_id === "string" ? req.body.receiver_id.trim() : "";
+    const content = typeof req.body?.content === "string" ? req.body.content.trim() : "";
+
+    if (!receiverId) {
+      return res.status(400).json({ ok: false, error: "receiver_id is required" });
+    }
+
+    if (!content) {
+      return res.status(400).json({ ok: false, error: "content is required" });
+    }
+
+    if (receiverId === actorEmployeeId) {
+      return res.status(400).json({ ok: false, error: "Cannot leave feedback for yourself" });
+    }
+
+    const { data: memberships, error: membershipError } = await supabase
+      .from("chat_members")
+      .select("employee_id")
+      .eq("chat_room_id", id)
+      .in("employee_id", [actorEmployeeId, receiverId]);
+
+    if (membershipError) {
+      return res.status(500).json({ ok: false, error: membershipError.message });
+    }
+
+    const memberIds = new Set((memberships ?? []).map((membership: { employee_id: string }) => membership.employee_id));
+    if (!memberIds.has(actorEmployeeId)) {
+      return res.status(403).json({ ok: false, error: "You are not a member of this chat room" });
+    }
+
+    if (!memberIds.has(receiverId)) {
+      return res.status(404).json({ ok: false, error: "Feedback target is not in this chat room" });
+    }
+
+    const existingFeedback = await loadExistingFeedback(receiverId, actorEmployeeId);
+    const payload = {
+      receiver_id: receiverId,
+      sender_id: actorEmployeeId,
+      content,
+    };
+
+    if (existingFeedback) {
+      const { data, error } = await supabase
+        .from("feedbacks")
+        .update({ content })
+        .eq("id", existingFeedback.id)
+        .select("id,receiver_id,sender_id,content")
+        .single();
+
+      if (error) {
+        return res.status(500).json({ ok: false, error: error.message });
+      }
+
+      return res.json({
+        ok: true,
+        action: "updated",
+        data,
+      });
+    }
+
+    const { data, error } = await supabase
+      .from("feedbacks")
+      .insert(payload)
+      .select("id,receiver_id,sender_id,content")
+      .single();
+
+    if (error) {
+      return res.status(500).json({ ok: false, error: error.message });
+    }
+
+    return res.status(201).json({
+      ok: true,
+      action: "created",
+      data,
+    });
   } catch (error) {
     return res.status(500).json({
       ok: false,

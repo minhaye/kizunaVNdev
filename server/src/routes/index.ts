@@ -2,7 +2,7 @@ import type { Router } from "express";
 import { healthHandler } from "./health.js";
 import { dbPingHandler } from "./db.js";
 import { loginHandler, signUpHandler, logoutHandler, getMeHandler } from "./auth.js";
-import { employeesHandler } from "./employees.js";
+import { employeeFeedbacksHandler, employeesHandler } from "./employees.js";
 import {
   claimTaskHandler,
   createTaskHandler,
@@ -19,9 +19,11 @@ import {
 } from "./posts.js";
 import {
   createChatMessageHandler,
+  getChatFeedbackHandler,
   getChatRoomDetailHandler,
   listChatRoomsHandler,
   pinChatRoomHandler,
+  saveChatFeedbackHandler,
   unpinChatRoomHandler,
 } from "./chat.js";
 import {
@@ -38,6 +40,7 @@ export const registerRoutes = (router: Router) => {
   router.get("/health", healthHandler);
   router.get("/db/ping", dbPingHandler);
   router.get("/employees", employeesHandler);
+  router.get("/employees/:id/feedbacks", employeeFeedbacksHandler);
   router.get("/tasks", listTasksHandler);
   router.get("/tasks/:id", getTaskHandler);
   router.post("/tasks", createTaskHandler);
@@ -62,7 +65,9 @@ export const registerRoutes = (router: Router) => {
   // Chat routes
   router.get("/chat/rooms", listChatRoomsHandler);
   router.get("/chat/rooms/:id", getChatRoomDetailHandler);
+  router.get("/chat/rooms/:id/feedback", getChatFeedbackHandler);
   router.post("/chat/rooms/:id/messages", createChatMessageHandler);
+  router.post("/chat/rooms/:id/feedback", saveChatFeedbackHandler);
   router.post("/chat/rooms/:id/pin", pinChatRoomHandler);
   router.delete("/chat/rooms/:id/pin", unpinChatRoomHandler);
 
