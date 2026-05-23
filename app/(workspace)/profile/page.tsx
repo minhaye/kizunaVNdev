@@ -12,19 +12,21 @@ type CurrentUser = {
   avatar_url?: string | null;
 };
 
-const feedbacks = [
-  "Tanakaさん: 報告の粒度が良くなりました。",
-  "Namさん: 翻訳サポートが速くて明確です / Translation hỗ trợ rất nhanh và rõ ràng.",
-  "Team Dev: 連携がスムーズで助かりました。",
-  "Hoaさん: レビューコメントが具体的で助かります。",
-  "PM: 進捗更新が安定していてとても良いです / Tiến độ cập nhật đều đặn, rất tốt.",
-  "Khanh: 日本語資料のサポートありがとうございます / Cảm ơn đã hỗ trợ phần tài liệu Nhật ngữ.",
-  "HR: 協力的なコミュニケーションが素晴らしいです。",
-  "Admin: ログ管理の整理に貢献してくれました。",
-];
+type FeedbackItem = {
+  id: string;
+  content: string;
+  employees?: {
+    id: string;
+    name: string;
+    avatar_url: string | null;
+  } | null;
+};
 
 export default function ProfilePage() {
   const [user, setUser] = useState<CurrentUser | null>(null);
+  const [feedbacks, setFeedbacks] = useState<FeedbackItem[]>([]);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [feedbackError, setFeedbackError] = useState("");
 
   useEffect(() => {
     const raw = localStorage.getItem("user");
@@ -66,6 +68,47 @@ export default function ProfilePage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!user?.id) {
+      return;
+    }
+
+    let active = true;
+    const token = localStorage.getItem("authToken");
+    const API_BASE_URL =
+      process.env.NEXT_PUBLIC_API_BASE_URL ??
+      process.env.NEXT_PUBLIC_API_BASE ??
+      "http://localhost:4000";
+
+    const loadFeedbacks = async () => {
+      try {
+        setFeedbackLoading(true);
+        setFeedbackError("");
+        const response = await fetch(`${API_BASE_URL}/api/employees/${encodeURIComponent(user.id ?? "")}/feedbacks`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+        const payload = await response.json();
+
+        if (!response.ok || !payload?.success || !active) {
+          throw new Error(payload?.error || "Failed to load feedbacks");
+        }
+
+        setFeedbacks((payload.feedbacks ?? []) as FeedbackItem[]);
+      } catch (loadError) {
+        if (!active) return;
+        setFeedbackError(loadError instanceof Error ? loadError.message : "Failed to load feedbacks");
+      } finally {
+        if (active) setFeedbackLoading(false);
+      }
+    };
+
+    void loadFeedbacks();
+
+    return () => {
+      active = false;
+    };
+  }, [user?.id]);
+
   const displayName = user?.name || user?.email?.split("@")[0] || "Người dùng";
   const displayRole =
     user?.role === "admin"
@@ -95,13 +138,28 @@ export default function ProfilePage() {
           <p className="text-sm text-slate-500 mb-3">
             プロフィールと評価画面 / Màn hình Profile & Feedback
           </p>
-          <ul className="space-y-2 text-sm text-slate-700">
-            {feedbacks.map((f) => (
-              <li key={f} className="border border-slate-100 rounded-lg p-3">
-                {f}
-              </li>
-            ))}
-          </ul>
+          {feedbackLoading ? (
+            <p className="text-sm text-slate-500">Đang tải feedback...</p>
+          ) : feedbackError ? (
+            <p className="text-sm text-red-500">{feedbackError}</p>
+          ) : (
+            <ul className="space-y-2 text-sm text-slate-700">
+              {feedbacks.length === 0 ? (
+                <li className="border border-dashed border-slate-200 rounded-lg p-3 text-slate-500">
+                  Chưa có feedback nào.
+                </li>
+              ) : (
+                feedbacks.map((feedback) => (
+                  <li key={feedback.id} className="border border-slate-100 rounded-lg p-3">
+                    <p className="font-semibold text-slate-800">
+                      {feedback.employees?.name ?? "Unknown"}
+                    </p>
+                    <p className="mt-1 whitespace-pre-wrap">{feedback.content}</p>
+                  </li>
+                ))
+              )}
+            </ul>
+          )}
         </section>
       </div>
     </main>

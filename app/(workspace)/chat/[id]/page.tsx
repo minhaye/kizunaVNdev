@@ -3,21 +3,21 @@
 import {
   ArrowLeft,
   Info,
-  Phone,
   SendHorizontal,
   Smile,
-  Video,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import {
+  fetchChatFeedback,
   fetchChatRoomDetail,
   formatRoomTime,
   getAvatarClass,
   getAvatarInitials,
   getAvatarSeed,
   getStoredEmployeeId,
+  saveChatFeedback,
   sendChatMessage,
   type ChatRoomDetail,
 } from "../chat-api";
@@ -39,6 +39,12 @@ export default function ChatDetailPage() {
   const [draft, setDraft] = useState("");
   const [error, setError] = useState("");
   const [translations, setTranslations] = useState<Record<string, TranslationEntry>>({});
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [feedbackDraft, setFeedbackDraft] = useState("");
+  const [feedbackError, setFeedbackError] = useState("");
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [feedbackSaving, setFeedbackSaving] = useState(false);
+  const [feedbackTargetId, setFeedbackTargetId] = useState("");
   const actorEmployeeId = useMemo(() => getStoredEmployeeId(), []);
 
   useEffect(() => {
@@ -71,6 +77,85 @@ export default function ChatDetailPage() {
       active = false;
     };
   }, [roomId]);
+
+  const feedbackTargets = useMemo(
+    () => room?.members.filter((member) => member.employee_id !== actorEmployeeId) ?? [],
+    [room, actorEmployeeId],
+  );
+
+  const selectedFeedbackTarget = useMemo(
+    () => feedbackTargets.find((member) => member.employee_id === feedbackTargetId) ?? feedbackTargets[0] ?? null,
+    [feedbackTargets, feedbackTargetId],
+  );
+
+  useEffect(() => {
+    if (!feedbackOpen) {
+      return;
+    }
+
+    if (feedbackTargets.length === 0) {
+      setFeedbackTargetId("");
+      setFeedbackDraft("");
+      setFeedbackError("Không có thành viên nào để feedback.");
+      return;
+    }
+
+    if (!feedbackTargetId || !feedbackTargets.some((member) => member.employee_id === feedbackTargetId)) {
+      setFeedbackTargetId(feedbackTargets[0].employee_id);
+    }
+  }, [feedbackOpen, feedbackTargetId, feedbackTargets]);
+
+  useEffect(() => {
+    if (!feedbackOpen || !roomId || !selectedFeedbackTarget || !actorEmployeeId) {
+      return;
+    }
+
+    let active = true;
+
+    const loadFeedback = async () => {
+      try {
+        setFeedbackLoading(true);
+        setFeedbackError("");
+        const currentFeedback = await fetchChatFeedback(roomId, selectedFeedbackTarget.employee_id);
+        if (!active) return;
+        setFeedbackDraft(currentFeedback?.content ?? "");
+      } catch (loadError) {
+        if (!active) return;
+        setFeedbackError(loadError instanceof Error ? loadError.message : "Failed to load feedback");
+      } finally {
+        if (active) setFeedbackLoading(false);
+      }
+    };
+
+    void loadFeedback();
+
+    return () => {
+      active = false;
+    };
+  }, [actorEmployeeId, feedbackOpen, roomId, selectedFeedbackTarget?.employee_id]);
+
+  const handleOpenFeedback = () => {
+    setFeedbackError("");
+    setFeedbackOpen(true);
+  };
+
+  const handleSaveFeedback = async () => {
+    if (!roomId || !selectedFeedbackTarget) {
+      return;
+    }
+
+    try {
+      setFeedbackSaving(true);
+      setFeedbackError("");
+      await saveChatFeedback(roomId, selectedFeedbackTarget.employee_id, feedbackDraft.trim());
+      setFeedbackOpen(false);
+      setFeedbackDraft("");
+    } catch (saveError) {
+      setFeedbackError(saveError instanceof Error ? saveError.message : "Failed to save feedback");
+    } finally {
+      setFeedbackSaving(false);
+    }
+  };
 
   const handleSend = async () => {
     if (!roomId || !draft.trim()) return;
@@ -164,13 +249,12 @@ export default function ChatDetailPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <button className="p-2 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors">
-                <Phone className="w-4 h-4 text-slate-600" />
-              </button>
-              <button className="p-2 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors">
-                <Video className="w-4 h-4 text-slate-600" />
-              </button>
-              <button className="p-2 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors">
+              <button
+                type="button"
+                onClick={handleOpenFeedback}
+                className="p-2 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors"
+                aria-label="Open feedback dialog"
+              >
                 <Info className="w-4 h-4 text-slate-600" />
               </button>
             </div>
@@ -286,6 +370,86 @@ export default function ChatDetailPage() {
           </footer>
         </section>
       </div>
+
+      {feedbackOpen && (
+        <div className="fixed inset-0 z-30 flex items-center justify-center bg-slate-950/45 px-4">
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white shadow-2xl">
+            <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-4 py-4">
+              <div>
+                <p className="text-sm font-semibold text-slate-900">Gửi feedback</p>
+                <p className="text-xs text-slate-500">
+                  {selectedFeedbackTarget
+                    ? `Đánh giá ${selectedFeedbackTarget.employees?.name ?? "người này"}`
+                    : "Chọn người nhận feedback"}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setFeedbackOpen(false)}
+                className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                aria-label="Close feedback dialog"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="space-y-3 px-4 py-4">
+              {feedbackTargets.length > 1 && (
+                <label className="block space-y-1">
+                  <span className="text-xs font-medium text-slate-600">Người nhận</span>
+                  <select
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-400"
+                    value={selectedFeedbackTarget?.employee_id ?? ""}
+                    onChange={(event) => setFeedbackTargetId(event.target.value)}
+                  >
+                    {feedbackTargets.map((member) => (
+                      <option key={member.employee_id} value={member.employee_id}>
+                        {member.employees?.name ?? "Unknown"}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+
+              <label className="block space-y-1">
+                <span className="text-xs font-medium text-slate-600">Nội dung feedback</span>
+                <textarea
+                  className="min-h-32 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-400 disabled:bg-slate-50"
+                  placeholder="Nhập feedback của bạn..."
+                  value={feedbackDraft}
+                  onChange={(event) => setFeedbackDraft(event.target.value)}
+                  disabled={feedbackLoading || feedbackSaving || !selectedFeedbackTarget}
+                />
+              </label>
+
+              {feedbackError && <p className="text-xs text-red-500">{feedbackError}</p>}
+
+              <div className="flex items-center justify-end gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setFeedbackOpen(false)}
+                  className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void handleSaveFeedback()}
+                  disabled={
+                    feedbackSaving ||
+                    feedbackLoading ||
+                    !selectedFeedbackTarget ||
+                    feedbackDraft.trim().length === 0
+                  }
+                  className="rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+                >
+                  {feedbackSaving ? "Đang lưu..." : "Lưu feedback"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
