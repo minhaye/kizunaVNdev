@@ -34,7 +34,7 @@ export default function WikiListPage() {
         const payload = await response.json();
 
         if (!response.ok || !payload?.ok) {
-          throw new Error(payload?.error || "Không thể tải danh sách wiki");
+          throw new Error(payload?.error || "Wiki一覧を読み込めません / Không thể tải danh sách wiki");
         }
 
         if (!active) return;
@@ -52,7 +52,7 @@ export default function WikiListPage() {
         );
       } catch (loadError) {
         if (!active) return;
-        setError(loadError instanceof Error ? loadError.message : "Có lỗi khi tải dữ liệu wiki");
+        setError(loadError instanceof Error ? loadError.message : "Wiki読み込みエラー / Có lỗi khi tải dữ liệu wiki");
       } finally {
         if (active) setLoading(false);
       }
@@ -88,10 +88,12 @@ export default function WikiListPage() {
       <div className="max-w-5xl mx-auto">
         <div className="mb-6">
           <h2 className="text-xl font-bold text-slate-900">
-            文化Wiki記事一覧画面
+            <span className="block">文化Wiki記事一覧画面</span>
+            <span className="block">Màn hình danh sách bài viết Wiki</span>
           </h2>
           <p className="text-sm text-slate-500">
-            Wiki記事一覧画面 / Màn hình DS bài viết Wiki
+            <span className="block">Wiki記事一覧画面</span>
+            <span className="block">Màn hình danh sách bài viết Wiki</span>
           </p>
         </div>
 
@@ -100,11 +102,12 @@ export default function WikiListPage() {
             <Search className="w-4 h-4 text-slate-400" />
             <input
               className="w-full text-sm outline-none"
-              placeholder="記事・タグを検索 / Tìm theo bài viết, tag..."
+              placeholder="記事・タグを検索..."
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
           </div>
+          <span className="text-[11px] text-slate-400">Tìm theo bài viết, tag...</span>
           <select
             value={tagFilter}
             onChange={(event) => setTagFilter(event.target.value)}
@@ -118,14 +121,16 @@ export default function WikiListPage() {
             ))}
           </select>
           <span className="text-xs text-slate-400">
-            {filteredArticles.length} articles
+            <span className="block">{filteredArticles.length} 件</span>
+            <span className="block">{filteredArticles.length} bài viết</span>
           </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {loading ? (
             <div className="col-span-full rounded-xl border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500">
-              Đang tải dữ liệu wiki...
+              <span className="block">Wikiを読み込み中...</span>
+              <span className="block">Đang tải dữ liệu wiki...</span>
             </div>
           ) : error ? (
             <div className="col-span-full rounded-xl border border-dashed border-red-200 bg-white p-6 text-center text-sm text-red-500">
@@ -133,7 +138,8 @@ export default function WikiListPage() {
             </div>
           ) : filteredArticles.length === 0 ? (
             <div className="col-span-full rounded-xl border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500">
-              該当する記事がありません / Không có bài viết phù hợp.
+              <span className="block">該当する記事がありません</span>
+              <span className="block">Không có bài viết phù hợp.</span>
             </div>
           ) : (
             filteredArticles.map((item) => (
@@ -147,8 +153,8 @@ export default function WikiListPage() {
                 </p>
                 <h3 className="font-semibold text-slate-800">{item.title}</h3>
                 <p className="text-xs text-slate-500 mt-2">
-                  クリックして記事詳細を表示 / Nhấn để xem chi tiết nội quy/bài
-                  viết.
+                  <span className="block">クリックして記事詳細を表示</span>
+                  <span className="block">Nhấn để xem chi tiết nội quy/bài viết.</span>
                 </p>
               </Link>
             ))

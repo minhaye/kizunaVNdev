@@ -231,6 +231,12 @@ const getRoomActorMembership = (members: ChatMemberRow[], actorEmployeeId: strin
   return members.find((member) => member.employee_id === actorEmployeeId) ?? null;
 };
 
+const getLastReadTimestamp = (lastReadAt: string | null) => {
+  if (!lastReadAt) return null;
+  const timestamp = new Date(lastReadAt).getTime();
+  return Number.isNaN(timestamp) ? null : timestamp;
+};
+
 const buildRoomSummary = (
   room: ChatRoomRow,
   members: ChatMemberRow[],
@@ -241,14 +247,14 @@ const buildRoomSummary = (
   const visibleMessages = messages.filter((message) => message.deleted_at === null);
   const latestMessage = visibleMessages[0] ?? null;
   const actorMembership = getRoomActorMembership(members, actorEmployeeId);
-  const unreadCount = actorMembership?.last_read_at
-    ? visibleMessages.filter(
-        (message) =>
-          actorEmployeeId !== null &&
-          message.sender_id !== actorEmployeeId &&
-          new Date(message.sent_at).getTime() > new Date(actorMembership.last_read_at ?? "").getTime(),
-      ).length
-    : 0;
+  const lastReadTimestamp = getLastReadTimestamp(actorMembership?.last_read_at ?? null);
+  const unreadMessages = visibleMessages.filter((message) => {
+    if (actorEmployeeId === null) return false;
+    if (message.sender_id === actorEmployeeId) return false;
+    const sentAt = new Date(message.sent_at).getTime();
+    if (Number.isNaN(sentAt)) return false;
+    return lastReadTimestamp === null ? true : sentAt > lastReadTimestamp;
+  }).length;
 
   const online = members.some(
     (member) => member.employee_id !== actorEmployeeId && isRecentOnline(member.employees?.last_online ?? null),
@@ -260,7 +266,8 @@ const buildRoomSummary = (
     topic: room.topic?.trim() || (room.room_type === "direct" ? "Direct" : "Group"),
     latest: latestMessage?.content ?? "",
     latest_at: latestMessage?.sent_at ?? room.last_message_at ?? room.updated_at,
-    unread: unreadCount,
+    unread_messages: unreadMessages,
+    unread: unreadMessages > 0 ? 1 : 0,
     online,
     pinned: pinnedRoomIds.has(room.id),
     room_type: room.room_type,
@@ -410,14 +417,14 @@ export const getChatRoomDetailHandler = async (req: Request, res: Response) => {
     const latestMessage = visibleMessages[0] ?? null;
     const roomName = formatRoomName(room, members, actorEmployeeId ?? members[0]?.employee_id ?? "");
     const actorMembership = getRoomActorMembership(members, actorEmployeeId);
-    const unread = actorMembership?.last_read_at
-      ? visibleMessages.filter(
-          (message) =>
-            actorEmployeeId !== null &&
-            message.sender_id !== actorEmployeeId &&
-            new Date(message.sent_at).getTime() > new Date(actorMembership.last_read_at ?? "").getTime(),
-        ).length
-      : 0;
+    const lastReadTimestamp = getLastReadTimestamp(actorMembership?.last_read_at ?? null);
+    const unreadMessages = visibleMessages.filter((message) => {
+      if (!actorEmployeeId) return false;
+      if (message.sender_id === actorEmployeeId) return false;
+      const sentAt = new Date(message.sent_at).getTime();
+      if (Number.isNaN(sentAt)) return false;
+      return lastReadTimestamp === null ? true : sentAt > lastReadTimestamp;
+    }).length;
     const online = members.some(
       (member) => member.employee_id !== actorEmployeeId && isRecentOnline(member.employees?.last_online ?? null),
     );
@@ -441,7 +448,8 @@ export const getChatRoomDetailHandler = async (req: Request, res: Response) => {
         updated_at: room.updated_at,
         created_by: room.created_by,
         last_message_at: room.last_message_at,
-        unread,
+        unread_messages: unreadMessages,
+        unread: unreadMessages > 0 ? 1 : 0,
         pinned: Boolean(pinnedResult.data),
         online,
         members,
@@ -756,6 +764,122 @@ export const saveChatFeedbackHandler = async (req: Request, res: Response) => {
       action: "created",
       data,
     });
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      error: "Internal server error",
+      details: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
+
+const normalizeMemberIds = (memberIds: unknown[]) => {
+  const unique = new Set<string>();
+  for (const value of memberIds) {
+    if (typeof value === "string") {
+      const trimmed = value.trim();
+      if (trimmed) unique.add(trimmed);
+    }
+  }
+  return Array.from(unique);
+};
+
+const findExistingDirectRoom = async (actorEmployeeId: string, otherEmployeeId: string) => {
+  const [actorRoomsResult, otherRoomsResult] = await Promise.all([
+    supabase.from("chat_members").select("chat_room_id").eq("employee_id", actorEmployeeId),
+    supabase.from("chat_members").select("chat_room_id").eq("employee_id", otherEmployeeId),
+  ]);
+
+  if (actorRoomsResult.error) {
+    throw new Error(actorRoomsResult.error.message);
+  }
+
+  if (otherRoomsResult.error) {
+    throw new Error(otherRoomsResult.error.message);
+  }
+
+  const actorRoomIds = new Set(
+    (actorRoomsResult.data ?? []).map((membership: { chat_room_id: string }) => membership.chat_room_id),
+  );
+
+  const sharedRoomIds = (otherRoomsResult.data ?? [])
+    .map((membership: { chat_room_id: string }) => membership.chat_room_id)
+    .filter((id) => actorRoomIds.has(id));
+
+  if (sharedRoomIds.length === 0) {
+    return null;
+  }
+
+  const rooms = await loadRoomsByIds(sharedRoomIds);
+  return rooms.find((room) => room.room_type === "direct") ?? null;
+};
+
+export const createChatRoomHandler = async (req: Request, res: Response) => {
+  try {
+    const actorEmployeeId = getActorEmployeeId(req);
+    if (!actorEmployeeId) {
+      return res.status(401).json({ ok: false, error: "employee_id or Bearer token is required" });
+    }
+
+    const roomType = req.body?.room_type === "direct" ? "direct" : "group";
+    const name = typeof req.body?.name === "string" ? req.body.name.trim() : "";
+    const topic = typeof req.body?.topic === "string" ? req.body.topic.trim() : "";
+    const requestedMemberIds = normalizeMemberIds(
+      Array.isArray(req.body?.member_ids) ? req.body.member_ids : [],
+    ).filter((id) => id !== actorEmployeeId);
+
+    const memberIds = normalizeMemberIds([actorEmployeeId, ...requestedMemberIds]);
+
+    if (roomType === "direct") {
+      const otherMemberId = requestedMemberIds.find((id) => id !== actorEmployeeId) ?? "";
+      if (!otherMemberId || requestedMemberIds.length !== 1) {
+        return res
+          .status(400)
+          .json({ ok: false, error: "direct chat requires exactly 1 other member" });
+      }
+
+      const existing = await findExistingDirectRoom(actorEmployeeId, otherMemberId);
+      if (existing) {
+        return res.json({ ok: true, action: "existing", data: { id: existing.id, room_type: "direct" } });
+      }
+    }
+
+    if (roomType === "group" && memberIds.length < 2) {
+      return res.status(400).json({ ok: false, error: "group chat requires at least 2 members" });
+    }
+
+    const timestamp = new Date().toISOString();
+    const { data: room, error: roomError } = await supabase
+      .from("chat_rooms")
+      .insert({
+        room_type: roomType,
+        name: roomType === "group" ? (name.length > 0 ? name : null) : null,
+        topic: topic.length > 0 ? topic : null,
+        created_at: timestamp,
+        updated_at: timestamp,
+        created_by: actorEmployeeId,
+      })
+      .select("id,room_type,name,topic,created_at,updated_at,created_by,last_message_at")
+      .single();
+
+    if (roomError) {
+      return res.status(500).json({ ok: false, error: roomError.message });
+    }
+
+    const membersPayload = memberIds.map((memberId) => ({
+      employee_id: memberId,
+      chat_room_id: room.id,
+      role: memberId === actorEmployeeId ? "chat_admin" : "member",
+      joined_at: timestamp,
+      last_read_at: null,
+    }));
+
+    const { error: memberError } = await supabase.from("chat_members").insert(membersPayload);
+    if (memberError) {
+      return res.status(500).json({ ok: false, error: memberError.message });
+    }
+
+    return res.status(201).json({ ok: true, action: "created", data: room });
   } catch (error) {
     return res.status(500).json({
       ok: false,

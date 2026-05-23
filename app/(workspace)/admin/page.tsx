@@ -90,9 +90,17 @@ export default function AdminPage() {
           <div>
             <h2 className="text-xl font-bold text-slate-900">管理者設定画面</h2>
             <p className="text-xs text-slate-500 mt-1">
-              {viewMode === "admin"
-                ? "管理者表示 / Admin view: full settings"
-                : "ユーザー表示 / User view: configuration only"}
+                {viewMode === "admin" ? (
+                  <>
+                    <span className="block">管理者表示</span>
+                    <span className="block">Chế độ quản trị (đầy đủ)</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="block">ユーザー表示</span>
+                    <span className="block">Chế độ người dùng (chỉ cấu hình)</span>
+                  </>
+                )}
             </p>
           </div>
 
@@ -102,14 +110,14 @@ export default function AdminPage() {
               className={switchClass("user")}
               onClick={() => setViewMode("user")}
             >
-              User
+              ユーザー / Người dùng
             </button>
             <button
               type="button"
               className={switchClass("admin")}
               onClick={() => setViewMode("admin")}
             >
-              Admin
+              管理者 / Admin
             </button>
           </div>
         </header>
@@ -117,7 +125,8 @@ export default function AdminPage() {
         {viewMode === "admin" && (
           <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
             <h3 className="font-semibold text-slate-800 mb-3">
-              Role Matrix / 権限ロール
+               <span className="block">権限ロール</span>
+               <span className="block text-slate-400">Ma trận quyền</span>
             </h3>
             <div className="grid md:grid-cols-2 gap-3">
               {roles.map((role) => (
@@ -126,15 +135,23 @@ export default function AdminPage() {
                   className="rounded-xl border border-slate-200 p-4 bg-slate-50/40"
                 >
                   <h4 className="text-sm font-bold text-slate-900">
-                    {role.ja} / {role.vi}
+                    <span className="block">{role.ja}</span>
+                    <span className="block">{role.vi}</span>
                   </h4>
                   <p className="text-xs text-slate-500 mt-1">
-                    {role.description}
+                      <span className="block">{role.description.split(" / ")[0]}</span>
+                      <span className="block">{role.description.split(" / ")[1] ?? ""}</span>
                   </p>
                   <ul className="mt-3 space-y-1.5 text-xs text-slate-700">
-                    {role.permissions.map((permission) => (
-                      <li key={permission}>- {permission}</li>
-                    ))}
+                    {role.permissions.map((permission) => {
+                      const [ja, vi] = permission.split(" / ");
+                      return (
+                        <li key={permission}>
+                          <span className="block">- {ja}</span>
+                          <span className="block">{vi}</span>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </article>
               ))}
@@ -146,20 +163,22 @@ export default function AdminPage() {
           <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-slate-800">
-                ユーザー管理 / Quản lý người dùng
+                <span className="block">ユーザー管理</span>
+                <span className="block">Quản lý người dùng</span>
               </h3>
               <button
                 type="button"
                 className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
               >
-                + ユーザー追加 / Thêm người dùng
+                 <span className="block">+ ユーザー追加</span>
+                 <span className="block">Thêm người dùng</span>
               </button>
             </div>
 
             <div className="mb-3 flex flex-wrap items-center gap-3">
               <input
                 className="flex-1 min-w-55 rounded-lg border border-slate-200 px-3 py-2 text-sm"
-                placeholder="ユーザー検索 / Tìm user..."
+                placeholder="ユーザー検索 / Tìm người dùng..."
                 value={userQuery}
                 onChange={(event) => setUserQuery(event.target.value)}
               />
@@ -173,11 +192,12 @@ export default function AdminPage() {
                 className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
               >
                 <option value="all">すべて / Tất cả</option>
-                <option value="active">Active</option>
-                <option value="pending">Pending</option>
+                <option value="active">有効 / Đang hoạt động</option>
+                <option value="pending">保留 / Chờ xử lý</option>
               </select>
               <span className="text-xs text-slate-400">
-                {filteredUsers.length} users
+                <span className="block">{filteredUsers.length} 件</span>
+                <span className="block">{filteredUsers.length} người dùng</span>
               </span>
             </div>
 
@@ -185,10 +205,22 @@ export default function AdminPage() {
               <table className="min-w-full text-sm">
                 <thead>
                   <tr className="text-left text-xs text-slate-500 border-b border-slate-100">
-                    <th className="py-2 pr-3 font-medium">Name</th>
-                    <th className="py-2 pr-3 font-medium">Team</th>
-                    <th className="py-2 pr-3 font-medium">Role</th>
-                    <th className="py-2 font-medium">Status</th>
+                    <th className="py-2 pr-3 font-medium">
+                      <span className="block">氏名</span>
+                      <span className="block">Tên</span>
+                    </th>
+                    <th className="py-2 pr-3 font-medium">
+                      <span className="block">チーム</span>
+                      <span className="block">Nhóm</span>
+                    </th>
+                    <th className="py-2 pr-3 font-medium">
+                      <span className="block">ロール</span>
+                      <span className="block">Vai trò</span>
+                    </th>
+                    <th className="py-2 font-medium">
+                      <span className="block">状態</span>
+                      <span className="block">Trạng thái</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -198,7 +230,8 @@ export default function AdminPage() {
                         colSpan={4}
                         className="py-6 text-center text-xs text-slate-500"
                       >
-                        該当するユーザーがいません / Không có user phù hợp.
+                        <span className="block">該当するユーザーがいません</span>
+                        <span className="block">Không có user phù hợp.</span>
                       </td>
                     </tr>
                   ) : (
@@ -220,7 +253,7 @@ export default function AdminPage() {
                                 : "inline-flex rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700"
                             }
                           >
-                            {u.status === "active" ? "Active" : "Pending"}
+                            {u.status === "active" ? "有効 / Đang hoạt động" : "保留 / Chờ xử lý"}
                           </span>
                         </td>
                       </tr>
@@ -234,7 +267,8 @@ export default function AdminPage() {
 
         <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
           <h3 className="font-semibold text-slate-800 mb-3">
-            システム設定 / Cấu hình hệ thống
+              <span className="block">システム設定</span>
+              <span className="block">Cấu hình hệ thống</span>
           </h3>
           <div className="grid md:grid-cols-2 gap-3">
             <label className="flex items-start gap-3 rounded-lg border border-slate-100 p-3">
@@ -293,7 +327,8 @@ export default function AdminPage() {
         {viewMode === "admin" && (
           <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
             <h3 className="font-semibold text-slate-800 mb-2">
-              コンテンツ管理 / Quản lý nội dung
+              <span className="block">コンテンツ管理</span>
+              <span className="block">Quản lý nội dung</span>
             </h3>
             <p className="text-sm text-slate-600">
               Wiki審査フロー、掲示板通知、公開スケジュール、ロール別編集ログを設定
@@ -325,7 +360,8 @@ export default function AdminPage() {
 
         <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
           <h3 className="font-semibold text-slate-800 mb-2">
-            通知設定 / Cài đặt thông báo
+            <span className="block">通知設定</span>
+            <span className="block">Cài đặt thông báo</span>
           </h3>
           <div className="grid md:grid-cols-2 gap-3 text-sm text-slate-700">
             <label className="rounded-lg border border-slate-100 p-3 flex items-center justify-between">
