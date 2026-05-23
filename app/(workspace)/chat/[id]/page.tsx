@@ -65,7 +65,7 @@ export default function ChatDetailPage() {
         setRoom(data);
       } catch (loadError) {
         if (!active) return;
-        setError(loadError instanceof Error ? loadError.message : "Failed to load chat room");
+        setError(loadError instanceof Error ? loadError.message : "チャットを読み込めません / Không thể tải phòng chat");
       } finally {
         if (active) setLoading(false);
       }
@@ -96,7 +96,7 @@ export default function ChatDetailPage() {
     if (feedbackTargets.length === 0) {
       setFeedbackTargetId("");
       setFeedbackDraft("");
-      setFeedbackError("Không có thành viên nào để feedback.");
+      setFeedbackError("フィードバック対象がありません / Không có thành viên nào để feedback.");
       return;
     }
 
@@ -121,7 +121,7 @@ export default function ChatDetailPage() {
         setFeedbackDraft(currentFeedback?.content ?? "");
       } catch (loadError) {
         if (!active) return;
-        setFeedbackError(loadError instanceof Error ? loadError.message : "Failed to load feedback");
+        setFeedbackError(loadError instanceof Error ? loadError.message : "フィードバックを読み込めません / Không thể tải feedback");
       } finally {
         if (active) setFeedbackLoading(false);
       }
@@ -151,7 +151,7 @@ export default function ChatDetailPage() {
       setFeedbackOpen(false);
       setFeedbackDraft("");
     } catch (saveError) {
-      setFeedbackError(saveError instanceof Error ? saveError.message : "Failed to save feedback");
+      setFeedbackError(saveError instanceof Error ? saveError.message : "フィードバックを保存できません / Không thể lưu feedback");
     } finally {
       setFeedbackSaving(false);
     }
@@ -167,7 +167,7 @@ export default function ChatDetailPage() {
       const refreshed = await fetchChatRoomDetail(roomId);
       setRoom(refreshed);
     } catch (sendError) {
-      setError(sendError instanceof Error ? sendError.message : "Failed to send message");
+      setError(sendError instanceof Error ? sendError.message : "メッセージを送信できません / Không thể gửi tin nhắn");
     } finally {
       setSending(false);
     }
@@ -189,7 +189,7 @@ export default function ChatDetailPage() {
       const payload = await response.json();
 
       if (!response.ok || !payload?.ok) {
-        throw new Error(payload?.error || "Failed to translate message");
+        throw new Error(payload?.error || "翻訳に失敗しました / Không thể dịch tin nhắn");
       }
 
       setTranslations((prev) => ({
@@ -206,7 +206,7 @@ export default function ChatDetailPage() {
         ...prev,
         [messageId]: {
           status: "error",
-          error: translateError instanceof Error ? translateError.message : "Failed to translate",
+          error: translateError instanceof Error ? translateError.message : "翻訳に失敗しました / Không thể dịch",
         },
       }));
     }
@@ -240,7 +240,12 @@ export default function ChatDetailPage() {
                   {roomName}
                 </h2>
                 <p className="text-xs text-emerald-600 font-medium">
-                  {room?.online ? "オンライン中 / Đang hoạt động" : "オフライン / Offline"}
+                  {room?.online ? (
+                    <span className="block">オンライン中</span>
+                  ) : (
+                    <span className="block">オフライン</span>
+                  )}
+                  <span className="block">{room?.online ? "Đang hoạt động" : "Ngoại tuyến"}</span>
                 </p>
                 {roomTopic && (
                   <p className="text-[11px] text-slate-500 mt-0.5">{roomTopic}</p>
@@ -263,7 +268,8 @@ export default function ChatDetailPage() {
           <div className="flex-1 min-h-0 p-5 overflow-y-auto space-y-4 bg-slate-50/40">
             {loading ? (
               <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-6 text-center text-sm text-slate-500">
-                Đang tải hội thoại...
+                <span className="block">会話を読み込み中...</span>
+                <span className="block">Đang tải hội thoại...</span>
               </div>
             ) : error ? (
               <div className="rounded-2xl border border-dashed border-red-200 bg-white px-4 py-6 text-center text-sm text-red-500">
@@ -273,7 +279,7 @@ export default function ChatDetailPage() {
               room.messages.map((message) => {
                 const mine = message.sender_id === actorEmployeeId;
                 const sender = room.members.find((member) => member.employee_id === message.sender_id);
-                const senderName = sender?.employees?.name ?? "Unknown";
+                const senderName = sender?.employees?.name ?? "不明 / Không rõ";
                 const translation = translations[message.id];
 
                 return (
@@ -332,7 +338,8 @@ export default function ChatDetailPage() {
               })
             ) : (
               <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-6 text-center text-sm text-slate-500">
-                Chưa có tin nhắn nào.
+                <span className="block">まだメッセージがありません</span>
+                <span className="block">Chưa có tin nhắn nào.</span>
               </div>
             )}
           </div>
@@ -345,7 +352,7 @@ export default function ChatDetailPage() {
               <textarea
                 className="w-full resize-none bg-transparent text-sm text-slate-800 outline-none py-2"
                 rows={2}
-                placeholder="送信内容を入力... / Nhập nội dung cần gửi..."
+                placeholder="送信内容を入力..."
                 value={draft}
                 onChange={(event) => setDraft(event.target.value)}
                 onKeyDown={(event) => {
@@ -360,12 +367,16 @@ export default function ChatDetailPage() {
                 disabled={sending || draft.trim().length === 0}
                 onClick={() => void handleSend()}
               >
-                <SendHorizontal className="w-4 h-4" /> 送信 / Gửi
+                <SendHorizontal className="w-4 h-4" />
+                <span className="leading-tight">
+                  <span className="block">送信</span>
+                  <span className="block">Gửi</span>
+                </span>
               </button>
             </div>
             <p className="text-[11px] text-slate-500 mt-2 px-1">
-              送信時にAI翻訳とトーン提案を適用 / AI dịch và gợi ý sắc thái sẽ áp
-              dụng khi gửi.
+              <span className="block">送信時にAI翻訳とトーン提案を適用</span>
+              <span className="block">AI dịch và gợi ý sắc thái sẽ áp dụng khi gửi.</span>
             </p>
           </footer>
         </section>
@@ -376,11 +387,22 @@ export default function ChatDetailPage() {
           <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white shadow-2xl">
             <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-4 py-4">
               <div>
-                <p className="text-sm font-semibold text-slate-900">Gửi feedback</p>
+                <p className="text-sm font-semibold text-slate-900">
+                  <span className="block">フィードバック送信</span>
+                  <span className="block">Gửi feedback</span>
+                </p>
                 <p className="text-xs text-slate-500">
-                  {selectedFeedbackTarget
-                    ? `Đánh giá ${selectedFeedbackTarget.employees?.name ?? "người này"}`
-                    : "Chọn người nhận feedback"}
+                  {selectedFeedbackTarget ? (
+                    <>
+                      <span className="block">評価</span>
+                      <span className="block">Đánh giá: {selectedFeedbackTarget.employees?.name ?? "người này"}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="block">受信者を選択</span>
+                      <span className="block">Chọn người nhận feedback</span>
+                    </>
+                  )}
                 </p>
               </div>
               <button
@@ -396,7 +418,10 @@ export default function ChatDetailPage() {
             <div className="space-y-3 px-4 py-4">
               {feedbackTargets.length > 1 && (
                 <label className="block space-y-1">
-                  <span className="text-xs font-medium text-slate-600">Người nhận</span>
+                  <span className="text-xs font-medium text-slate-600">
+                    <span className="block">受信者</span>
+                    <span className="block">Người nhận</span>
+                  </span>
                   <select
                     className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-400"
                     value={selectedFeedbackTarget?.employee_id ?? ""}
@@ -404,7 +429,7 @@ export default function ChatDetailPage() {
                   >
                     {feedbackTargets.map((member) => (
                       <option key={member.employee_id} value={member.employee_id}>
-                        {member.employees?.name ?? "Unknown"}
+                              {member.employees?.name ?? "不明 / Không rõ"}
                       </option>
                     ))}
                   </select>
@@ -412,10 +437,13 @@ export default function ChatDetailPage() {
               )}
 
               <label className="block space-y-1">
-                <span className="text-xs font-medium text-slate-600">Nội dung feedback</span>
+                <span className="text-xs font-medium text-slate-600">
+                  <span className="block">フィードバック内容</span>
+                  <span className="block">Nội dung feedback</span>
+                </span>
                 <textarea
                   className="min-h-32 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-400 disabled:bg-slate-50"
-                  placeholder="Nhập feedback của bạn..."
+                  placeholder="フィードバックを入力..."
                   value={feedbackDraft}
                   onChange={(event) => setFeedbackDraft(event.target.value)}
                   disabled={feedbackLoading || feedbackSaving || !selectedFeedbackTarget}
@@ -443,7 +471,7 @@ export default function ChatDetailPage() {
                   }
                   className="rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
                 >
-                  {feedbackSaving ? "Đang lưu..." : "Lưu feedback"}
+                  {feedbackSaving ? "保存中... / Đang lưu..." : "保存 / Lưu feedback"}
                 </button>
               </div>
             </div>

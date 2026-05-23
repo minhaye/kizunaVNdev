@@ -71,9 +71,9 @@ const API_BASE_URL =
   "http://localhost:4000";
 
 const statusLabel: Record<TaskStatus, string> = {
-  todo: "未着手 / To do",
-  doing: "進行中 / Doing",
-  done: "完了 / Done",
+  todo: "未着手 / Chưa làm",
+  doing: "進行中 / Đang làm",
+  done: "完了 / Hoàn thành",
 };
 
 const statusBadgeClass: Record<TaskStatus, string> = {
@@ -154,8 +154,8 @@ const mapAnnouncementCard = (post: Post, index: number): AnnouncementCard => {
   const createdAt = post.created_at ? new Date(post.created_at) : null;
   const badge = createdAt
     ? `${createdAt.getMonth() + 1}月`
-    : "New";
-  const badge2 = createdAt ? String(createdAt.getDate()) : "Post";
+    : "新規";
+  const badge2 = createdAt ? String(createdAt.getDate()) : "Mới";
   return {
     id: post.id,
     badge,
@@ -185,7 +185,7 @@ export default function DashboardPage() {
       const token = getAuthToken();
       if (!token || !currentUser?.id) {
         setLoadingTasks(false);
-        setTaskError("Chưa có session đăng nhập hoặc user.");
+        setTaskError("セッションがありません / Chưa có phiên đăng nhập.");
         return;
       }
 
@@ -200,7 +200,7 @@ export default function DashboardPage() {
         const payload = await response.json();
 
         if (!response.ok) {
-          throw new Error(payload?.error || "Không thể tải task");
+          throw new Error(payload?.error || "タスクを読み込めません / Không thể tải task");
         }
 
         const mapped = (payload?.tasks ?? [])
@@ -208,7 +208,7 @@ export default function DashboardPage() {
           .map((task: TaskItem) => mapTaskCard(task));
         setTasks(mapped);
       } catch (error) {
-        setTaskError(error instanceof Error ? error.message : "Không thể tải task");
+        setTaskError(error instanceof Error ? error.message : "タスクを読み込めません / Không thể tải task");
       } finally {
         setLoadingTasks(false);
       }
@@ -236,7 +236,7 @@ export default function DashboardPage() {
         );
       } catch (error) {
         setMessageError(
-          error instanceof Error ? error.message : "Không thể tải tin nhắn",
+          error instanceof Error ? error.message : "メッセージを読み込めません / Không thể tải tin nhắn",
         );
         setUnreadCount(0);
       } finally {
@@ -255,7 +255,7 @@ export default function DashboardPage() {
         const response = await fetch(`${API_BASE_URL}/api/posts`);
         const payload = await response.json();
         if (!response.ok || !payload?.ok) {
-          throw new Error(payload?.error || "Không thể tải bảng tin");
+          throw new Error(payload?.error || "掲示板を読み込めません / Không thể tải bảng tin");
         }
 
         const mapped = (payload?.data ?? [])
@@ -264,7 +264,7 @@ export default function DashboardPage() {
         setAnnouncements(mapped);
       } catch (error) {
         setAnnouncementError(
-          error instanceof Error ? error.message : "Không thể tải bảng tin",
+          error instanceof Error ? error.message : "掲示板を読み込めません / Không thể tải bảng tin",
         );
       } finally {
         setLoadingAnnouncements(false);
@@ -286,21 +286,24 @@ export default function DashboardPage() {
                   マイタスク
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  マイタスク / Task của tôi
+                  <span className="block">マイタスク</span>
+                  <span className="block">Task của tôi</span>
                 </p>
               </div>
               <Link
                 href="/tasks"
                 className="text-sm text-blue-600 hover:underline font-medium"
               >
-                すべて見る (Xem tất cả)
+                <span className="block">すべて見る</span>
+                <span className="block">Xem tất cả</span>
               </Link>
             </div>
 
             <div className="space-y-3">
               {loadingTasks ? (
                 <div className="rounded-lg border border-dashed border-slate-200 px-4 py-6 text-center text-sm text-slate-500">
-                  Đang tải task...
+                  <span className="block">タスクを読み込み中...</span>
+                  <span className="block">Đang tải task...</span>
                 </div>
               ) : taskError ? (
                 <div className="rounded-lg border border-dashed border-red-200 px-4 py-6 text-center text-sm text-red-500">
@@ -308,7 +311,8 @@ export default function DashboardPage() {
                 </div>
               ) : tasks.length === 0 ? (
                 <div className="rounded-lg border border-dashed border-slate-200 px-4 py-6 text-center text-sm text-slate-500">
-                  Không có task.
+                  <span className="block">タスクがありません</span>
+                  <span className="block">Không có task.</span>
                 </div>
               ) : (
                 tasks.map((task) => (
@@ -353,18 +357,21 @@ export default function DashboardPage() {
                   最新メッセージ
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  最新メッセージ / Tin nhắn mới nhất
+                  <span className="block">最新メッセージ</span>
+                  <span className="block">Tin nhắn mới nhất</span>
                 </p>
               </div>
               <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
-                {unreadCount} 未読 ({unreadCount} chưa đọc)
+                <span className="block">{unreadCount} 未読</span>
+                <span className="block">{unreadCount} chưa đọc</span>
               </span>
             </div>
 
             <div className="space-y-0 divide-y divide-slate-100">
               {loadingMessages ? (
                 <div className="rounded-lg border border-dashed border-slate-200 px-4 py-6 text-center text-sm text-slate-500">
-                  Đang tải tin nhắn...
+                  <span className="block">メッセージを読み込み中...</span>
+                  <span className="block">Đang tải tin nhắn...</span>
                 </div>
               ) : messageError ? (
                 <div className="rounded-lg border border-dashed border-red-200 px-4 py-6 text-center text-sm text-red-500">
@@ -372,7 +379,8 @@ export default function DashboardPage() {
                 </div>
               ) : latestMessages.length === 0 ? (
                 <div className="rounded-lg border border-dashed border-slate-200 px-4 py-6 text-center text-sm text-slate-500">
-                  Không có tin nhắn.
+                  <span className="block">メッセージがありません</span>
+                  <span className="block">Không có tin nhắn.</span>
                 </div>
               ) : (
                 latestMessages.map((msg) => (
@@ -418,14 +426,16 @@ export default function DashboardPage() {
               最新のお知らせ
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              最新通知 / Thông báo / Bảng tin mới
+              <span className="block">最新通知</span>
+              <span className="block">Thông báo / Bảng tin mới</span>
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {loadingAnnouncements ? (
               <div className="rounded-lg border border-dashed border-slate-200 px-4 py-6 text-center text-sm text-slate-500 md:col-span-2">
-                Đang tải bảng tin...
+                <span className="block">掲示板を読み込み中...</span>
+                <span className="block">Đang tải bảng tin...</span>
               </div>
             ) : announcementError ? (
               <div className="rounded-lg border border-dashed border-red-200 px-4 py-6 text-center text-sm text-red-500 md:col-span-2">
@@ -433,7 +443,8 @@ export default function DashboardPage() {
               </div>
             ) : announcements.length === 0 ? (
               <div className="rounded-lg border border-dashed border-slate-200 px-4 py-6 text-center text-sm text-slate-500 md:col-span-2">
-                Không có thông báo.
+                <span className="block">お知らせがありません</span>
+                <span className="block">Không có thông báo.</span>
               </div>
             ) : (
               announcements.map((news) => (

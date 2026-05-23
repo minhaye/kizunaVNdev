@@ -18,6 +18,7 @@ import {
   postReactionsHandler,
 } from "./posts.js";
 import {
+  createChatRoomHandler,
   createChatMessageHandler,
   getChatFeedbackHandler,
   getChatRoomDetailHandler,
@@ -64,6 +65,7 @@ export const registerRoutes = (router: Router) => {
 
   // Chat routes
   router.get("/chat/rooms", listChatRoomsHandler);
+  router.post("/chat/rooms", createChatRoomHandler);
   router.get("/chat/rooms/:id", getChatRoomDetailHandler);
   router.get("/chat/rooms/:id/feedback", getChatFeedbackHandler);
   router.post("/chat/rooms/:id/messages", createChatMessageHandler);
