@@ -2,6 +2,9 @@ import type { Router } from "express";
 import { healthHandler } from "./health.js";
 import { dbPingHandler } from "./db.js";
 import {
+  forgotPasswordRequestHandler,
+  forgotPasswordResetHandler,
+  forgotPasswordVerifyHandler,
   getMeHandler,
   loginHandler,
   logoutHandler,
@@ -55,7 +58,9 @@ export const registerRoutes = (router: Router) => {
   // Auth routes
   router.post("/auth/login", loginHandler);
   router.post("/auth/signup", signUpHandler);
-  // Forgot-password backend routes removed per request (frontend-only push)
+  router.post("/auth/forgot-password/request", forgotPasswordRequestHandler);
+  router.post("/auth/forgot-password/verify", forgotPasswordVerifyHandler);
+  router.post("/auth/forgot-password/reset", forgotPasswordResetHandler);
   router.post("/auth/logout", logoutHandler);
   router.get("/auth/me", getMeHandler);
   

@@ -73,3 +73,13 @@
 | wiki_articles | created_by | UUID | Người tạo bài viết wiki |  | NOT NULL | FK → employees.id |
 | wiki_articles | created_at | TIMESTAMP | Thời gian tạo bài viết wiki |  | NOT NULL | DEFAULT now() |
 | wiki_articles | updated_at | TIMESTAMP | Thời gian cập nhật bài viết wiki |  |  |  |
+| password_reset_otps | id | UUID | Lưu OTP đặt lại mật khẩu | UNIQUE | NOT NULL | PRIMARY KEY |
+| password_reset_otps | email | VARCHAR(100) | Email yêu cầu đặt lại mật khẩu | UNIQUE | NOT NULL |  |
+| password_reset_otps | source | VARCHAR(20) | Nguồn tài khoản |  | NOT NULL | CHECK (employees, admins) |
+| password_reset_otps | otp_hash | TEXT | Mã OTP đã băm |  | NOT NULL |  |
+| password_reset_otps | otp_expires_at | TIMESTAMPTZ | Hạn OTP (3 phút) |  | NOT NULL |  |
+| password_reset_otps | reset_token | TEXT | Token đặt lại mật khẩu |  |  | UNIQUE index |
+| password_reset_otps | reset_expires_at | TIMESTAMPTZ | Hạn reset token |  |  |  |
+| password_reset_otps | used_at | TIMESTAMPTZ | Thời điểm đã dùng token |  |  |  |
+| password_reset_otps | created_at | TIMESTAMPTZ | Thời gian tạo |  | NOT NULL | DEFAULT now() |
+| password_reset_otps | updated_at | TIMESTAMPTZ | Thời gian cập nhật |  | NOT NULL | DEFAULT now() |
