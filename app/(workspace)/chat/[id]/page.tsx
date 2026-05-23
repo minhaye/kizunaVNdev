@@ -216,9 +216,9 @@ export default function ChatDetailPage() {
   const roomTopic = room?.topic ?? "";
 
   return (
-    <main className="flex-1 overflow-auto p-8 bg-slate-50/50">
-      <div className="max-w-5xl mx-auto">
-        <section className="bg-white rounded-2xl border border-slate-200 shadow-sm min-h-170 flex flex-col overflow-hidden">
+    <main className="flex-1 overflow-hidden p-8 bg-slate-50/50">
+      <div className="max-w-5xl mx-auto h-full">
+        <section className="h-full min-h-0 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col overflow-hidden">
           <header className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-linear-to-r from-white to-blue-50/40">
             <div className="flex items-center gap-3 min-w-0">
               <Link
@@ -260,7 +260,7 @@ export default function ChatDetailPage() {
             </div>
           </header>
 
-          <div className="flex-1 p-5 space-y-4 bg-slate-50/40">
+          <div className="flex-1 min-h-0 p-5 overflow-y-auto space-y-4 bg-slate-50/40">
             {loading ? (
               <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-6 text-center text-sm text-slate-500">
                 Đang tải hội thoại...
@@ -337,7 +337,7 @@ export default function ChatDetailPage() {
             )}
           </div>
 
-          <footer className="border-t border-slate-100 p-4 bg-white">
+          <footer className="shrink-0 border-t border-slate-100 p-4 bg-white">
             <div className="rounded-2xl border border-slate-200 px-3 py-2 flex items-start gap-2 bg-slate-50">
               <button className="mt-1 p-2 rounded-full hover:bg-slate-200 transition-colors">
                 <Smile className="w-4 h-4 text-slate-500" />
