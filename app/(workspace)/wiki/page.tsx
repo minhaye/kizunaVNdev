@@ -19,6 +19,12 @@ export default function WikiListPage() {
   const [articles, setArticles] = useState<WikiArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [createError, setCreateError] = useState("");
+  const [createSuccess, setCreateSuccess] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newTag, setNewTag] = useState("");
+  const [newContent, setNewContent] = useState("");
   const [query, setQuery] = useState("");
   const [tagFilter, setTagFilter] = useState("all");
 
@@ -83,6 +89,59 @@ export default function WikiListPage() {
     [articles, normalizedQuery, tagFilter],
   );
 
+  const handleCreateWiki = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setCreateError("");
+    setCreateSuccess("");
+    setCreating(true);
+
+    try {
+      const token = localStorage.getItem("authToken");
+      const rawUser = localStorage.getItem("user");
+      const user = rawUser ? (JSON.parse(rawUser) as { id?: string }) : null;
+
+      const headers: HeadersInit = { "Content-Type": "application/json" };
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/wiki`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          title: newTitle,
+          topic: newTag,
+          content: newContent,
+          employee_id: user?.id,
+        }),
+      });
+      const payload = await response.json();
+
+      if (!response.ok || !payload?.ok) {
+        throw new Error(payload?.error || "Không thể tạo bài viết Wiki");
+      }
+
+      const created = payload.data as { slug?: string; title?: string; tag?: string };
+      if (created?.slug && created?.title) {
+        setArticles((prev) => [
+          { slug: created.slug, title: created.title, tag: created.tag ?? "General" },
+          ...prev,
+        ]);
+      }
+
+      setNewTitle("");
+      setNewTag("");
+      setNewContent("");
+      setCreateSuccess("Tạo bài viết Wiki thành công.");
+    } catch (submitError) {
+      setCreateError(
+        submitError instanceof Error ? submitError.message : "Có lỗi khi tạo bài viết Wiki",
+      );
+    } finally {
+      setCreating(false);
+    }
+  };
+
   return (
     <main className="flex-1 overflow-auto p-8 bg-slate-50/50">
       <div className="max-w-5xl mx-auto">
@@ -121,6 +180,44 @@ export default function WikiListPage() {
             {filteredArticles.length} articles
           </span>
         </div>
+
+        <form
+          onSubmit={handleCreateWiki}
+          className="mb-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm space-y-3"
+        >
+          <p className="text-sm font-semibold text-slate-800">
+            Wiki記事作成 / Tạo bài viết Wiki
+          </p>
+          <input
+            value={newTitle}
+            onChange={(event) => setNewTitle(event.target.value)}
+            placeholder="Tiêu đề bài viết"
+            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
+            required
+          />
+          <input
+            value={newTag}
+            onChange={(event) => setNewTag(event.target.value)}
+            placeholder="Tag / Chủ đề (không bắt buộc)"
+            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
+          />
+          <textarea
+            value={newContent}
+            onChange={(event) => setNewContent(event.target.value)}
+            placeholder="Nội dung bài viết"
+            className="min-h-28 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
+            required
+          />
+          {createError ? <p className="text-xs text-red-500">{createError}</p> : null}
+          {createSuccess ? <p className="text-xs text-emerald-600">{createSuccess}</p> : null}
+          <button
+            type="submit"
+            disabled={creating}
+            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+          >
+            {creating ? "Đang tạo..." : "作成 / Tạo bài viết"}
+          </button>
+        </form>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {loading ? (
