@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { AlertCircle, CheckSquare, Clock, MessageSquare } from "lucide-react";
 import {
+  CHAT_UNREAD_CHANGED_EVENT,
   fetchChatRooms,
   formatRoomTime,
   getAvatarClass,
@@ -217,35 +218,45 @@ export default function DashboardPage() {
     void loadTasks();
   }, [currentUser?.id]);
 
+  const loadMessages = useCallback(async () => {
+    try {
+      setLoadingMessages(true);
+      setMessageError("");
+      const rooms = await fetchChatRooms();
+      const sorted = rooms
+        .filter((room) => room.latest_at)
+        .sort(
+          (a, b) =>
+            new Date(b.latest_at).getTime() - new Date(a.latest_at).getTime(),
+        )
+        .slice(0, 4);
+      setLatestMessages(sorted.map(mapMessageCard));
+      setUnreadCount(
+        rooms.reduce((sum, room) => sum + (room.unread ?? 0), 0),
+      );
+    } catch (error) {
+      setMessageError(
+        error instanceof Error ? error.message : "メッセージを読み込めません / Không thể tải tin nhắn",
+      );
+      setUnreadCount(0);
+    } finally {
+      setLoadingMessages(false);
+    }
+  }, []);
+
   useEffect(() => {
-    const loadMessages = async () => {
-      try {
-        setLoadingMessages(true);
-        setMessageError("");
-        const rooms = await fetchChatRooms();
-        const sorted = rooms
-          .filter((room) => room.latest_at)
-          .sort(
-            (a, b) =>
-              new Date(b.latest_at).getTime() - new Date(a.latest_at).getTime(),
-          )
-          .slice(0, 4);
-        setLatestMessages(sorted.map(mapMessageCard));
-        setUnreadCount(
-          rooms.reduce((sum, room) => sum + (room.unread ?? 0), 0),
-        );
-      } catch (error) {
-        setMessageError(
-          error instanceof Error ? error.message : "メッセージを読み込めません / Không thể tải tin nhắn",
-        );
-        setUnreadCount(0);
-      } finally {
-        setLoadingMessages(false);
-      }
+    void loadMessages();
+
+    const handleChatUnreadChanged = () => {
+      void loadMessages();
     };
 
-    void loadMessages();
-  }, []);
+    window.addEventListener(CHAT_UNREAD_CHANGED_EVENT, handleChatUnreadChanged);
+
+    return () => {
+      window.removeEventListener(CHAT_UNREAD_CHANGED_EVENT, handleChatUnreadChanged);
+    };
+  }, [loadMessages]);
 
   useEffect(() => {
     const loadAnnouncements = async () => {

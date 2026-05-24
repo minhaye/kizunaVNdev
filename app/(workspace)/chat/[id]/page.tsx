@@ -17,6 +17,8 @@ import {
   getAvatarInitials,
   getAvatarSeed,
   getStoredEmployeeId,
+  markChatRoomRead,
+  notifyChatUnreadChanged,
   saveChatFeedback,
   sendChatMessage,
   type ChatRoomDetail,
@@ -63,6 +65,12 @@ export default function ChatDetailPage() {
         const data = await fetchChatRoomDetail(roomId);
         if (!active) return;
         setRoom(data);
+        try {
+          await markChatRoomRead(roomId);
+        } catch {
+          // Keep the room visible even if the read update fails.
+        }
+        notifyChatUnreadChanged();
       } catch (loadError) {
         if (!active) return;
         setError(loadError instanceof Error ? loadError.message : "チャットを読み込めません / Không thể tải phòng chat");
@@ -166,6 +174,12 @@ export default function ChatDetailPage() {
       setDraft("");
       const refreshed = await fetchChatRoomDetail(roomId);
       setRoom(refreshed);
+      try {
+        await markChatRoomRead(roomId);
+      } catch {
+        // Ignore read-update errors after a successful send.
+      }
+      notifyChatUnreadChanged();
     } catch (sendError) {
       setError(sendError instanceof Error ? sendError.message : "メッセージを送信できません / Không thể gửi tin nhắn");
     } finally {

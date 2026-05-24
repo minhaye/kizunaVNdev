@@ -557,6 +557,69 @@ export const createChatMessageHandler = async (req: Request, res: Response) => {
   }
 };
 
+export const markChatRoomReadHandler = async (req: Request, res: Response) => {
+  try {
+    const actorEmployeeId = getActorEmployeeId(req);
+    if (!actorEmployeeId) {
+      return res.status(401).json({ ok: false, error: "employee_id or Bearer token is required" });
+    }
+
+    const { id } = req.params;
+    if (!id || typeof id !== "string") {
+      return res.status(400).json({ ok: false, error: "Invalid chat room ID" });
+    }
+
+    const [membershipResult, roomResult] = await Promise.all([
+      supabase
+        .from("chat_members")
+        .select("employee_id,chat_room_id")
+        .eq("employee_id", actorEmployeeId)
+        .eq("chat_room_id", id)
+        .maybeSingle(),
+      supabase
+        .from("chat_rooms")
+        .select("id")
+        .eq("id", id)
+        .maybeSingle(),
+    ]);
+
+    if (membershipResult.error) {
+      return res.status(500).json({ ok: false, error: membershipResult.error.message });
+    }
+
+    if (roomResult.error) {
+      return res.status(500).json({ ok: false, error: roomResult.error.message });
+    }
+
+    if (!roomResult.data) {
+      return res.status(404).json({ ok: false, error: "Chat room not found" });
+    }
+
+    if (!membershipResult.data) {
+      return res.status(403).json({ ok: false, error: "You are not a member of this chat room" });
+    }
+
+    const now = new Date().toISOString();
+    const { error } = await supabase
+      .from("chat_members")
+      .update({ last_read_at: now })
+      .eq("employee_id", actorEmployeeId)
+      .eq("chat_room_id", id);
+
+    if (error) {
+      return res.status(500).json({ ok: false, error: error.message });
+    }
+
+    return res.json({ ok: true, data: { chat_room_id: id, last_read_at: now } });
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      error: "Internal server error",
+      details: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
+
 export const pinChatRoomHandler = async (req: Request, res: Response) => {
   try {
     const actorEmployeeId = getActorEmployeeId(req);

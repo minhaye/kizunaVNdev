@@ -13,6 +13,8 @@ import {
   getAvatarInitials,
   getAvatarSeed,
   getStoredEmployeeId,
+  markChatRoomRead,
+  notifyChatUnreadChanged,
   type EmployeeSummary,
   type ChatRoomSummary,
 } from "./chat-api";
@@ -98,6 +100,10 @@ export default function ChatListPage() {
           : room,
       ),
     );
+    void markChatRoomRead(roomId).catch(() => {
+      // Keep optimistic UI even if the server update fails.
+    });
+    notifyChatUnreadChanged();
   };
 
   const resetCreateForm = () => {
