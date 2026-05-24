@@ -41,7 +41,8 @@
 | chat_members | chat_room_id | UUID | ID đoạn chat |  | NOT NULL | FK → chat_rooms.id, PRIMARY KEY (employee_id, chat_room_id) |
 | chat_members | role | VARCHAR(20) | Vai trò trong đoạn chat |  | NOT NULL | CHECK (member, chat_admin) |
 | chat_members | joined_at | TIMESTAMP | Thời gian tham gia đoạn chat |  | NOT NULL | DEFAULT now() |
-| chat_members | last_read_at | TIMESTAMP | Thời gian đọc tin nhắn gần nhất |  |  | Dùng để tính unread |
+| chat_members | last_read_at | TIMESTAMP | Thời gian đọc tin nhắn gần nhất | | | Có thể dùng để lưu thời điểm đọc cuối cùng, hiện tại unread chủ yếu dựa vào is_read
+| chat_members | is_read    | BOOLEAN | Trạng thái đã đọc của thành viên trong đoạn chat |         | NOT NULL  | DEFAULT false; true = đã xem, false = chưa xem |
 | tasks | id | UUID | Lưu task được giao | UNIQUE | NOT NULL | PRIMARY KEY |
 | tasks | assigner_id | UUID | ID người giao task |  | NOT NULL | FK → employees.id |
 | tasks | assignee_id | UUID | ID người nhận task |  | NOT NULL | FK → employees.id |

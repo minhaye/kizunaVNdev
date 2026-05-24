@@ -62,14 +62,12 @@ export default function ChatDetailPage() {
       try {
         setLoading(true);
         setError("");
-        const data = await fetchChatRoomDetail(roomId);
+        const [data] = await Promise.all([
+          fetchChatRoomDetail(roomId),
+          markChatRoomRead(roomId).catch(() => null),
+        ]);
         if (!active) return;
         setRoom(data);
-        try {
-          await markChatRoomRead(roomId);
-        } catch {
-          // Keep the room visible even if the read update fails.
-        }
         notifyChatUnreadChanged();
       } catch (loadError) {
         if (!active) return;

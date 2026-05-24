@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { MessageCircleHeart, Plus, Search, Users } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   createChatRoom,
   fetchEmployees,
@@ -36,6 +36,7 @@ export default function ChatListPage() {
   const [groupName, setGroupName] = useState("");
   const [groupTopic, setGroupTopic] = useState("");
   const router = useRouter();
+  const pathname = usePathname();
   const actorEmployeeId = useMemo(() => getStoredEmployeeId(), []);
 
   const loadRooms = useCallback(async () => {
@@ -53,7 +54,7 @@ export default function ChatListPage() {
 
   useEffect(() => {
     void loadRooms();
-  }, [loadRooms]);
+  }, [loadRooms, pathname]);
 
   const loadEmployees = useCallback(async () => {
     if (employees.length > 0) return;
@@ -92,7 +93,7 @@ export default function ChatListPage() {
   const allUnread = rooms.reduce((sum, room) => sum + (room.unread > 0 ? 1 : 0), 0);
   const availableEmployees = employees.filter((employee) => employee.id !== actorEmployeeId);
 
-  const markRoomRead = (roomId: string) => {
+  const markRoomRead = async (roomId: string) => {
     setRooms((prev) =>
       prev.map((room) =>
         room.id === roomId
@@ -100,10 +101,12 @@ export default function ChatListPage() {
           : room,
       ),
     );
-    void markChatRoomRead(roomId).catch(() => {
+    try {
+      await markChatRoomRead(roomId);
+      notifyChatUnreadChanged();
+    } catch {
       // Keep optimistic UI even if the server update fails.
-    });
-    notifyChatUnreadChanged();
+    }
   };
 
   const resetCreateForm = () => {
@@ -261,6 +264,11 @@ export default function ChatListPage() {
                     <Link
                       key={room.id}
                       href={`/chat/${room.id}`}
+                      onClick={async (event) => {
+                        event.preventDefault();
+                        await markRoomRead(room.id);
+                        router.push(`/chat/${encodeURIComponent(room.id)}`);
+                      }}
                       className="shrink-0 rounded-xl border border-slate-200 px-3 py-2 bg-white hover:bg-blue-50 hover:border-blue-200 transition-colors"
                     >
                       <p className="text-xs font-semibold text-slate-700">
@@ -284,7 +292,11 @@ export default function ChatListPage() {
                   <Link
                     key={chat.id}
                     href={`/chat/${chat.id}`}
-                    onClick={() => markRoomRead(chat.id)}
+                    onClick={async (event) => {
+                      event.preventDefault();
+                      await markRoomRead(chat.id);
+                      router.push(`/chat/${encodeURIComponent(chat.id)}`);
+                    }}
                     className="group flex items-center justify-between rounded-xl border border-transparent px-3 py-3 hover:bg-blue-50/70 hover:border-blue-200 transition-all"
                   >
                     <div className="flex items-center gap-3 min-w-0">

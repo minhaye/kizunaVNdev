@@ -191,7 +191,7 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
       window.removeEventListener(CHAT_UNREAD_CHANGED_EVENT, handleChatUnreadChanged);
       window.clearInterval(interval);
     };
-  }, [API_BASE_URL, loadChatUnread]);
+  }, [API_BASE_URL, loadChatUnread, pathname]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
