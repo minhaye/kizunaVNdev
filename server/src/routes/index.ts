@@ -17,6 +17,15 @@ import {
   postsListHandler,
   postReactionsHandler,
 } from "./posts.js";
+import {
+  createManagedUserHandler,
+  deleteManagedUserHandler,
+  getModerationPostHandler,
+  listManagedUsersHandler,
+  listPendingPostsHandler,
+  moderatePostHandler,
+  updateManagedUserHandler,
+} from "./admin.js";
 
 export const registerRoutes = (router: Router) => {
   router.get("/health", healthHandler);
@@ -40,4 +49,13 @@ export const registerRoutes = (router: Router) => {
   router.get("/posts/:id/reactions", getPostReactionsHandler);
   router.post("/posts/:id/reactions", postReactionsHandler);
   router.delete("/posts/:id/reactions", deletePostReactionHandler);
+
+  // Admin management routes
+  router.get("/admin/users", listManagedUsersHandler);
+  router.post("/admin/users", createManagedUserHandler);
+  router.patch("/admin/users/:source/:id", updateManagedUserHandler);
+  router.delete("/admin/users/:source/:id", deleteManagedUserHandler);
+  router.get("/admin/posts/pending", listPendingPostsHandler);
+  router.get("/admin/posts/:id", getModerationPostHandler);
+  router.patch("/admin/posts/:id/moderation", moderatePostHandler);
 };

@@ -10,6 +10,68 @@ type JwtLikePayload = {
 
 const validReactionTypes: ReactionType[] = ["like", "heart", "useful"];
 
+type RelatedEmployee =
+  | {
+      name?: string | null;
+      avatar_url?: string | null;
+    }
+  | Array<{
+      name?: string | null;
+      avatar_url?: string | null;
+    }>
+  | null
+  | undefined;
+
+type RawPostRow = {
+  id: string;
+  topic?: string | null;
+  title: string;
+  content: string;
+  created_by: string;
+  created_at: string;
+  employees?: RelatedEmployee;
+  post_reactions?: Array<{
+    id: string;
+    employee_id: string;
+    reaction_type: ReactionType;
+  }>;
+};
+
+const getRelatedEmployee = (employee: RelatedEmployee) =>
+  Array.isArray(employee) ? employee[0] : employee;
+
+const isMissingColumnError = (error: { code?: string; message?: string }, column: string) => {
+  const message = error.message?.toLowerCase() ?? "";
+  return error.code === "PGRST204" || message.includes(column.toLowerCase());
+};
+
+const postListSelect = `
+  id,
+  topic,
+  title,
+  content,
+  created_at,
+  created_by,
+  status,
+  employees:created_by(
+    name,
+    avatar_url
+  )
+`;
+
+const postListSelectFallback = `
+  id,
+  topic,
+  title,
+  content,
+  created_at,
+  created_by,
+  employees:created_by(
+    name,
+    avatar_url
+  )
+`;
+
 const verifyToken = (token: string) => {
   const [encodedPayload, signature] = token.split(".");
   if (!encodedPayload || !signature) return null;
@@ -60,22 +122,26 @@ const mapReactionCounts = (reactions: Array<{ reaction_type: ReactionType }>) =>
 // GET /posts - Lấy danh sách bài đăng (sắp xếp mới nhất trước)
 export const postsListHandler = async (_req: Request, res: Response) => {
   try {
-    const { data, error } = await supabase
+    const publishedResult = await supabase
       .from("posts")
-      .select(`
-        id,
-        topic,
-        title,
-        content,
-        created_at,
-        created_by,
-        employees:created_by(
-          name,
-          avatar_url
-        )
-      `)
+      .select(postListSelect)
+      .eq("status", "published")
       .order("created_at", { ascending: false })
       .limit(100);
+
+    let data = publishedResult.data as RawPostRow[] | null;
+    let error = publishedResult.error;
+
+    if (error && isMissingColumnError(error, "status")) {
+      const fallbackResult = await supabase
+        .from("posts")
+        .select(postListSelectFallback)
+        .order("created_at", { ascending: false })
+        .limit(100);
+
+      data = fallbackResult.data as RawPostRow[] | null;
+      error = fallbackResult.error;
+    }
 
     if (error) {
       console.error("Supabase error:", error);
@@ -93,16 +159,20 @@ export const postsListHandler = async (_req: Request, res: Response) => {
     }
 
     // Map dữ liệu từ DB sang format frontend cần
-    const posts: Post[] = data.map((post: any) => ({
-      id: post.id,
-      topic: post.topic,
-      title: post.title,
-      author: post.employees?.name || "Unknown",
-      avatar: post.employees?.avatar_url || "",
-      content: post.content,
-      created_by: post.created_by,
-      created_at: post.created_at,
-    }));
+    const posts: Post[] = data.map((post) => {
+      const employee = getRelatedEmployee(post.employees);
+
+      return {
+        id: post.id,
+        topic: post.topic ?? undefined,
+        title: post.title,
+        author: employee?.name || "Unknown",
+        avatar: employee?.avatar_url || "",
+        content: post.content,
+        created_by: post.created_by,
+        created_at: post.created_at,
+      };
+    });
 
     res.json({ ok: true, data: posts });
   } catch (err) {
@@ -175,12 +245,14 @@ export const postsDetailHandler = async (req: Request, res: Response) => {
       return;
     }
 
+    const relatedEmployee = getRelatedEmployee((data as RawPostRow).employees);
+
     const post: Post = {
       id: data.id,
       topic: data.topic,
       title: data.title,
-      author: data.employees?.name || "Unknown",
-      avatar: data.employees?.avatar_url || "",
+      author: relatedEmployee?.name || "Unknown",
+      avatar: relatedEmployee?.avatar_url || "",
       content: data.content,
       created_by: data.created_by,
       created_at: data.created_at,
