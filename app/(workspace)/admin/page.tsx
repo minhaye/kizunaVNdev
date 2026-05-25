@@ -435,14 +435,14 @@ export default function AdminPage() {
               className={switchClass("user")}
               onClick={() => setViewMode("user")}
             >
-              User
+              ユーザー / Người dùng
             </button>
             <button
               type="button"
               className={switchClass("admin")}
               onClick={() => setViewMode("admin")}
             >
-              Admin
+              管理者 / Admin
             </button>
           </div>
         </header>
@@ -506,8 +506,8 @@ export default function AdminPage() {
                 className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-base font-semibold text-slate-700"
               >
                 <option value="all">すべて / Tất cả</option>
-                <option value="active">Active</option>
-                <option value="pending">Pending</option>
+                <option value="active">有効 / Đang hoạt động</option>
+                <option value="pending">保留 / Chờ xử lý</option>
               </select>
               <span className="text-base text-slate-400">
                 {filteredUsers.length} users

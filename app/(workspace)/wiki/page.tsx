@@ -2,63 +2,157 @@
 
 import Link from "next/link";
 import { Search } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-const articles = [
-  {
-    slug: "ho-ren-so-basic",
-    title: "報連相（ホウレンソウ）の基本",
-    tag: "Business",
-  },
-  { slug: "meeting-manner", title: "会議マナー（日越共通）", tag: "Manner" },
-  {
-    slug: "email-tone",
-    title: "ビジネスメールの丁寧表現",
-    tag: "Communication",
-  },
-  { slug: "report-format", title: "進捗報告フォーマット集", tag: "Template" },
-  { slug: "qa-glossary", title: "QA用語の日越対訳", tag: "Glossary" },
-  {
-    slug: "onboarding-vn",
-    title: "新メンバー向けオンボーディング",
-    tag: "Onboarding",
-  },
-  {
-    slug: "conflict-resolution",
-    title: "意見の違いを解決する会話例",
-    tag: "Culture",
-  },
-  {
-    slug: "meeting-minutes",
-    title: "議事録テンプレート（日本語/ベトナム語）",
-    tag: "Meeting",
-  },
-];
+type WikiArticle = {
+  slug: string;
+  title: string;
+  tag: string;
+};
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ??
+  process.env.NEXT_PUBLIC_API_BASE ??
+  "http://localhost:4000";
 
 export default function WikiListPage() {
+  const [articles, setArticles] = useState<WikiArticle[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [createError, setCreateError] = useState("");
+  const [createSuccess, setCreateSuccess] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newTag, setNewTag] = useState("");
+  const [newContent, setNewContent] = useState("");
   const [query, setQuery] = useState("");
   const [tagFilter, setTagFilter] = useState("all");
+
+  useEffect(() => {
+    let active = true;
+
+    const loadArticles = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const response = await fetch(`${API_BASE_URL}/api/wiki`);
+        const payload = await response.json();
+
+        if (!response.ok || !payload?.ok) {
+          throw new Error(payload?.error || "Wiki一覧を読み込めません / Không thể tải danh sách wiki");
+        }
+
+        if (!active) return;
+
+        const mapped = Array.isArray(payload.data)
+          ? payload.data.map((article: { slug?: string; title?: string; tag?: string }) => ({
+              slug: article.slug ?? "",
+              title: article.title ?? "",
+              tag: article.tag ?? "General",
+            }))
+          : [];
+
+        setArticles(
+          mapped.filter((article: WikiArticle) => article.slug && article.title),
+        );
+      } catch (loadError) {
+        if (!active) return;
+        setError(loadError instanceof Error ? loadError.message : "Wiki読み込みエラー / Có lỗi khi tải dữ liệu wiki");
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    void loadArticles();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const normalizedQuery = query.trim().toLowerCase();
-  const tags = Array.from(new Set(articles.map((article) => article.tag)));
-  const filteredArticles = articles.filter((article) => {
-    const matchesQuery =
-      normalizedQuery.length === 0 ||
-      [article.title, article.tag, article.slug].some((value) =>
-        value.toLowerCase().includes(normalizedQuery),
+
+  const tags = useMemo(() => Array.from(new Set(articles.map((article) => article.tag))), [articles]);
+
+  const filteredArticles = useMemo(
+    () =>
+      articles.filter((article) => {
+        const matchesQuery =
+          normalizedQuery.length === 0 ||
+          [article.title, article.tag, article.slug].some((value) =>
+            value.toLowerCase().includes(normalizedQuery),
+          );
+        const matchesTag = tagFilter === "all" || article.tag === tagFilter;
+        return matchesQuery && matchesTag;
+      }),
+    [articles, normalizedQuery, tagFilter],
+  );
+
+  const handleCreateWiki = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setCreateError("");
+    setCreateSuccess("");
+    setCreating(true);
+
+    try {
+      const token = localStorage.getItem("authToken");
+      const rawUser = localStorage.getItem("user");
+      const user = rawUser ? (JSON.parse(rawUser) as { id?: string }) : null;
+
+      const headers: HeadersInit = { "Content-Type": "application/json" };
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/wiki`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          title: newTitle,
+          topic: newTag,
+          content: newContent,
+          employee_id: user?.id,
+        }),
+      });
+      const payload = await response.json();
+
+      if (!response.ok || !payload?.ok) {
+        throw new Error(payload?.error || "Không thể tạo bài viết Wiki");
+      }
+
+      const created = payload.data as { slug?: string; title?: string; tag?: string };
+      if (created?.slug && created?.title) {
+        setArticles((prev) => [
+          { slug: created.slug, title: created.title, tag: created.tag ?? "General" },
+          ...prev,
+        ]);
+      }
+
+      setNewTitle("");
+      setNewTag("");
+      setNewContent("");
+      setCreateSuccess("Tạo bài viết Wiki thành công.");
+    } catch (submitError) {
+      setCreateError(
+        submitError instanceof Error ? submitError.message : "Có lỗi khi tạo bài viết Wiki",
       );
-    const matchesTag = tagFilter === "all" || article.tag === tagFilter;
-    return matchesQuery && matchesTag;
-  });
+    } finally {
+      setCreating(false);
+    }
+  };
 
   return (
     <main className="flex-1 overflow-auto p-8 bg-slate-50/50">
       <div className="max-w-5xl mx-auto">
         <div className="mb-6">
           <h2 className="text-xl font-bold text-slate-900">
-            文化Wiki記事一覧画面
+            <span className="block">文化Wiki記事一覧画面</span>
+            <span className="block">Màn hình danh sách bài viết Wiki</span>
           </h2>
           <p className="text-sm text-slate-500">
-            Wiki記事一覧画面 / Màn hình DS bài viết Wiki
+            <span className="block">Wiki記事一覧画面</span>
+            <span className="block">Màn hình danh sách bài viết Wiki</span>
           </p>
         </div>
 
@@ -67,11 +161,12 @@ export default function WikiListPage() {
             <Search className="w-4 h-4 text-slate-400" />
             <input
               className="w-full text-sm outline-none"
-              placeholder="記事・タグを検索 / Tìm theo bài viết, tag..."
+              placeholder="記事・タグを検索..."
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
           </div>
+          <span className="text-[11px] text-slate-400">Tìm theo bài viết, tag...</span>
           <select
             value={tagFilter}
             onChange={(event) => setTagFilter(event.target.value)}
@@ -85,14 +180,63 @@ export default function WikiListPage() {
             ))}
           </select>
           <span className="text-xs text-slate-400">
-            {filteredArticles.length} articles
+            <span className="block">{filteredArticles.length} 件</span>
+            <span className="block">{filteredArticles.length} bài viết</span>
           </span>
         </div>
 
+        <form
+          onSubmit={handleCreateWiki}
+          className="mb-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm space-y-3"
+        >
+          <p className="text-sm font-semibold text-slate-800">
+            Wiki記事作成 / Tạo bài viết Wiki
+          </p>
+          <input
+            value={newTitle}
+            onChange={(event) => setNewTitle(event.target.value)}
+            placeholder="Tiêu đề bài viết"
+            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
+            required
+          />
+          <input
+            value={newTag}
+            onChange={(event) => setNewTag(event.target.value)}
+            placeholder="Tag / Chủ đề (không bắt buộc)"
+            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
+          />
+          <textarea
+            value={newContent}
+            onChange={(event) => setNewContent(event.target.value)}
+            placeholder="Nội dung bài viết"
+            className="min-h-28 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
+            required
+          />
+          {createError ? <p className="text-xs text-red-500">{createError}</p> : null}
+          {createSuccess ? <p className="text-xs text-emerald-600">{createSuccess}</p> : null}
+          <button
+            type="submit"
+            disabled={creating}
+            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+          >
+            {creating ? "Đang tạo..." : "作成 / Tạo bài viết"}
+          </button>
+        </form>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredArticles.length === 0 ? (
+          {loading ? (
             <div className="col-span-full rounded-xl border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500">
-              該当する記事がありません / Không có bài viết phù hợp.
+              <span className="block">Wikiを読み込み中...</span>
+              <span className="block">Đang tải dữ liệu wiki...</span>
+            </div>
+          ) : error ? (
+            <div className="col-span-full rounded-xl border border-dashed border-red-200 bg-white p-6 text-center text-sm text-red-500">
+              {error}
+            </div>
+          ) : filteredArticles.length === 0 ? (
+            <div className="col-span-full rounded-xl border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500">
+              <span className="block">該当する記事がありません</span>
+              <span className="block">Không có bài viết phù hợp.</span>
             </div>
           ) : (
             filteredArticles.map((item) => (
@@ -106,8 +250,8 @@ export default function WikiListPage() {
                 </p>
                 <h3 className="font-semibold text-slate-800">{item.title}</h3>
                 <p className="text-xs text-slate-500 mt-2">
-                  クリックして記事詳細を表示 / Nhấn để xem chi tiết nội quy/bài
-                  viết.
+                  <span className="block">クリックして記事詳細を表示</span>
+                  <span className="block">Nhấn để xem chi tiết nội quy/bài viết.</span>
                 </p>
               </Link>
             ))

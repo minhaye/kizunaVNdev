@@ -1,0 +1,551 @@
+1.問題ハノイで働いている日本人スタッフとベトナム人スタッフの間で、コミュニケーションの誤解や衝突がよく起こり、円滑に業務を進めることが難しい。Giữa nhân viên người Nhật và nhân viên người Việt đang làm việc tại Hà Nội thường xảy ra hiểu lầm hoặc xung đột trong giao tiếp, khiến việc thực hiện công việc một cách suôn sẻ trở nên khó khăn.
+2.想定ユーザー日本語：・ハノイで働いている日本人スタッフ・ハノイで働いている日本語（にほんご）が話（はな）せるベトナム人スタッフTiếng Việt:・Nhân viên người Nhật đang làm việc tại Hà Nội・Nhân viên người Việt Nam biết tiếng Nhật đang làm việc tại Hà Nội
+3.課題・解決策ID 想定ユーザー 課題：解決に向けて取り組むべきこと・理想の状態 解決策：課題を実行・実現するための具体的手段
+1
+日越チームで働くビジネスパーソン(Nhân viên làm việc trong team Nhật-Việt)
+言葉の壁をなくし、遅延や誤解のないリアルタイムで正確な意思疎通ができる状態にする。(Xóa bỏ rào cản ngôn ngữ, đạt được trạng thái giao tiếp chính xác, không chậm trễ hay hiểu lầm.)
+AI翻訳・ニュアンス変換チャットの導入リアルタイム翻訳と、文化的なニュアンス（日本的な丁寧な表現など）をAIが調整するチャット機能を提供する。(Tích hợp Chat AI dịch thuật & chuyển đổi sắc thái: Dịch real-time và dùng AI điều chỉnh sắc thái văn hóa - ví dụ: diễn đạt lịch sự kiểu Nhật).
+2
+日越チームで働くビジネスパーソン(Nhân viên làm việc trong team Nhật-Việt)
+業務指示や報連相のフォーマットを統一し、必要な情報の漏れを完全に防ぐ状態にする。(Thống nhất định dạng giao việc và Ho-Ren-So, ngăn chặn hoàn toàn việc thiếu sót thông tin.)
+標準化テンプレート付きタスク管理ビジネスマナーに適したテンプレートを用いて、タスクの依頼や進捗報告を標準化する。(Quản lý Task kèm Template chuẩn: Chuẩn hóa việc giao việc và báo cáo tiến độ bằng các form mẫu chuẩn Business).
+3
+日越チームで働くビジネスパーソン(Nhân viên làm việc trong team Nhật-Việt)
+日越のビジネス文化の違い（直接的な意見と遠回しな表現など）を相互に理解し合える状態にする。(Thấu hiểu sự khác biệt văn hóa kinh doanh Nhật-Việt, ví dụ cách nói trực tiếp và gián tiếp.)
+異文化・ビジネスマナー共有Wikiオフィスの共通ルールや、異文化理解のためのガイドライン（報連相の基本など）をいつでも閲覧できる機能。(Wiki chia sẻ văn hóa & quy tắc: Chức năng cho phép xem guideline làm việc chung và kiến thức văn hóa mọi lúc).
+4
+日越チームで働くビジネスパーソン(Nhân viên làm việc trong team Nhật-Việt)
+ユーザーの役割や過去のやり取り（ログ）を適切に管理・追跡できる状態にする。(Quản lý và theo dõi hiệu quả vai trò của người dùng cũng như lịch sử trao đổi trong hệ thống.)
+ユーザーと履歴の管理機能管理者がユーザーの役割を設定し、過去のチャット履歴や翻訳ログを管理・共有できるようにする。(Quản lý User & Lịch sử: Quản trị viên phân quyền và quản lý/lưu trữ lịch sử chat/dịch thuật).
+5
+日越チームで働くビジネスパーソン(Nhân viên làm việc trong team Nhật-Việt)
+両国のビジネスマナーや習慣に関する知識を共有し、互いに尊重し合える環境を作る。(Tạo môi trường chia sẻ và tôn trọng các quy tắc, thói quen kinh doanh của cả hai nước.)
+異文化理解Wiki（マナーや習慣を学べる記事共有）。(Wiki chia sẻ các bài viết học hỏi quy tắc, văn hóa kinh doanh.)
+6
+日越チームで働くビジネスパーソン(Nhân viên làm việc trong team Nhật-Việt)
+言語の壁を取り除き, 過去のやり取りを簡単に確認できるようにして利便性を高める。。(Xóa bỏ rào cản ngôn ngữ và giúp khách hàng dễ dàng kiểm tra lại các thông tin đã trao đổi trước đó.)
+言語翻訳 , チャット履歴検索Hỗ trợ giao tiếp đa ngôn ngữ và Tra cứu hội thoại
+7
+日越チームで働くビジネスパーソン(Nhân viên làm việc trong team Nhật-Việt)
+プロジェクト完了後に互いを評価し、感謝や改善点を伝え合える文化を定着させる。(Xây dựng văn hóa feedback, đánh giá và cảm ơn lẫn nhau sau khi xong việc.)
+相互フィードバック機能（感謝や改善点の共有）。(Chức năng gửi feedback, lời cảm ơn chéo giữa các nhân viên.)
+
+8
+日越チームで働くビジネスパーソン(Nhân viên làm việc trong team Nhật-Việt)
+システム内で誰がどの役割を持ち、何を閲覧できるかを明確に制御できる状態にする。(Quản lý rõ ràng ai có quyền hạn gì và được xem thông tin gì trong hệ thống.)
+管理者によるユーザー権限・コンテンツ管理機能。(Chức năng quản lý tài khoản và phân quyền cho Admin.)
+4.アプリ名称KizunaVN
+5.ロール一覧ID ロール名 役割
+1 日越スタッフNhân viên Nhật – Việt
+業務指示の共有、タスクの実行・管理、進捗報告、および日本人とベトナム人の間の円滑なコミュニケーションを行う。Thực hiện và quản lý công việc, báo cáo tiến độ, đồng thời đảm bảo giao tiếp hiệu quả giữa nhân viên người Nhật và nhân viên người Việt.
+2 管理者Quản trị viên ユーザー管理、コンテンツ管理Quản lý người dùng và nội dung hệ thống
+6.機能一覧ID 機能名 解決策ID 対象ロールID 機能の概要
+1 AI翻訳チャット(Chat AI dịch thuật) 1 1, 2
+翻訳ボタンを押すことで、メッセージの原文と翻訳文を並べて表示する機能。 必要に応じて翻訳を実行できるため、日越双方向で内容を正確に対比・確認できる。APIを活用し、文脈に応じた精度の高い翻訳を提供することで、誤訳による誤解を防ぐ。Chức năng hiển thị song song bản gốc và bản dịch sau khi nhấn nút dịch. Cho phép người dùng chủ động đối chiếu nội dung Nhật - Việt khi cần thiết. Sử dụng API phân tích ngữ cảnh để cung cấp bản dịch chính xác, giúp ngăn chặn các hiểu lầm phát sinh do dịch sai.
+2 ニュアンス変換サポート(Hỗ trợ chuyển đổi sắc thái)1 1, 2
+送信前に文章のトーン（丁寧語、ビジネス敬語など）をAIが調整する。ベトナム側の直接的な表現を日本的な配慮のある表現へ、または日本側の曖昧な表現を明確な指示へ変換サポートする。AI điều chỉnh sắc thái văn bản (kính ngữ, từ ngữ business) trước khi gửi. Hỗ trợ chuyển đổi cách nói trực tiếp của phía VN sang cách nói lịch sự kiểu Nhật, hoặc làm rõ các diễn đạt ẩn ý của phía Nhật.
+3 タスク作成・割り当て(Tạo và giao task) 2 1, 2
+5W1H（誰が、いつ、どこで、何を、なぜ、どのように）に基づいたタスク管理。テンプレートを使用することで、指示の漏れや「言った・言わない」のトラブルを未然に防ぐ。Quản lý công việc dựa trên 5W1H. Sử dụng template chuẩn giúp ngăn chặn hoàn toàn việc thiếu sót thông tin hoặc tranh cãi "đã nói hay chưa" khi giao việc.
+4 報連相・進捗報告(Báo cáo Ho-Ren-So)2 1, 2
+業務報告、連絡、相談をボタン一つで使い分けられる機能。進捗状況やトラブルの兆候を定型フォーマットで迅速に共有し、日越間の情報共有のスピードを上げる。Chức năng phân loại Báo cáo - Liên lạc - Thảo luận qua một nút bấm. Chia sẻ nhanh tiến độ và dấu hiệu rắc rối qua form mẫu, tăng tốc độ nắm bắt thông tin giữa 2 bên.
+5 マナー・文化Wiki閲覧(Xem Wiki văn hóa)3,5 1, 2
+両国の商習慣、マナー、価値観の違いに関する記事を閲覧・共有する機能。検索機能やタグ付けにより、必要な時にすぐ異文化理解のヒントを得られるようにする。Chức năng xem và chia sẻ các bài viết về tập quán kinh doanh, quy tắc ứng xử, giá trị quan. Có tính năng tìm kiếm và hashtag giúp tra cứu nhanh các mẹo hiểu biết đa văn hóa.
+
+6
+翻訳ボタンとチャット履歴検索機能の統合(Tích hợp nút dịch ngôn ngữ và thanh tìm kiếm lịch sử trò chuyện)
+6 1, 2
+過去の全てのやり取りを全文検索できる機能。一度翻訳された内容が不明瞭な場合、手動で再翻訳をかけたり、キーワードで重要な決定事項を即座に振り返ることができる。Chức năng tìm kiếm toàn văn các cuộc hội thoại cũ. Nếu bản dịch trước đó chưa rõ, người dùng có thể yêu cầu dịch lại thủ công hoặc tra cứu nhanh các quyết định quan trọng qua từ khóa.
+7 相互フィードバック(Feedback chéo) 7 1, 2
+プロジェクト完了時や日常の業務に対し、感謝のスタンプやフィードバックを送る機能。心理的安全性を高め, 互いを尊重し合える職場環境を醸成する。Chức năng gửi sticker cảm ơn hoặc nhận xét sau mỗi dự án/công việc hàng ngày. Nâng cao sự an tâm tâm lý và xây dựng môi trường làm việc tôn trọng lẫn nhau.
+8 コンテンツ管理(Quản lý nội dung) 4,8 1,2
+ユーザーの役割（マネージャー/一般）に応じた閲覧制限や、Wiki記事の編集権限を制御する。システム全体のログを追跡し、円滑な運用を担保する。Kiểm soát quyền xem (Manager/Member) và quyền chỉnh sửa bài viết Wiki. Theo dõi log toàn hệ thống để đảm bảo vận hành suôn sẻ.
+7.画面一覧ID 画面名 機能ID 対象ロールID 画面の概要
+1 ログイン画面(Màn hình Đăng nhập)
+- 1,2 ユーザーがシステムにアクセスするための認証画面 (Màn hình xác thực để người dùng đăng nhập vào hệ thống).
+2
+ダッシュボード (ホーム)(Dashboard / Trang chủ)
+3,4,6,7 1,2 Màn hình chính tổng hợp công việc và thông báo (全体の進捗や通知を表示するトップ画面).
+3
+チャット一覧画面(Màn hình DS Chat)
+1 1, 2 Danh sách các cuộc hội thoại/nhóm chat (チャットルームの一覧を表示する画面).
+4
+チャット詳細・変換画面(Màn hình Chat & Chuyển đổi)
+1,2,6 1, 2 Giao diện nhắn tin, hiển thị tin gốc và tin dịch/chuyển đổi (翻訳・ニュアンス変換を行うチャット画面).
+5
+タスクボード（一覧）画面(Màn hình DS Task)
+3 1, 2 Bảng quản lý công việc dạng Kanban (タスク一覧をカンバン方式で表示する画面).
+6
+タスク詳細・報告画面(Màn hình Chi tiết Task & Báo cáo)
+3, 4 1, 2 Màn hình xem chi tiết task và nhập báo cáo Hō-Ren-Sō (タスク詳細の確認と進捗報告を行う画面).
+7
+文化Wiki記事一覧画面(Màn hình DS bài viết Wiki)
+5 1, 2 Danh sách các bài viết về văn hóa/manner (異文化理解やマナーに関する記事一覧画面).
+
+8
+記事・ルール詳細画面(Màn hình Chi tiết Nội quy)
+5 1, 2 Nội dung chi tiết của bài viết hoặc nội quy (記事やルールの詳細を読む画面).
+9
+掲示板（コミュニティ）画面(Màn hình Bảng tin Cộng đồng)
+6,8 1, 2 Bảng tin giao lưu và thông báo chung (社内交流やアナウンスを行う画面).
+10
+プロフィール・評価画面(Màn hình Profile & Feedback)
+7,6 1, 2 Trang cá nhân, lịch sử hoạt động và nhận feedback (個人の履歴確認やフィードバックを表示する画面).
+11
+アドミン用設定画面Màn hình cài đặt dành cho Admin
+7,8 2
+ユーザーの個人設定、および管理者によるシステム全体の管理を行う画面。(Màn hình cài đặt thông tin cá nhân và quản lý toàn hệ thống dành cho Admin).
+12
+ユーザー用設定画面Màn hình cài đặt dành cho người dùng
+7,8 1
+ユーザー用個人情報設定・システム管理画面Màn hình cài đặt thông tin cá nhân và quản lý toàn hệ thống dành cho người dùng
+
+ロールID 1ロール名 日越スタッフNhân viên Nhật – Việt
+ロールID 2ロール名 管理者Quản trị viên
+
+
+
+
+画面ID 1 画面タイトルログイン画面 ロールID 1,2 画面項目画面レイアウト・デザインNo 項目名称 項目説明 分類 選択肢・入力値処理内容 備考1 タイトル Tiêu đề 挨拶文を表示。Hiển thị lời chào trang đăng nhậpテキストなしKhông có なしkhông có 常に表示Luôn hiển thị
+2 Email入力欄Ô nhập Email ログイン用メールアドレスを入力する。Nhập địa chỉ email để đăng nhập入力フィールドメールアドレス形式Định dạng Email: abc@domain.com
+Trigger: 文字を入力Nhập textAction: 入力内容を保持するLưu giữ nội dung đã nhập.常に表示Luôn hiển thị
+3 パスワード入力欄Ô nhập Mật khẩu ログイン用パスワードを入力する。Nhập mật khẩu để đăng nhập入力フィールド半角英数字Ký tự chữ và số
+Trigger: 文字を入力Nhập textAction: 入力内容を保持するLưu giữ nội dung đã nhập.常に表示Luôn hiển thị
+4 パスワード表示切替アイコンIcon Ẩn / Hiện Pass パスワードの表示・非表示を切り替える。Bật / tắt trạng thái hiển thị mật khẩu.ボタン なしKhông có Trigger: クリックClickAction: パスワードの文字を表示・非表示にするHiển thị hoặc ẩn các ký tự mật khẩu.常に表示Luôn hiển thị
+5 パスワードリセットリンクLink Quên mật khẩu パスワードを忘れた場合のリンク。Link dành cho người quên mật khẩu.ボタン なしKhông có Trigger: クリックClickAction: パスワード再設定画面へ遷移するChuyển đến màn hình đặt lại mật khẩu.常に表示Luôn hiển thị
+6 ログインボタンNút Đăng nhập 認証を実行し、システムに入る。Thực hiện xác thực và vào hệ thống.ボタン なしKhông có認証成功時はダッシュボードへ遷移。失敗時はエラーを表示。Thành công chuyển sang Dashboard. Thất bại báo lỗi.常に表示Luôn hiển thị
+画面ID 2 画面タイトルダッシュボード (ホーム) ロールID 1,2 画面項目画面レイアウト・デザインNo 項目名称 項目説明 分類 選択肢・入力値処理内容 備考1 ロゴLogo KizunaVN システムのロゴを画面左上に表示するHiển thị logo hệ thống ở góc trái画像 なしKhông có クリックするとホーム画面に戻るNhấn vào để quay về trang chủ常に表示Luôn hiển thị2 ユーザー名Tên người dùng ユーザー名と挨拶メッセージを表示するHiển thị tên người dùng kèm lời chàoテキストなしKhông có なしkhông có ログイン後に表示 Hiển thị sau khi đăng nhập3 アバター枠＋アカウント名Khung ảnh đại diện + tên tài khoản画面右上にユーザーのアバター付きプロフィール画像を表示するHiển thị ảnh đại diện của người dùng kèm avatar, ở góc trên cùng bên phải của màn hìnhドロップダウンなしKhông có クリックするとアカウントメニューを開くNhấn vào để mở menu tài khoản画面右上に表示 Hiển thị ở góc trên bên phải4 通知Thông báo アバターの横に表示するHiển thị bên cạnh khung ảnh đại diện画像 なしKhông cóクリックすると新しい通知を確認できる（新着メッセージ、アカウント通知など）Nhấn để xem các thông báo mới(tin nhắn mới, thông báo tài khoản)画面右上に表示 Hiển thị ở góc trên bên phải5 プロフィールProfile アバターをクリックするとドロップダウンメニューを表示するHiển thị dạng dropdown khi nhấn vào khung ảnh đại diệnボタン なしKhông cóクリックすると個人プロフィール画面を開くNhấn để mở profile cá nhânアカウントメニュー内に表示 Hiển thị trong menu tài khoản6 ログアウトĐăng xuất アバターをクリックするとドロップダウンメニューを表示するHiển thị dạng dropdown khi nhấn vào khung ảnh đại diệnボタン なしKhông có ログアウトしたいときにクリックするNhấn khi muốn đăng xuấtアカウントメニュー内に表示 Hiển thị trong menu tài khoản7 サイドバー枠Khung Sidebar 画面左側にサイドバーを表示し、主要なナビゲーション機能を配置するHiển thị ở bên trái màn hình, khu vực chứa các chức năng điều hướng chính của hệ thốngナビゲーションバー. なしKhông cóユーザー権限に応じた機能一覧を表示するHiển thị danh sách chức năng theo quyền người dùng常に表示Luôn hiển thị7.1 ホームメニューMenu trang chủ システムのホーム画面へ遷移するĐiều hướng đến trang chủ của hệ thốngラジオボタンなしKhông có クリックするとホーム画面へ移動するNhấn để đến trang chủサイドバーに属するThuộc sidebar7.2 チャットメニューMenu trò chuyện チャット画面へ遷移するĐiều hướng đến trang trò chuyện của hệ thốngラジオボタンなしKhông có クリックするとチャット画面へ移動するNhấn để đến trò chuyệnサイドバーに属するThuộc sidebar7.3 タスク管理メニューMenu quản lý task タスク管理画面へ遷移するĐiều hướng đến trang quản lý taskラジオボタンなしKhông cóクリックするとタスク管理画面へ移動するNhấn để sang trang quản lý taskサイドバーに属するThuộc sidebar7.4 カルチャーWikiメニューMenu wiki văn hóa カルチャーWiki画面へ遷移するĐiều hướng đến trang wiki văn hóaラジオボタンなしKhông có クリックすると文化Wiki画面へ移動するNhấn đế đến trang wiki văn hóaサイドバーに属するThuộc sidebar7.5 フィードメニューMenu bảng tin フィード画面へ遷移するĐiều hướng sang bảng tinラジオボタンなしKhông có クリックすると掲示板画面へ移動するNhấn để đến bảng tinサイドバーに属するThuộc sidebar7.6 プロフィールページメニューMenu Trang cá nhân プロフィールページへ遷移するĐiều hướng đến trang cá nhânラジオボタンなしKhông cóクリックするとプロフィールページへ遷移Nhấn để đến trang cá nhânサイドバーに属するThuộc sidebar7.7 設定メニューMenu Cài đặt アカウントまたはシステム設定画面へ遷移するĐiều hướng đến phần cài đặt tài khoản hoặc hệ thốngラジオボタンなしKhông có クリックすると設定画面へ移動するNhấn để đến cài đặtサイドバーに属するThuộc sidebar8 「自分のタスク」セクションKhối “Task của tôi” 個人に割り当てられた当日のタスクを表示するHiển thị các công việc được giao cho cá nhân theo ngàyリスト なしKhông có なしkhông có メインコンテンツNội dung chính8.1 「マイタスク」ラベルNhãn "Task của tôi"個人に割り当てられたすべてのタスクを表示するHiển thị tất cả công việc được giao cho cá nhânラベル なしKhông có なしkhông có タスク欄内Trong khối task8.2 すべてのタスクを見るボタンNút xem tất cả task個人に割り当てられたすべてのタスクを表示するHiển thị tất cả công việc được giao cho cá nhânラジオボタンなしKhông cóクリックすると割り当てられたタスク一覧をすべて表示するNhấn để xem toàn bộ danh sách công việc được giaoタスク欄内Trong khối task8.3 「Todo task」ブロックKhối "Todo task" 未着手のタスクを表示Hiển thị công việc cần làmリスト なしKhông có なしkhông có タスク欄内Trong khối task8.4 タスクの期限Hạn hoàn thành task タスクの締切日時を表示Hiển thị hạn hoàn thành taskラベル なしKhông có なしkhông có タスク欄内Trong khối task8.5 タスクの内容Nội dung chính của taskタスクの主な内容を表示Hiển thị nội dung chính của taskラベル なしKhông có なしkhông có タスク欄内Trong khối task9 最新メッセージセクションKhối tin nhắn mới nhất未読または最近のメッセージを表示するHiển thị các tin nhắn chưa đọc hoặc trao đổi gần nhấtドロップダウンなしKhông có なしkhông có メインコンテンツNội dung chính9.1 「最新メッセージ」ラベルNhãn "Tin nhắn mới nhất"「最新メッセージ」という見出しを表示Nhãn "Tin nhắn mới nhất"ラベル なしKhông có なしkhông có メインコンテンツNội dung chính9.2 未読メッセージ数ラベルNhãn "Số lượng tin nhắn chưa đọc"未読メッセージの件数を表示Hiên thị số lượng tin nhắn chưa đọcラベル なしKhông có なしKhông có 最新メッセージセクション欄内Trong khối tin nhắn mới nhất9.3 最新メッセージTin nhắn mới nhất 送信者名、メッセージ内容、送信時間を表示Hiển thị tên người gửi, nội dung tin nhắn và thời gian gửiメッセージなしKhông có なしKhông có 最新メッセージセクション欄内Trong khối tin nhắn mới nhất9.3.1 送信者アバターAvar người gửi 送信者のプロフィール画像を表示Hiển thị avatar người gửi画像 なしKhông có なしKhông có 最新メッセージセクション欄内Trong khối tin nhắn mới nhất9.3.2 送信者名Tên người gửi 送信者の名前を表示Hiển thị tên người gửiラベル なしKhông có なしKhông có 最新メッセージセクション欄内Trong khối tin nhắn mới nhất9.3.3 送信時間Thời gian gửi メッセージの送信時間を表示Hiển thị thời gian gửiラベル なしKhông có なしKhông có 最新メッセージセクション欄内Trong khối tin nhắn mới nhất9.3.4 メッセージ内容Nội dung tin nhắn メッセージ本文を表示Hiển thị nội dung tin nhắn テキストなしKhông có なしKhông có 最新メッセージセクション欄内Trong khối tin nhắn mới nhất10 最新通知／フィードセクションKhối Thông báo/bảng tin mới未読または最近のメッセージを表示するHiển thị các tin nhắn chưa đọc hoặc trao đổi gần nhấtリスト なしKhông có なしkhông có メインコンテンツNội dung chính10.1 「通知／最新情報」ラベルNhãn "Thông báo/bảng tin mới"「通知／最新情報」という見出しを表示Nhãn "Thông báo/bảng tin mới"テキストなしKhông có なしkhông có 最新通知／フィードセクション欄内Trong khối "Thông báo/Bản tin mới"10.2 通知／最新情報項目Thông báo/Tin mới 通知の種類、内容、発生時間を表示Hiển thị loại tin, nội dung tin, thời gian diễn ra〇〇表示領域なしKhông có なしKhông có 最新通知／フィードセクション欄内Trong khối "Thông báo/Bản tin mới"10.2.1 通知タイプアイコンAvatar loại thông báo/tin通知の種類を示すアイコンを表示Hiển thị loại thông báo画像 なしKhông có なしKhông có 最新通知／フィードセクション欄内Trong khối "Thông báo/Bản tin mới"10.2.2 通知タイトルTiêu đề thông báo/tin 通知のタイトルを表示Hiển thị tiêu đề của thông báo/tinラベル なしKhông có なしKhông có 最新通知／フィードセクション欄内Trong khối "Thông báo/Bản tin mới"10.2.3 通知内容Nội dung chính của thông báo/tin通知の詳細内容を表示Hiển thị nội dung chính của thông báo/tinテキストなしKhông có なしKhông có 最新通知／フィードセクション欄内Trong khối "Thông báo/Bản tin mới"
+画面ID 3 画面タイトルチャット一覧画面ロールID 1,2 画面項目画面レイアウト・デザインNo 項目名称 項目説明 分類 選択肢・入力値処理内容 備考
+1 ロゴ(Logo KizunaVN) システムのロゴを画面左上に表示するHiển thị logo hệ thống ở góc trái画像 なしKhông có クリックするとホーム画面に戻るNhấn vào để quay về trang chủ常に表示Luôn hiển thị
+
+
+2 ユーザー名Tên người dùng ユーザー名と挨拶メッセージを表示するHiển thị tên người dùng kèm lời chàoテキストなしKhông có なしKhông có ログイン後に表示Hiển thị sau khi đăng nhập3 アバター枠＋アカウント名Khung ảnh đại diện + tên tài khoản画面右上にユーザーのアバター付きプロフィール画像を表示するHiển thị ảnh đại diện của người dùng kèm avatar, ở góc trên cùng bên phải của màn hìnhドロップダウンなしKhông có クリックするとアカウントメニューを開くNhấn vào để mở menu tài khoản 画面右上に表示Hiển thị ở góc trên bên phải
+4 プロフィールProfile アバターをクリックするとドロップダウンメニューを表示するHiển thị dạng dropdown khi nhấn vào khung ảnh đại diệnボタン なしKhông cóクリックすると個人プロフィール画面を開くNhấn để mở profile cá nhân アカウントメニュー内に表示Hiển thị trong menu tài khoản5 ログアウトĐăng xuất アバターをクリックするとドロップダウンメニューを表示するHiển thị dạng dropdown khi nhấn vào khung ảnh đại diệnボタン なしKhông có ログアウトしたいときにクリックするNhấn khi muốn đăng xuấtアカウントメニュー内に表示Hiển thị trong menu tài khoản6 通知Thông báo アバターの横に表示するHiển thị bên cạnh khung ảnh đại diện画像 なしKhông cóクリックすると新しい通知を確認できる（新着メッセージ、アカウント通知など）Nhấn để xem các thông báo mới(tin nhắn mới, thông báo tài khoản)画面右上に表示Hiển thị ở góc trên bên phải7 サイドバー枠Khung Sidebar 画面左側にサイドバーを表示し、主要なナビゲーション機能を配置するHiển thị ở bên trái màn hình, khu vực chứa các chức năng điều hướng chính của hệ thốngナビゲーションバー なしKhông cóユーザー権限に応じた機能一覧を表示するHiển thị danh sách chức năng theo quyền người dùng常に表示Luôn hiển thị8 ホームメニューMenu trang chủ システムのホーム画面へ遷移するĐiều hướng đến trang chủ của hệ thốngラジオボタンなしKhông có クリックするとホーム画面へ移動するNhấn để đến trang chủサイドバー項目Thuộc sidebar9 チャットメニューMenu trò chuyện チャット画面へ遷移するĐiều hướng đến trang trò chuyện của hệ thốngラジオボタンなしKhông có クリックするとチャット画面へ移動するNhấn để đến trò chuyệnサイドバー項目、選択中Thuộc sidebar, đang được chọn10 タスク管理メニューMenu quản lý task タスク管理画面へ遷移するĐiều hướng đến trang quản lý taskラジオボタンなしKhông cóクリックするとタスク管理画面へ移動するNhấn để sang trang quản lý task サイドバー項目Thuộc sidebar11 カルチャーWikiメニューMenu wiki văn hóa カルチャーWiki画面へ遷移するĐiều hướng đến trang wiki văn hóaラジオボタンなしKhông có クリックすると文化Wiki画面へ移動するNhấn đế đến trang wiki văn hóaサイドバー項目Thuộc sidebar12 フィードメニューMenu bảng tin フィード画面へ遷移するĐiều hướng sang bảng tinラジオボタンなしKhông có クリックすると掲示板画面へ移動するNhấn để đến bảng tinサイドバー項目Thuộc sidebar13 マイページメニューMenu Trang cá nhânサイドバーのプロフィールページへ遷移するĐiều hướng đến trang thông tin cá nhân trên sidebarラジオボタンなしKhông cóクリックすると個人プロフィール画面へ移動するNhấn để đến trang cá nhânサイドバー項目Thuộc sidebar14 検索バーThanh tìm kiếm チャットルーム、メンバー、またはハッシュタグを検索するTìm kiếm phòng chat, thành viên hoặc hashtag入力フィールドテキストを入力Điền textクリックしてテキストを入力し、チャットルーム、メンバー、またはハッシュタグを検索するNhấn và điền text để tìm kiếm phòng chat, thành viên hoặc hashtagチャット一覧上部に表示Hiển thị ở phía trên danh sách chat
+15 ピン留めエリアKhu vực PINNED ピン留めされた重要な会話を表示するHiển thị các cuộc hội thoại quan trọng đã được ghimカード, リスト なしKhông cóクリックすると、固定されたグループまたはメンバーとのチャット画面へ移動するNhấn để đến đoạn chat với nhóm, thành viên được ghim ピン留め会話エリアに表示Hiển thị trong khu vực hội thoại được ghim
+16 メッセージ一覧Danh sách tin nhắn 最近のすべての会話を表示するHiển thị tất cả các cuộc trò chuyện gần đâyリスト なしKhông cóクリックすると、グループまたはメンバーとのチャット画面へ移動するNhấn để đến đoạn chat với nhóm, thành viên最近の会話一覧に表示Hiển thị trong danh sách hội thoại gần đây17 設定メニューMenu Cài đặt 設定画面へ遷移するĐiều hướng đến phần thiết lậpラジオボタンなしKhông có システム設定を開くNhấn để mở trang cài đặt hệ thốngサイドバーの最下部Cuối sidebar
+画面ID 4 画面タイトルチャット詳細・変換画面ロールID 1, 2 画面項目画面レイアウト・デザインNo 項目名称 項目説明 分類 選択肢・入力値処理内容 備考
+1 ロゴ(Logo KizunaVN) 画面左上にシステムロゴ（KizunaVN）を表示するHiển thị logo hệ thống ở góc trái (logo KizunaVN)画像 なしKhông có ダッシュボードへ戻るNhấn để quay về trang chủ (Dashboard)常時表示Luôn hiển thị
+2 挨拶・通知Chào hỏi & Thông báoユーザーへの挨拶と通知を表示するHiển thị lời chào người dùng và thông báoリスト なしKhông có なしKhông có 最上部Phía trên cùng3 個人プロフィールHồ sơ cá nhân 現在のユーザーのアバターと名前を表示するẢnh đại diện và tên người dùng hiện tạiテキストなしKhông có 個人アカウントメニューを開くNhấn để mở menu tài khoản cá nhân右上隅Góc trên phải4 サイドバーThanh bên (Sidebar)システムの主要ナビゲーションエリアKhu vực điều hướng chính của hệ thốngドロップダウンなしKhông có権限に応じたモジュール一覧を表示するHiển thị danh sách các phân hệ theo quyền người dùng常時表示Luôn hiển thị5 ホームメニューMenu trang chủ ダッシュボードへ遷移するĐiều hướng về Dashboardナビゲーションバー. なしKhông có ホーム画面へ移動するNhấn để đến trang chủサイドバー内Thuộc sidebar6 チャットメニューMenu trò chuyện チャット機能へ遷移するĐiều hướng đến tính năng chatラジオボタンなしKhông có チャット画面へ移動するNhấn để đến màn hình trò chuyệnアクティブ状態Trạng thái Active7 タスク管理メニューMenu quản lý task タスク管理画面へ遷移するĐiều hướng đến quản lý công việcラジオボタンなしKhông có タスク管理ページへ移動するNhấn để đến trang quản lý taskサイドバー内Thuộc sidebar8 カルチャーWikiメニューMenu wiki văn hóa ナレッジライブラリへ遷移するĐiều hướng đến thư viện kiến thứcラジオボタンなしKhông có カルチャーウィキページへ移動するNhấn để đến trang wiki văn hóaサイドバー内Thuộc sidebar9 フィードメニューMenu bảng tin 社内フィードへ遷移するĐiều hướng đến bảng tin công tyラジオボタンなしKhông có ニュースフィードページへ移動するNhấn để đến trang bảng tinサイドバー内Thuộc sidebar10 マイページメニューMenu Trang cá nhân 個人プロフィールへ遷移するĐiều hướng đến thông tin cá nhânラジオボタンなしKhông có 個人プロフィールページへ移動するNhấn để đến trang cá nhânサイドバー内Thuộc sidebar11 戻るボタンNút Quay lại 会話一覧へ戻るボタンNút quay lại danh sách hội thoạiボタン なしKhông có 前の会話一覧に戻るQuay lại danh sách các cuộc hội thoại trước đóグループ名の横Bên cạnh tên nhóm12 グループ名Tên nhóm チャット相手／グループ名を表示するHiển thị tên nhóm/người đang chatテキストなしKhông có現在の会話タイトルを表示する（例：team-dev）Hiển thị tiêu đề hội thoại hiện tại (ví dụ: team-dev)メインコンテンツNội dung chính13 ステータスTrạng thái 相手のステータスを表示するTrạng thái của đối phươngテキストなしKhông có なしKhông có グループ名の隣Cạnh tên nhóm14 コミュニケーションツールCông cụ giao tiếp 通話・ビデオ通話アイコンCác icon gọi điện và video callボタン なしKhông có通話を開始、または会話の詳細情報を確認するKhởi tạo cuộc gọi hoặc xem chi tiết thông tin hội thoạiチャット枠の右上Góc trên phải khung chat15 メッセージ表示エリアKhu vực hiển thị tin nhắnメッセージ表示エリアVùng hiển thị nội dung tin nhắn〇〇表示領域なしKhông có なしKhông có メインコンテンツNội dung chính16 メッセージ入力欄Khung nhập tin nhắn メッセージ入力欄Ô soạn thảo nội dung tin nhắn入力フィールドテキスト内容văn bản メッセージ入力欄Cho phép người dùng nhập văn bản (chữ, biểu cảm, kí tự đặc biệt) để trao đổi プレースホルダーありCó placeholder17 絵文字（Emoji）Biểu tượng cảm xúc (Emoji)絵文字挿入ボタンNút chèn biểu tượng cảm xúcボタン なしKhông có 絵文字リストを開くMở danh sách emoji để lựa chọn入力欄内（インプットボックス内）Trong khung input18 送信ボタンNút Gửi 送信ボタンNút gửi tin nhắn ボタン なしKhông có メッセージを送信するNhấn và gửi dữ liệu từ ô input (nội dung của ô chat) vào khung chat強調された青色Màu xanh nổi bật ( #009688)19 AI注釈／AIノートChú thích AI / Ghi chú AIAI翻訳サポートメモGhi chú hỗ trợ từ AI dịch thuậtテキストなしKhông có AI翻訳・提案機能の通知Thông báo về tính năng AI đang hỗ trợ dịch và gợi ý画面の最下部Dưới cùng màn hình20 設定メニューMenu Cài đặt 設定画面へ遷移するĐiều hướng đến phần thiết lậpラジオボタンなしKhông có システム設定を開くNhấn để mở trang cài đặt hệ thốngサイドバーの最下部Cuối sidebar21 ブロックボタンNút chặn người dùng trong hội thoạiコミュニケーションを望まないユーザーはブロックする。chặn người dùng không muốn giao tiếpボタン なしKhông cóクリックすると、メッセージの受信を停止するために、対象のユーザーまたはグループをブロックする確認画面が表示されます。Khi nhấn, hệ thống hiển thị xác nhận chặn người dùng/nhóm này để ngừng nhận tin nhắn.
+通話／ビデオ通話アイコンの横にある感嘆符（！）アイコンBiểu tượng dấu chấm than (!), cạnh công cụ call/video
+画面ID 5 画面タイトルタスクボード（一覧）画面ロールID 1,2 画面項目画面レイアウト・デザインNo 項目名称 項目説明 分類 選択肢・入力値処理内容 備考
+1 ロゴ(Logo KizunaVN) ロゴを表示するHiển thị logo hệ thống ở góc trái画像 なしKhông có クリックしてホームに戻るNhấn vào để quay về trang chủ常に表示Luôn hiển thị
+2 ユーザー名Tên người dùng 挨拶と共に名前を表示Hiển thị tên người dùng kèm lời chàoテキストなしKhông có なしKhông có ヘッダー左側に配置Nằm bên trái thanh header3 アバター枠＋アカウント名Khung ảnh đại diện + tên tài khoảnユーザーのアバターと名前Hiển thị ảnh đại diện và tên ở góc trên bên phảiドロップダウンなしKhông có アカウントメニューを開くNhấn vào để mở menu tài khoảnヘッダー右側に配置Nằm bên phải thanh header4 通知Thông báo 新着通知を表示Hiển thị bên cạnh khung ảnh đại diện画像 なしKhông có新着通知を確認する（新着メッセージ、アカウント通知）Nhấn để xem các thông báo mới (tin nhắn mới, thông báo tài khoản)未読数バッジを表示Hiển thị số lượng chưa đọc5 サイドバー枠Khung Sidebar ナビゲーションエリアKhu vực chứa các chức năng điều hướng chính〇〇表示領域なしKhông có なしKhông có 常に表示Luôn hiển thị5.1 ホームメニューMenu trang chủ ホームへのナビゲーションĐiều hướng đến trang chủ của hệ thốngラジオボタンなしKhông có ホーム画面へ移動するNhấn để đến trang chủサイドバー内Thuộc sidebar
+
+
+5.2 チャットメニューMenu trò chuyện チャットへのナビゲーションĐiều hướng đến trang trò chuyệnラジオボタンなしKhông có チャット画面へ移動するNhấn để đến trò chuyệnサイドバー内Thuộc sidebar5.3 タスク管理メニューMenu quản lý task タスク一覧へのナビゲーションĐiều hướng đến trang quản lý taskラジオボタンなしKhông có タスク管理画面へ移動するNhấn để sang trang quản lý taskサイドバー内Thuộc sidebar5.4 カルチャーWikiメニューMenu wiki văn hóa WikiへのナビゲーションĐiều hướng đến trang wiki văn hóaラジオボタンなしKhông có カルチャーウィキ画面へ移動するNhấn đế đến trang wiki văn hóaサイドバー内Thuộc sidebar5.5 フィードメニューMenu bảng tin ニュースフィードへのナビゲーションĐiều hướng sang bảng tinラジオボタンなしKhông có ニュースフィード画面へ移動するNhấn để đến bảng tinサイドバー内Thuộc sidebar5.6 プロフィールページメニューMenu Trang cá nhân プロフィールページへ遷移するĐiều hướng đến trang cá nhânラジオボタンなしKhông cóクリックするとプロフィールページへ遷移Nhấn để đến trang cá nhânサイドバーに属するThuộc sidebar5.7 設定メニューMenu Cài đặt アカウントまたはシステム設定画面へ遷移するĐiều hướng đến phần cài đặt tài khoản hoặc hệ thốngラジオボタンなしKhông có クリックすると設定画面へ移動するNhấn để đến cài đặtサイドバーに属するThuộc sidebar6 ToDoタスク一覧Danh sách Todo task 着手前のタスクを表示Hiển thị danh sách các task có thể nhận〇〇表示領域なしKhông cóタスクをクリックして情報を確認し、受け取るNhấn vào task để xem thông tin và nhận taskメインコンテンツNội dung chính6.1 タスクカードThẻ task 個別タスクのカードHiển thị thông tin cơ bản của một taskボタン なしKhông có なしKhông có サイドバー内Thuộc sidebar6.2 タスク名Tên task タスクのタイトルHiển thị tên công việcテキストなしKhông có なしKhông có タスクカード内Nằm trong thẻ task6.3 タスクの期限Hạn xử lý task タスクの期日Hiển thị thời gian như hôm nay, ngày mai...テキストなしKhông có なしKhông có タスクカード内Nằm trong thẻ task6.4 タスク受け取りボタンNút nhận task タスクを開始するNút nhấn để nhận taskボタン なしKhông có タスクを受注するNhấn để nhận task未着手列のみChỉ có ở cột Chưa thực hiện6.5 担当者Người phụ trách 実行ユーザーの名前Hiển thị người đang phụ trách taskテキストなしKhông có なしKhông có タスクカード内Nằm trong thẻ task7 進行中（Doing）タスク一覧Danh sách Doing task 実行中のタスクを表示Hiển thị các task đã nhận và đang làm〇〇表示領域なしKhông có なしKhông có メインコンテンツNội dung chính7.1 タスク完了ボタンNút Xong task タスクを完了にするNút nhấn để hoàn thành taskボタン なしKhông có タスク完了を確認するNhấn để xác nhận hoàn thành taskDoing task列のみChỉ có ở cột Doing task7.2 タスクの簡単な説明Mô tả ngắn task タスクの概要ログHiển thị ghi chú hoặc nội dung ngắn của taskテキストなしKhông có なしKhông có タスクカード内Nằm trong thẻ task8 完了（Done）タスク一覧Danh sách Done task 終了したタスクを表示Hiển thị danh sách các task đã hoàn thành〇〇表示領域なしKhông có なしKhông có メインコンテンツNội dung chính
+画面ID 6 画面タイトルタスク詳細・報告画面ロールID 1, 2 画面項目画面レイアウト・デザインNo 項目名称 項目説明 分類 選択肢・入力値処理内容 備考
+1 ロゴ(Logo KizunaVN) KizunaVNシステムロゴを表示するHiển thị logo hệ thống KizunaVN画像 なしKhông có ダッシュボード（ホーム）へ戻るNhấn để quay về trang chủ (Dashboard)常時表示Luôn hiển thị
+2 挨拶・通知Chào hỏi & Thông báoユーザーへの挨拶と通知を表示するHiển thị lời chào người dùng và thông báoテキストなしKhông có なしKhông có 最上部Phía trên cùng3 個人プロフィールHồ sơ cá nhân 現在のユーザーのアバターと名前を表示するẢnh đại diện và tên người dùng hiện tạiドロップダウンなしKhông có 個人アカウントメニューを開くNhấn để mở menu tài khoản cá nhân右上隅Góc trên phải4 サイドバーThanh bên (Sidebar)システムの主要ナビゲーションエリアKhu vực điều hướng chính của hệ thốngナビゲーションバー なしKhông có なしKhông có 常時表示Luôn hiển thị5 ホームメニューMenu trang chủ ダッシュボードへ遷移するĐiều hướng về DashboardラジオボタンなしKhông có ホーム画面へ移動するNhấn để đến trang chủサイドバー内Thuộc sidebar6 チャットメニューMenu trò chuyện チャット機能へ遷移するĐiều hướng đến tính năng chatラジオボタンなしKhông có チャット画面へ移動するNhấn để đến màn hình trò chuyệnサイドバー内Thuộc sidebar7 タスク管理メニューMenu quản lý task タスク管理画面へ遷移するĐiều hướng đến quản lý công việcラジオボタンなしKhông có タスク管理ページへ移動するNhấn để đến trang quản lý taskアクティブ状態Trạng thái Active8 カルチャーWikiメニューMenu wiki văn hóa ナレッジライブラリへ遷移するĐiều hướng đến thư viện kiến thứcラジオボタンなしKhông có カルチャーウィキページへ移動するNhấn để đến trang wiki văn hóaサイドバー内Thuộc sidebar9 フィードメニューMenu bảng tin 社内フィードへ遷移するĐiều hướng đến bảng tin công tyラジオボタンなしKhông có ニュースフィードページへ移動するNhấn để đến trang bảng tinサイドバー内Thuộc sidebar10 マイページメニューMenu Trang cá nhân 個人プロフィールへ遷移するĐiều hướng đến thông tin cá nhânラジオボタンなしKhông có プロフィールページへ移動するNhấn để đến trang cá nhânサイドバー内Thuộc sidebar11 画面タイトルTiêu đề màn hình 現在の画面のメインタイトルTiêu đề chính của màn hình hiện tạiテキストなしKhông có なしKhông có コンテンツ最上部Phía trên cùng nội dung12 タスクIDMã công việc タスクIDMã định danh của TaskテキストなしKhông có なしKhông có コンテンツ最上部Phía trên cùng nội dung13 タスクタイトルTiêu đề công việc タスクのタイトルTiêu đề cụ thể của công việcテキストなしKhông có なしKhông có タスクブロック内Nằm trong khối Task14 ステータスラベルNhãn trạng thái タスクのステータスラベルNhãn hiển thị trạng thái công việcテキストなしKhông có なしKhông có 緑色Màu xanh lá cây (#007D4F)15 タスク詳細Mô tả công việc 詳細な要件説明Nội dung mô tả chi tiết yêu cầuテキストなしKhông có なしKhông có タスクブロック内Nằm trong khối Task16 履歴表示エリアKhu vực hiển thị lịch sử実施済み報告の表示エリアVùng hiển thị các báo cáo đã thực hiện〇〇表示領域なしKhông có なしKhông có 左側のブロックKhối bên trái17 報告Báo cáo 進捗報告入力欄Ô nhập nội dung báo cáo tiến độ入力フィールドテキスト内容văn bản 実績報告内容を入力するCho phép nhập nội dung báo cáo kết quảプレースホルダーが必要Phải có placeholder18 連絡／通知Liên lạc / Thông báo 連絡内容入力欄Ô nhập nội dung liên lạc入力フィールドテキスト内容văn bản チーム共有事項を入力するCho phép nhập nội dung cần thông tin đến teamプレースホルダーが必要Phải có placeholder19 相談／意見交換Thảo luận / Xin ý kiến 相談／意見入力欄Ô nhập nội dung thảo luận/xin ý kiến入力フィールドテキスト内容văn bản 相談事項を入力するCho phép nhập các vấn đề cần tư vấnプレースホルダーが必要Phải có placeholder20 報連相の保存Lưu Ho-Ren-So 新規報告保存ボタンNút lưu nội dung báo cáo mớiボタン なしKhông có 内容を確認し、履歴に保存するKiểm tra và lưu các nội dung vào lịch sử強調された青色Màu xanh nổi bật21 設定メニューMenu Cài đặt 設定画面へ遷移するĐiều hướng đến phần thiết lậpラジオボタンなしKhông có システム設定画面を開くNhấn để mở trang cài đặt hệ thốngサイドバーの最下部Cuối sidebar
+画面ID 7 画面タイトル文化Wiki記事一覧画面ロールID 1,2 画面項目画面レイアウト・デザインNo 項目名称 項目説明 分類 選択肢・入力値処理内容 備考
+1 ロゴ(Logo KizunaVN) KizunaVNシステムロゴLogo hệ thống KizunaVN画像 なしKhông có ダッシュボードへ戻るNhấn để quay về trang chủ (Dashboard)画面左上に表示Góc trái trên
+2 挨拶Lời chào 田中さんへの挨拶メッセージCâu chào người dùng (Tanaka-san)テキストなしKhông có ログインユーザー名を表示するHiển thị tên theo tài khoản đăng nhập画面左上に表示Góc trái trên3 通知Thông báo 通知ベルアイコンBiểu tượng chuông thông báo画像 なしKhông có 新着通知一覧を表示するNhấn để xem danh sách thông báo mới件数バッジありCó badge số4 ユーザープロフィールUser Profile アバターとユーザー名Ảnh đại diện và tên người dùngドロップダウンなしKhông có アカウントメニューを開くNhấn để mở menu tài khoản画面右上に表示Góc phải trên5 ホームメニューMenu Home ホームへ遷移するĐiều hướng về Trang chủラジオボタンなしKhông có ダッシュボード画面へ移動するChuyển đến màn hình Dashboardサイドバー項目Thuộc Sidebar6 チャットメニューMenu Chat チャットへ遷移するĐiều hướng về Trò chuyệnラジオボタンなしKhông có チャット画面へ移動するChuyển đến màn hình Chatサイドバー項目Thuộc Sidebar7 タスクメニューMenu Task タスク管理へ遷移するĐiều hướng về Quản lý TaskラジオボタンなしKhông có タスクボード画面へ移動するChuyển đến màn hình Task Boardサイドバー項目Thuộc Sidebar8 WikiメニューMenu Wiki カルチャーWikiへ遷移するĐiều hướng về Văn hóa WikiラジオボタンなしKhông có Wiki一覧画面へ移動するChuyển đến màn hình danh sách Wiki選択中Đang chọn9 ニュースメニューMenu Tin tức フィードへ遷移するĐiều hướng về Bảng tinラジオボタンなしKhông có ニュースフィード画面へ移動するChuyển đến màn hình Bảng tin chungサイドバー項目Thuộc Sidebar10 プロフィールメニューMenu Profile マイページへ遷移するĐiều hướng về Trang cá nhânラジオボタンなしKhông cóユーザープロフィールページへ移動するChuyển đến trang cá nhân của userサイドバー項目Thuộc Sidebar
+
+
+11 ページタイトルTiêu đề trang 現在の画面名Tên màn hình hiện tạiテキストなしKhông có 「Wiki記事一覧」と表示するHiển thị: "Danh sách bài viết Wiki"上中央隅に表示Góc trên giữa12 Wikiカード1Thẻ Wiki 1 報連相ルールに関する記事Bài viết về quy tắc Horensoボタン なしKhông có報・連・相（ホウレンソウ）の詳細を表示するNhấn để xem chi tiết bài HorensoBusinessグループNhóm Business13 Wikiカード2Thẻ Wiki 2 会議ルールに関する記事Bài viết về quy tắc họpボタン なしKhông có 会議の詳細を表示するNhấn để xem chi tiết bài Hội họpMannerグループNhóm Manner14 Wikiカード3Thẻ Wiki 3 ビジネスメールの書き方Cách viết Email doanh nghiệpボタン なしKhông có メールの書き方の詳細を表示するNhấn để xem chi tiết cách viết EmailComm.グループNhóm Comm.15 Wikiカード4Thẻ Wiki 4 進捗報告テンプレートCác mẫu báo cáo tiến độボタン なしKhông có報告書テンプレートの表示・ダウンロードNhấn để xem/tải các mẫu báo cáoTemplateグループNhóm Template16 Wikiカード5Thẻ Wiki 5 日越QA用語集Thuật ngữ QA Nhật - Việtボタン なしKhông có 専門用語辞書を検索するNhấn để tra cứu từ điển chuyên ngànhGlossaryグループNhóm Glossary17 Wikiカード6Thẻ Wiki 6 オンボーディングガイドHướng dẫn Onboardingボタン なしKhông có 新入社員のロードマップを表示するNhấn để xem lộ trình nhân viên mớiOnboardingグループNhóm Onboarding18 Wikiカード7Thẻ Wiki 7 コンフリクト解決Giải quyết xung độtボタン なしKhông có対応／解決用の会話テンプレートを表示するNhấn để xem mẫu hội thoại giải quyếtCultureグループNhóm Culture19 Wikiカード8Thẻ Wiki 8 議事録テンプレートMẫu biên bản cuộc họpボタン なしKhông có二ヶ国語議事録テンプレートを表示するNhấn để xem mẫu biên bản song ngữMeetingグループNhóm Meeting20 設定Cài đặt システム設定ボタンNút thiết lập hệ thốngラジオボタンなしKhông có 一般設定画面へ移動するNhấn để vào trang cài đặt chungサイドバー下部に表示Dưới sidebar
+画面ID 8 画面タイトル記事・ルール詳細画面ロールID 1,2 画面項目画面レイアウト・デザインNo 項目名称 項目説明 分類 選択肢・入力値処理内容 備考1 ロゴ(Logo KizunaVN) KizunaVNシステムロゴLogo hệ thống KizunaVN画像 なしKhông có ダッシュボードへ戻るNhấn để quay về trang Dashboard左上Góc trái trên2 ホームメニューMenu Home ホームTrang chủ ボタン なしKhông có ダッシュボード画面へ移動するChuyển đến màn hình DashboardサイドバーSidebar3 チャットメニューMenu Chat チャットTrò chuyện ボタン なしKhông có チャット画面へ移動するChuyển đến màn hình ChatサイドバーSidebar4 タスクメニューMenu Task タスク管理Quản lý công việcボタン なしKhông có タスクボード画面へ移動するChuyển đến màn hình Task BoardサイドバーSidebar5 WikiメニューMenu Wiki カルチャーWikiVăn hóa Wiki ボタン なしKhông có Wiki一覧画面へ移動するChuyển đến màn hình danh sách Wikiアクティブ状態Đang Active6 ボードメニューMenu Board 社内フィードBảng tin công ty ボタン なしKhông có ニュースフィード画面へ移動するChuyển đến màn hình Bảng tinサイドバーSidebar7 プロフィールメニューMenu Profile マイページTrang cá nhân ボタン なしKhông cóユーザープロフィールページへ移動するChuyển đến trang cá nhân của userサイドバーSidebar8 設定Settings 設定Cài đặt ボタン なしKhông có システム設定へ移動するNhấn để vào thiết lập hệ thốngサイドバー下部Dưới sidebar9 挨拶Lời chào 田中さんへの挨拶メッセージCâu chào Tanaka-sanボタン なしKhông có なしKhông có ヘッダーHeader10 通知Thông báo ベルアイコンIcon chuông 画像 なしKhông có 新着通知一覧を開くNhấn để mở danh sách thông báo mớiバッジ数ありCó Badge số11 ユーザープロフィールUser Profile アカウントエリアKhu vực tài khoảnテキストなしKhông cóプロフィール確認またはログアウトメニューを開くNhấn mở menu xem Profile hoặc Logout右上Góc phải trên12 パンくずリストBreadcrumb サブナビゲーションバーThanh điều hướng phụテキストなしKhông có 一覧画面へ戻るNhấn để quay lại màn hình danh sách挨拶の下Dưới lời chào13 記事タイトルTiêu đề bài 報連相の記事タイトルTên bài viết HorensoテキストなしKhông có なしKhông có 大きくて太字のフォントFont lớn, đậm14 項目1：報告Mục 1: Báo cáo 報告に関する内容Nội dung về Báo cáoテキストなしKhông có なしKhông có "常に表示するLuôn hiển thị"15 項目2：連絡Mục 2: Liên lạc 連絡に関する内容Nội dung về Liên lạcテキストなしKhông có なしKhông có "常に表示するLuôn hiển thị"16 項目3：相談Mục 3: Thảo luận 相談に関する内容Nội dung về Thảo luậnテキストなしKhông có なしKhông có "常に表示するLuôn hiển thị"17 ベトナム語要約Tóm tắt VN 要約（翻訳版）Bản dịch tóm tắt テキストなしKhông có なしKhông có コンテンツの末尾Cuối nội dung
+画面ID 9 画面タイトル掲示板 ロールID 1,2 画面項目画面レイアウト・デザインNo 項目名称 項目説明 分類 選択肢・入力値処理内容 備考
+1 ロゴ(Logo KizunaVN) KizunaVNシステムロゴLogo hệ thống KizunaVN画像 なしKhông có クリックするとダッシュボード画面に戻るNhấn để quay về trang Dashboard画面左上に表示Góc trái trên
+2 ダッシュボードメニューMenu bảng tin ホームTrang chủ ボタン なしKhông có ダッシュボード画面へ移動するChuyển đến màn hình Dashboardサイドバー項目Sidebar3 チャットメニューMenu Chat チャットTrò chuyện ボタン なしKhông có チャット画面へ移動するChuyển đến màn hình Chatサイドバー項目Sidebar4 タスクボードメニューMenu quản lý task タスク管理Quản lý công việcボタン なしKhông có タスクボード画面へ移動するChuyển đến màn hình Task Boardサイドバー項目Sidebar5 WikiメニューMenu Wiki カルチャーWikiVăn hóa Wiki ボタン なしKhông có Wiki画面へ移動するChuyển đến màn hình Wikiサイドバー項目Sidebar6 ボードメニューMenu bảng コミュニティフィードBảng tin cộng đồngボタン なしKhông có 掲示板画面へ移動するChuyển đến màn hình Board / đang activeサイドバー項目、選択中Sidebar7 プロフィールメニューMenu thông tin cá nhân マイページTrang cá nhân ボタン なしKhông có ユーザーの個人ページへ移動するChuyển đến trang cá nhân userサイドバー項目Sidebar8 設定Cài đặt 設定Cài đặt ボタン なしKhông có 設定画面または設定メニューを開くMở màn hình / menu cài đặtサイドバー下部に表示Dưới sidebar9 ウェルカムメッセージTin nhắn chào mừng ユーザーへの挨拶Lời chào người dùngテキストなしKhông có なしKhông có ページ上部に表示Phần đầu trang10 通知アイコンBiểu tượng thông báo ベルアイコンBiểu tượng chuôngボタン なしKhông có 通知一覧を開くMở danh sách thông báo画面右上に表示Góc phải trên11 ユーザープロフィールエリアVùng thông tin người dùng アカウントエリアKhu vực tài khoảnボタン なしKhông cóアカウントメニューまたはログアウトメニューを開くMở menu tài khoản / logout画面右上に表示Góc phải trên12 ボード画面タイトルTiêu đề bảng 画面タイトルTiêu đề màn hìnhテキストなしKhông có 画面タイトルを表示するHiển thị tên màn hìnhメインコンテンツNội dung chính13 ボード一覧コンテナVùng chứa tin 投稿一覧枠Khung danh sách bài viếtリスト なしKhông có 通知一覧を表示するHiển thị danh sách thông báo中央エリアに表示Trung tâm
+14 投稿アイテム1Tin 1 4/30-5/1 休業のお知らせThông báo nghỉ lễ 30/4–1/5ボタン なしKhông có 記事の詳細を開くMở chi tiết bài viếtタイトルが50文字を超える場合は、50文字でカットすること。Nếu tiêu đề quá dài cắt chuỗi ở ký tự 5015 投稿アイテム2Tin 2 社内交流イベントのお知らせThông báo sự kiện giao lưu nội bộボタン なしKhông có 記事の詳細を開くMở chi tiết bài viết2行目Dòng 216 投稿アイテム3Tin 3 新しいWiki記事を公開しましたĐã đăng bài Wiki mớiボタン なしKhông có 記事の詳細を開くMở chi tiết bài viết3行目Dòng 317 投稿アイテム4Tin 4 製品品質レビュー会のお知らせThông báo họp đánh giá chất lượng sản phẩmボタン なしKhông có 記事の詳細を開くMở chi tiết bài viết4行目Dòng 418 投稿アイテム5Tin 5 来週の全体朝会アジェンダAgenda họp toàn công ty tuần tớiボタン なしKhông có 記事の詳細を開くMở chi tiết bài viết5行目Dòng 519 投稿アイテム6Tin 6 Taskテンプレートv2 配布Phát hành template task v2ボタン なしKhông có 記事の詳細を開くMở chi tiết bài viết6行目Dòng 620 投稿アイテム7Tin 7 VPNメンテナンス計画Kế hoạch bảo trì VPNボタン なしKhông có 記事の詳細を開くMở chi tiết bài viết7行目Dòng 7
+
+
+21 投稿アイテム8Tin 8 新人向け日本語ガイド更新Cập nhật hướng dẫn tiếng Nhật cho nhân viên mớiボタン なしKhông có 記事の詳細を開くMở chi tiết bài viết8行目Dòng 822 投稿者アバターAvatar của người đăng記事またはお知らせを投稿したユーザーのアバター画像を表示する。Hiển thị ảnh đại diện của người đăng bài viết hoặc thông báo.画像 なしKhông có投稿者を識別するための画像を表示する。Hiển thị hình ảnh để nhận diện người đăng.ポップアップ左上に配置Nằm ở góc trên bên trái của popup23 記事タイトルTiêu đề bài viết 投稿された記事のタイトルを表示する。Hiển thị tiêu đề của bài viết đã được đăng.テキストなしKhông có 記事の主題をユーザーに伝える。Truyền đạt chủ đề chính của bài viết cho người dùng.太字・大きめフォントChữ đậm, cỡ lớn24 投稿者・日時情報Thông tin người đăng và thời gian投稿チーム名または投稿者名、および投稿日時を表示する。Hiển thị tên team hoặc người đăng cùng thời gian đăng bài.テキストなしKhông có 記事のメタ情報を表示する。Hiển thị thông tin metadata của bài viết.タイトル下に表示Nằm bên dưới tiêu đề25 閉じるアイコンBiểu tượng đóng ポップアップ右上にある閉じるためのアイコン。Biểu tượng dùng để đóng popup ở góc trên bên phải.ボタン なしKhông có クリックするとポップアップを閉じる。Khi nhấn vào sẽ đóng popup.「×」アイコンIcon dấu x26 本文表示領域Vùng hiển thị nội dung chính記事の本文を表示するための領域。Khu vực dùng để hiển thị phần nội dung chính của bài viết.〇〇表示領域なしKhông có 記事の詳細内容を表示する。Hiển thị nội dung chi tiết của bài viết.中央の本文エリアKhu vực nội dung chính ở giữa popup27 本文テキストVăn bản nội dung bài viết記事本文の文章を表示する。Hiển thị đoạn văn bản nội dung chi tiết của bài viết.テキストなしKhông cóユーザーが記事内容を読むために表示する。Hiển thị để người dùng đọc nội dung bài viết.複数行表示可Có thể hiển thị nhiều dòng28 いいねボタンNút thích 記事に「いいね」を付けるためのボタン。Nút dùng để bày tỏ thích bài viết.ボタン なしKhông cóクリックすると記事への「いいね」を登録する。Khi nhấn sẽ ghi nhận lượt thích cho bài viết.左側のアクションボタンNút hành động bên trái29 お気に入りボタンNút yêu thích Nút yêu thích記事をお気に入りに追加するためのボタン。Nút dùng để thêm bài viết vào danh sách yêu thích.ボタン なしKhông cóクリックすると記事をお気に入りとして保存する。Khi nhấn sẽ lưu bài viết vào mục yêu thích.中央のアクションボタンNút hành động ở giữa30 参考になったボタンNút hữu ích 記事が参考になったことを示すためのボタン。Nút dùng để đánh dấu rằng bài viết hữu ích cho người đọc.ボタン なしKhông cóクリックすると有益な記事として評価を記録する。Khi nhấn sẽ ghi nhận đánh giá bài viết là hữu ích.右側のアクションボタンNút hành động bên phải31 アクションボタン領域Vùng nút hành động記事に対する各種リアクションボタンをまとめて表示する領域。Khu vực gom nhóm các nút phản hồi/tương tác với bài viết.〇〇表示領域なしKhông cóユーザーが記事に対してリアクション操作を行える。Cho phép người dùng thực hiện các thao tác phản hồi với bài viết.本文下に横並び配置Nằm ngang bên dưới phần nội dung32 ポップアップ全体Toàn bộ popup 記事詳細をモーダル形式で表示する全体コンテナ。Khung tổng thể hiển thị chi tiết bài viết dưới dạng popup/modal.〇〇表示領域なしKhông có既存画面の上に重ねて記事詳細を表示する。Hiển thị thông tin chi tiết bài viết nổi phía trên màn hình hiện tại.白背景・角丸モーダルModal nền trắng, bo góc
+画面ID 10 画面タイトルプロフィール ロールID 1,2 画面項目画面レイアウト・デザインNo 項目名称 項目説明 分類 選択肢・入力値処理内容 備考1 ロゴ(Logo KizunaVN)
+KizunaVNシステムロゴLogo hệ thống KizunaVN画像 なしKhông có クリックしてダッシュボードへ戻るNhấn để quay về Dashboard画面左上に表示Góc trái trên2 ダッシュボードメニューMenu bảng tin ホームTrang chủ ボタン なしKhông có ダッシュボード画面へ遷移するChuyển đến màn hình Dashboardサイドバー項目Sidebar3 チャットメニューMenu Chat チャットTrò chuyện ボタン なしKhông có チャット画面へ遷移するChuyển đến màn hình Chatサイドバー項目Sidebar4 タスクボードメニューMenu quản lý task タスク管理Quản lý công việcボタン なしKhông có タスクボード画面へ遷移するChuyển đến màn hình Task Boardサイドバー項目Sidebar5 WikiメニューMenu Wiki カルチャーWikiVăn hóa Wiki ボタン なしKhông có Wiki画面へ遷移するChuyển đến màn hình WikiサイドバーSidebar6 ボードメニューMenu Board コミュニティフィードBảng tin cộng đồngボタン なしKhông có ボード画面へ遷移するChuyển đến màn hình Boardサイドバー項目Sidebar7 プロフィールメニューMenu thông tin cá nhân マイページTrang cá nhân ボタン なしKhông có プロフィール画面へ遷移するChuyển đến màn hình ProfileサイドバーSidebar8 設定Cài đặt 設定Cài đặt ボタン なしKhông có 設定画面を開くMở màn hình cài đặtサイドバー下部Dưới sidebar9 ウェルカムメッセージTin nhắn chào mừng ユーザーへの挨拶Lời chào người dùngテキストなしKhông có なしKhông có ヘッダー部分Phần đầu trang10 通知アイコンBiểu tượng thông báo 通知アイコンBiểu tượng thông báoボタン なしKhông có 通知一覧を開くMở danh sách thông báo右上Góc phải trên11 ユーザープロフィールエリアVùng thông tin người dùng ログイン中アカウントエリアKhu vực tài khoản đang đăng nhậpボタン なしKhông có アカウントメニューを開くMở menu tài khoản右上Góc phải trên12 プロフィールカードThẻ thông tin cá nhân プロフィール情報枠Khung thông tin cá nhânリスト なしKhông có なしKhông có 左側のブロックKhối bên trái13 アバターAvatar ユーザーのアバターẢnh đại diện người dùng画像 なしKhông có なしKhông có プロフィールカード内Trong profile card14 従業員名Tên người làm ユーザー名Tên người dùng テキストなしKhông có なしKhông có プロフィールカード内Trong profile card15 役職／IDVai trò / ID 役割とIDVai trò và mã ID テキストなしKhông có なしKhông có プロフィールカード内Trong profile card16 フィードバックタイトルTiêu đề nhận feedback về thông tin cá nhân評価画面タイトルTiêu đề màn hình đánh giáテキストなしKhông có なしKhông có 右側のセクションKhối bên phải17 フィードバック一覧コンテナVùng chứa các feedbackフィードバック一覧枠Khung danh sách nhận xétリスト なしKhông có なしKhông có 右側のセクションKhối bên phải18 フィードバック項目1Feedback 1 フィードバック1Nhận xét số 1 テキストなしKhông có なしKhông có 1行目Dòng 119 フィードバック項目2Feedback 2 フィードバック2Nhận xét số 2 テキストなしKhông có なしKhông có 2行目Dòng 220 フィードバック項目3Feedback 3 フィードバック3Nhận xét số 3 テキストなしKhông có なしKhông có 3行目Dòng 321 フィードバック項目4Feedback 4 フィードバック4Nhận xét số 4 テキストなしKhông có なしKhông có 4行目Dòng 422 フィードバック項目5Feedback 5 フィードバック5Nhận xét số 5 テキストなしKhông có なしKhông có 5行目Dòng 523 フィードバック項目6Feedback 6 フィードバック6Nhận xét số 6 テキストなしKhông có なしKhông có 6行目Dòng 624 フィードバック項目7Feedback 7 フィードバック7Nhận xét số 7 テキストなしKhông có なしKhông có 7行目Dòng 725 フィードバック項目8Feedback 8 フィードバック8Nhận xét số 8 テキストなしKhông có なしKhông có 8行目Dòng 8
+画面ID 11 画面タイトルアドミン用設定画面ロールID 2 画面項目画面レイアウト・デザインNo 項目名称 項目説明 分類 選択肢・入力値処理内容 備考1 ロゴLogo システムロゴLogo hệ thống KizunaVN画像 なしKhông có クリックしてホーム画面に戻るNhấn vào để quay về trang chủ画面左上に固定表示Hiển thị cố định góc trái2 ユーザー挨拶Lời chào ユーザー名と挨拶を表示Hiển thị tên và lời chàoテキストなしKhông có なしKhông có ログイン後に表示Hi ển thị sau khi đăng nhập3 アバター枠＋アカウント名Khung ảnh đại diện + tên tài khoản画面右上にユーザーのアバター付きプロフィール画像を表示するHiển thị ảnh đại diện của người dùng kèm avatar, ở góc trên cùng bên phải của màn hìnhドロップダウンなしKhông có クリックしてアカウントメニューを開くNhấn vào để mở menu tài khoản画面右上に表示 Hiển thị ở góc trên bên phải4 プロフィールProfile アバターをクリックするとドロップダウンメニューを表示するHiển thị dạng dropdown khi nhấn vào khung ảnh đại diệnボタン なしKhông có クリックして個人プロフィールを開くNhấn để mở profile cá nhânアカウントメニュー内に表示 Hiển thị trong menu tài khoản5 ログアウトĐăng xuất アバターをクリックするとドロップダウンメニューを表示するHiển thị dạng dropdown khi nhấn vào khung ảnh đại diệnボタン なしKhông có クリックしてログアウトするNhấn khi muốn đăng xuấtアカウントメニュー内に表示 Hiển thị trong menu tài khoản6 ダッシュボードTrang chủ メイン画面へのリンクĐiều hướng về trang chủラジオボタンなしKhông có ダッシュボード画面へ遷移Nhấn để về trang Dashboardサイドバーに属するThuộc sidebar7 チャットTrò chuyện チャット画面へのリンクĐiều hướng đến trang Chatメニュー項目なしKhông có チャット画面へ遷移Nhấn để mở trang nhắn tinサイドバーに属するThuộc sidebar8 タスクボードQuản lý Task タスク管理画面へのリンクĐiều hướng đến quản lý Taskgメニュー項目なしKhông có タスク管理画面へ遷移Nhấn để mở trang công việcサイドバーに属するThuộc sidebar9 文化WikiWiki Văn hóa Wiki画面へのリンクĐiều hướng đến thư viện Wikiメニュー項目なしKhông có Wiki画面へ遷移Nhấn để mở trang kiến thứcサイドバーに属するThuộc sidebar10 掲示板Bảng tin 掲示板画面へのリンクĐiều hướng đến bảng tinメニュー項目なしKhông có 掲示板画面へ遷移Nhấn để mở trang tin tứcサイドバーに属するThuộc sidebar
+
+
+11 プロフィールTrang cá nhân サイドバーの個人設定Trang cá nhân trên sidebarメニュー項目なしKhông có プロフィール画面へ遷移Chuyển đến trang cá nhânサイドバーに属するThuộc sidebar12 設定Cài đặt 管理者設定へのリンクLối tắt trang Adminメニュー項目なしKhông có なしKhông có サイドバーに属するThuộc sidebar13 日越スタッフNhân viên Nhật - Việt スタッフ権限のラベルNhãn vai trò nhân viênラベル なしKhông có なしKhông có メインコンテンツエリアの左上ブロックNằm ở khối trên cùng bên trái vùng nội dung14 スタッフ権限説明Mô tả quyền nhân viênスタッフの操作範囲説明Chi tiết quyền nhân viênテキストなしKhông có スタッフの権限範囲を表示Liệt kê thao tác cho phépスタッフ権限ラベルの直下に配置Nằm ngay dưới nhãn vai trò nhân viên15 管理者Quản trị viên 管理者権限のラベルNhãn vai trò quản trịラベル なしKhông có なしKhông có メインコンテンツエリアの右上ブロックNằm ở khối trên cùng bên phải vùng nội dung16 管理者権限説明Mô tả quyền Admin 管理者の操作範囲説明Chi tiết quyền quản trịテキストなしKhông có 管理者の全権限範囲を表示Liệt kê quyền hạn tối cao管理者ラベルの直下に配置Nằm ngay dưới nhãn vai trò quản trị17 ユーザー管理Quản lý người dùng セクションタイトルTiêu đề quản trị nhân sựラベル なしKhông có なしKhông có ユーザー一覧テーブルの上部に配置Nằm trên cùng của bảng danh sách người dùng18 氏名Name テーブルの氏名カラムCột họ và tên ラベル なしKhông có なしKhông có ユーザー一覧テーブルの第1列目Cột thứ 1 trong bảng người dùng19 チームTeam テーブルのチームカラムCột đội nhóm ラベル なしKhông có なしKhông có ユーザー一覧テーブルの第2列目Cột thứ 2 trong bảng người dùng20 ロールRole テーブルの役割カラムCột vai trò ラベル なしKhông có なしKhông có ユーザー一覧テーブルの第3列目Cột thứ 3 trong bảng người dùng21 ステータスTrạng thái アカウントの状態Tình trạng tài khoảnラベル なしKhông có 状態を色分けして表示Phân biệt trạng thái qua màu sắcユーザー一覧テーブルの最終列Cột cuối cùng trong bảng người dùng22 Add UserボタンNút Thêm người dùng 新規ユーザー登録Thêm thành viên mớiボタン なしKhông có 新規登録フォームを表示Mở form nhập thông tin mới常に表示するLuôn hiển thị23 システム設定Cấu hình hệ thống セクションタイトルTiêu đề thiết lập vận hànhラベル なしKhông có なしKhông có 常に表示するLuôn hiển thị24 メール認証要求Xác minh Email 認証の強制設定Yêu cầu xác thực qua mailチェックボックス有効 / 無効Bật / Tắt メール認証機能の切り替えBật/tắt xác thực email常に表示するLuôn hiển thị25 掲示板承認Duyệt bảng tin 投稿前の承認設定Kiểm duyệt tin trước khi đăngチェックボックス有効 / 無効Bật / Tắt 承認フローの切り替えBật/tắt quy trình phê duyệt常に表示するLuôn hiển thị26 ログインログNhật ký đăng nhập 90日間のログ保存Lưu log trong 90 ngàyチェックボックス有効 / 無効Bật / Tắt ログ保存機能の切り替えBật/tắt lưu lịch sử truy cập常に表示するLuôn hiển thị27 リアルタイム警告Cảnh báo bảo mật 不正アクセスの警告Cảnh báo thời gian thựcチェックボックス有効 / 無効Bật / Tắt 警告通知機能の切り替えBật/tắt cảnh báo xâm nhập常に表示するLuôn hiển thị28 コンテンツ管理Quản lý nội dung セクションタイトルTiêu đề quản trị dataラベル なしKhông có なしKhông có 常に表示するLuôn hiển thị29 承認待ち件数Bài chờ duyệt 未承認の投稿数Số lượng bài đợi duyệtチェックボックスなしKhông có なしKhông có 常に表示するLuôn hiển thị30 予約済み件数Tin đã lên lịch 公開待ちの投稿数Số lượng bài đã hẹn giờチェックボックスなしKhông có なしKhông có 常に表示するLuôn hiển thị31 警告件数Cảnh báo nội dung モデレーション警告数Số lượng vi phạmチェックボックスなしKhông có なしKhông có 常に表示するLuôn hiển thị32 通知設定Cài đặt thông báo セクションタイトルTiêu đề tùy chỉnh thông báoラベル なしKhông có なしKhông có 常に表示するLuôn hiển thị33 メールダイジェストEmail hàng ngày 毎日のまとめ通知Gửi tóm tắt qua emailチェックボックス有効 / 無効Bật / Tắt 配信設定の切り替えĐăng ký nhận bản tin tổng hợp常に表示するLuôn hiển thị34 Wikiレビュー通知Nhắc review Wiki Wiki更新の確認通知Thông báo có Wiki mớiチェックボックス有効 / 無効Bật / Tắt 通知の切り替えBật/tắt nhắc nhở kiểm tra Wiki常に表示するLuôn hiển thị35 期限切れ通知Cảnh báo quá hạn タスク遅延の警告Nhắc nhở Task trễ hạnチェックボックス有効 / 無効Bật / Tắt 通知の切り替えBật/tắt thông báo quá hạn常に表示するLuôn hiển thị36 新規ログイン通知Đăng nhập mới 各メンバーの名前と役割（ロール）を表示するHiển thị tên và vai trò (Role) của từng thành viênチェックボックス有効 / 無効Bật / Tắt 通知の切り替えBật/tắt cảnh báo đăng nhập lạ常に表示するLuôn hiển thị画面ID 12 画面タイトルユーザー用設定画面ロールID 1 画面項目画面レイアウト・デザインNo 項目名称 項目説明 分類 選択肢・入力値処理内容 備考1 ロゴLogo システムロゴLogo hệ thống KizunaVN画像 なしKhông có クリックしてホーム画面に戻るNhấn vào để quay về trang chủ"常に表示するLuôn hiển thị"2 ユーザー挨拶Lời chào ユーザー名と挨拶を表示Hiển thị tên và lời chàoテキストなしKhông có なしKhông có ログイン後に表示Hi ển thị sau khi đăng nhập3 アバター枠＋アカウント名Khung ảnh đại diện + tên tài khoản画面右上にユーザーのアバター付きプロフィール画像を表示するHiển thị ảnh đại diện của người dùng kèm avatar, ở góc trên cùng bên phải của màn hìnhドロップダウンなしKhông có クリックしてアカウントメニューを開くNhấn vào để mở menu tài khoản画面右上に表示 Hiển thị ở góc trên bên phải4 サイドバーThanh điều hướng (Sidebar)機能ナビゲーションバーThanh điều hướng chức năngナビゲーションバーなしKhông có メインモジュール間の切り替えChuyển đổi giữa các phân hệ chính常に表示するLuôn hiển thị5 ホームメニューMenu trang chủ ダッシュボードへのショートカットLối tắt về DashboardラジオボタンなしKhông có ホーム画面へ戻るNhấn để quay lại màn hình chínhサイドバーに属するThuộc sidebar6 チャットメニューMenu trò chuyện チャットルームへのショートカットLối tắt đến phòng chatラジオボタンなしKhông có チャット画面へ移動するNhấn để đến màn hình trò chuyệnサイドバーに属するThuộc sidebar7 タスク管理メニューMenu quản lý task タスクボードへのショートカットLối tắt đến bảng công việcラジオボタンなしKhông có タスク管理画面へ移動するNhấn để sang trang quản lý taskサイドバーに属するThuộc sidebar8 Wiki文化メニューMenu wiki văn hóa WikiライブラリへのショートカットLối tắt đến thư viện WikiラジオボタンなしKhông có Wiki画面へ移動するNhấn để xem wiki văn hóaサイドバーに属するThuộc sidebar9 ニュースフィードメニューMenu bảng tin 社内掲示板へのショートカットLối tắt đến bảng tin nội bộラジオボタンなしKhông có ニュースフィード画面へ移動するNhấn để đến màn hình bảng tinサイドバーに属するThuộc sidebar10 個人プロフィールメニューMenu Trang cá nhân 個人情報の表示Xem thông tin cá nhânラジオボタンなしKhông có プロフィールページへ移動するNhấn để vào trang cá nhânサイドバーに属するThuộc sidebar11 画面タイトルTiêu đề màn hình 現在の画面タイトルTiêu đề của màn hình hiện tạiラジオボタンなしKhông có なしKhông có ユーザー表示User view12 システム設定Cài đặt hệ thống システム設定エリアKhu vực cấu hình hệ thốngラジオボタンなしKhông có なしKhông có 常に表示するLuôn hiển thị13 メール認証の必須化Bắt buộc xác thực emailメール認証規定Quy định xác minh emailチェックボックス有効 / 無効Bật / Tắt メール認証機能の切り替えBật/tắt xác thực email常に表示するLuôn hiển thị14 ログイン履歴の保持Lưu giữ lịch sử đăng nhập90日間のログイン履歴Nhật ký đăng nhập 90 ngàyチェックボックス有効 / 無効Bật / Tắt ログ保存機能の切り替えBật/tắt lưu lịch sử truy cập常に表示するLuôn hiển thị15 掲示板投稿の事前審査Kiểm duyệt bài viết bảng tin trước khi công khai掲示板投稿の審査規定Quy định duyệt bài bảng tinチェックボックス有効 / 無効Bật / Tắt 承認フローの切り替えBật/tắt quy trình phê duyệt常に表示するLuôn hiển thị16 リアルタイム警告Cảnh báo thời gian thựcリアルタイムセキュリティ警告Cảnh báo bảo mật thời gian thựcチェックボックス有効 / 無効Bật / Tắt 警告通知機能の切り替えBật/tắt cảnh báo xâm nhập常に表示するLuôn hiển thị17 通知設定Cài đặt thông báo 通知設定エリアKhu vực cài đặt thông báoセクションなしKhông có なしKhông có 常に表示するLuôn hiển thị18 メール要約Tóm tắt qua email デイリーメール要約の受信Nhận email tóm tắt hàng ngàyチェックボックス有効 / 無効Bật / Tắt 配信設定の切り替えĐăng ký nhận bản tin tổng hợp常に表示するLuôn hiển thị19 期限超過警告Cảnh báo quá hạn (Deadline)タスク期限超過警告Cảnh báo Task quá hạnチェックボックス有効 / 無効Bật / Tắt 通知の切り替えBật/tắt nhắc nhở kiểm tra Wiki常に表示するLuôn hiển thị20 Wikiレビュー通知Thông báo xem lại WikiWikiレビューの通知Nhắc nhở review Wikiチェックボックス有効 / 無効Bật / Tắt 通知の切り替えBật/tắt thông báo quá hạn常に表示するLuôn hiển thị21 新規ログイン通知Thông báo đăng nhập mới新規ログイン通知Thông báo đăng nhập mớiチェックボックス有効 / 無効Bật / Tắt 通知の切り替えBật/tắt cảnh báo đăng nhập lạ常に表示するLuôn hiển thị22 設定メニューMenu Cài đặt 現在のステータスTrạng thái hiện tạiラジオボタンなしKhông có なしKhông có サイドバーに属するThuộc sidebar
+
+
+No. シート名Tên sheet 確認項目Mục check 確認することNội dung check
+POTセルフレビューPOT – Tự đánh giá
+開発TレビューNhóm phát triển đánh giá
+教師FBPhản hồi của giáo viên
+1
+システム概要Tổng quan hệ thống
+課題Thách thức
+「解決に向けて取り組むべきこと・理想の状態」になっているかCó phải là “việc cần thực hiện để hướng tới giải pháp / trạng thái lý tưởng” không?
+2 解決策Giải pháp
+「課題を実行・実現するための具体的手段」になっているかCó phải là “phương thức cụ thể để tiến hành / hiện thực hóa thách thức” không?
+3 アプリ名称Tên ứng dụng
+ユーザーが問題解決をイメージできる名称になっているかTên ứng dụng có giúp người dùng hình dung được giải pháp giải quyết vấn đề không?
+4 ロール一覧Danh sách role
+役割が明確に説明されていて、ロール名は役割をイメージできる名称になっているかVai trò của các role có được giải thích rõ ràng, và có thể hình dung được vai trò của role từ tên mỗi role không?
+5 機能一覧Danh sách chức năngすべての解決策、すべてのロールを網羅しているかCó bao quát đầy đủ tất cả giải pháp và tất cả role không?
+6 画面一覧Danh sách màn hìnhすべての機能、すべてのロールを網羅しているかCó bao quát đầy đủ tất cả chức năng và tất cả role không?
+7 全般：言語Phần chung: Ngôn ngữ各項目に日本語とベトナム語の記載があるかCó ghi đầy đủ cả tiếng Nhật và tiếng Việt cho từng mục không?
+8 全般：体裁Phần chung: Layout
+空欄や罫線の破壊等がないか、必要な情報が見やすい状態になっているかCác ô đều được điền đầy đủ, đường kẻ bảng nguyên vẹn, và các thông tin quan trọng được hiển thị dễ nhìn không?
+9
+画面遷移図Sơ đồ chuyển màn hình
+ロールの網羅性Tính đầy đủ của role
+システム概要のロール一覧すべてが網羅され、表記も一致しているかTất cả các role trong hệ thống có được liệt kê đầy đủ và tên role có trùng khớp với danh sách role ở sheet tổng quan hệ thống không?
+10 画面の網羅性Tính đầy đủ của màn hình
+記載されている画面はシステム概要の画面一覧と完全に一致しているかCác màn hình được liệt kê có khớp hoàn toàn với danh sách màn hình ở sheet tổng quan hệ thống không?
+11 論理性Tính logic 画面遷移に矛盾がないかCó mâu thuẫn trong luồng chuyển màn hình không?
+12 言語Ngôn ngữ 日本語とベトナム語の記載があるかCó ghi đầy đủ cả tiếng Nhật và tiếng Việt không?
+13 体裁Layout
+空欄や罫線の破壊等がないか、必要な情報が見やすい状態になっているかCác ô đều được điền đầy đủ, đường kẻ bảng nguyên vẹn, và các thông tin quan trọng được hiển thị dễ nhìn không?
+
+14
+画面設計書Thiết kế màn hình
+画面の網羅性Tính đầy đủ của màn hình
+記載されている画面はシステム概要の画面一覧と完全に一致しているかCác màn hình được liệt kê có khớp hoàn toàn với danh sách màn hình ở sheet tổng quan hệ thống không?
+15 画面項目Các mục trên màn hình
+記載されている項目はその画面レイアウト・デザインをすべて説明できているかCó giải thích đầy đủ về bố cục và thiết kế của các mục được liệt kê trên màn hình không?
+16 項目名称Tên mục 項目をイメージできる名称になっているかTên mục có giúp hình dung được nội dung của mục đó không?
+17 項目説明Mô tả mục 項目が明確に説明されているかMục có được giải thích rõ ràng không?
+18 分類Phân loại 適切な分類になっているかCó được phân loại phù hợp không?
+19 選択肢・入力値Lựa chọn / giá trị nhập
+開発Tに必要な選択肢・入力値が網羅されているかCó đầy đủ các lựa chọn và giá trị nhập cần thiết cho nhóm phát triển không?
+20 処理内容Nội dung xử lý 処理のトリガーと、その結果行う処理が明確に説明されているか。Trigger và kết quả của xử lý có được giải thích rõ ràng không?
+21 言語Ngôn ngữ 日本語とベトナム語の記載があるかCó ghi đầy đủ cả tiếng Nhật và tiếng Việt không?
+22 体裁Layout
+空欄や罫線の破壊等がないか、必要な情報が見やすい状態になっているかCác ô đều được điền đầy đủ, đường kẻ bảng nguyên vẹn, và các thông tin quan trọng được hiển thị dễ nhìn không?
+23 全般Chung 表記ゆれSự thống nhất về cách ghi
+システム概要・画面遷移図・画面設計書と同じ意味の言葉を違う表記で記載していないかCó đảm bảo các từ cùng nghĩa với các từ trong các sheet tổng quan hệ thống, sơ đồ chuyển màn hình và thiết kế màn hình không bị ghi bằng từ khác không?
+
+プロダクトバックログチェックリストLinkP_ID 機能 ユーザーストーリー 優先度 受入条件 ステータス 備考1 DB設計Thiết kế cơ sở dữ liệu
+なしKhông có
+1 ・ERD図が作成完了していること・マイグレーションが正常に動くこと・CRUD操作のテストが通ること・ERD được hoàn thành・Migration hoạt động bình thường・Các bài test thao tác CRUD đã được pass
+完了 -
+2 開発環境整備Thiết lập môi trường phát triển
+なしKhông có
+2 ・アプリがローカルで正常に起動すること・Ứng dụng khởi chạy bình thường trên môi trường local
+完了 -
+3 ログインĐăng nhập
+私は日本人スタッフ、またはベトナム人スタッフ、または管理者として、正しい認証情報を使ってシステムに安全にログインしたい。なぜなら、会社のデータを保護し、自分の権限に応じた機能にアクセスしたいからです。Với tư cách là nhân viên Nhật - Việt hoặc Quản trị viên, tôi muốn đăng nhập vào hệ thống an toàn bằng thông tin xác thực. Bởi vì tôi muốn bảo vệ dữ liệu công ty và truy cập đúng quyền hạn của mình.
+3 ・正しいメールアドレスとパスワードを入力すると、ダッシュボード画面へ遷移すること。・誤った情報を入力した場合、エラーメッセージが表示されること。・システムがアカウント情報に基づき、ユーザーの役割（ロール1、2、または3）を正しく分類すること。・必要に応じて「パスワードを忘れた方」機能を利用できること。・Người dùng nhập đúng email và mật khẩu sẽ chuyển sang màn hình Dashboard.・Người dùng nhập sai thông tin sẽ nhận được thông báo lỗi.・Hệ thống tự động phân loại đúng vai trò (Role 1, 2 hoặc 3) dựa trên tài khoản.・Người dùng có thể sử dụng chức năng quên mật khẩu nếu cần.
+対応中 ・Core MVP。ログインセッションを管理するためのJWTまたはセッション設定が必要です。・Core MVP. Yêu cầu thiết lập JWT hoặc session để quản lý phiên đăng nhập.
+4 AI翻訳チャットChat AI dịch thuật
+私は日越スタッフとして、リアルタイム翻訳付きのチャットを使いたい。なぜなら、言葉の壁をなくし円滑にコミュニケーションしたいからです。Với tư cách là nhân viên Nhật-Việt, tôi muốn sử dụng chat có dịch thuật real-time, bởi vì tôi muốn xóa bỏ rào cản ngôn ngữ và giao tiếp suôn sẻ.
+4 ・ユーザーは、自分が参加権限を持つチャットルーム一覧のみを閲覧できること。・チャット詳細画面で、日本語またはベトナム語のテキストメッセージを送信できること。・ メッセージ送信後、原文と翻訳文が送信者名・送信時刻付きで表示されること。・ 翻訳処理中はローディング状態が表示され、完了後に翻訳結果が自動反映されること。・ 翻訳処理に失敗した場合、失敗状態が表示され、再試行できること。・ 権限のないチャットルームやメッセージ履歴にはアクセスできないこと。・ メッセージ一覧を再読み込みしても、原文と翻訳文の対応関係が保持されること。・ Người dùng chỉ có thể xem danh sách các phòng chat mà mình có quyền tham gia.・ Tại màn hình chi tiết chat, người dùng có thể gửi tin nhắn văn bản bằng tiếng Nhật hoặc tiếng Việt.・ Sau khi gửi, hệ thống phải hiển thị cả bản gốc và bản dịch kèm tên người gửi và thời gian gửi.・ Trong lúc đang dịch, màn hình phải có trạng thái loading và tự cập nhật khi có kết quả.・ Nếu quá trình dịch thất bại, hệ thống phải hiển thị trạng thái lỗi và cho phép người dùng thử lại.・ Người dùng không được truy cập các phòng chat hoặc lịch sử tin nhắn ngoài quyền của mình.・ Sau khi tải lại danh sách tin nhắn, mối liên kết giữa bản gốc và bản dịch vẫn phải được giữ đúng.
+対応中 ・ Core MVP。チャット権限、翻訳精度、履歴保存が依存項目。・ Đây là chức năng cốt lõi của MVP. Phụ thuộc vào phân quyền chat, độ chính xác dịch thuật và lưu lịch sử.
+
+5 ニュアンス変換サポートHỗ trợ chuyển đổi sắc thái
+私は日越スタッフとして、AIにビジネス文章のニュアンス変換をサポートしてほしい。なぜなら、文化的な誤解を避けて適切な表現で伝えたいからです。Với tư cách là nhân viên Nhật - Việt, tôi muốn giữ nguyên ý chính của nội dung nhưng được gợi ý cách diễn đạt lịch sự và phù hợp hơn trong môi trường business.
+5 ・ ユーザーは送信前の入力文に対して、ニュアンス変換を実行できること。・ システムは、元の意味を大きく変えずに、より丁寧またはビジネス向けの候補文を表示すること。・ ユーザーは、原文を送るか、AI が提案した変換文を送るかを自分で選択できること。・ 変換結果は「AI提案」であることが UI 上で明示されること。・ AI 提案の生成に失敗した場合、原文は保持され、通常送信が可能であること。・ 連続して複数回変換を実行しても、入力中の原文が失われないこと。・ Người dùng có thể thực hiện chức năng chuyển đổi sắc thái đối với nội dung đã nhập trước khi gửi.・ Hệ thống phải đưa ra câu gợi ý mang sắc thái lịch sự hoặc business hơn nhưng không làm thay đổi đáng kể ý nghĩa ban đầu.・ Người dùng có thể tự chọn gửi bản gốc hoặc gửi bản AI gợi ý.・ Trên UI phải thể hiện rõ đây là gợi ý của AI, không phải nội dung bắt buộc.・ Nếu việc tạo gợi ý thất bại, nội dung gốc vẫn phải được giữ nguyên và có thể gửi bình thường.・ Khi người dùng thực hiện chuyển đổi nhiều lần liên tiếp, nội dung đang nhập không được bị mất.
+完了 ・ 要件精査が必要。AI責任範囲、mode定義、confidence表示を要確認。・ Cần refine thêm. Phải làm rõ phạm vi trách nhiệm của AI, định nghĩa mode và cách hiển thị độ tin cậy.
+6 タスク作成・割り当てTạo và giao task
+私はスタッフまたは管理者として、標準テンプレートを使ってタスクを作成し、必要な相手に正しく割り当てたい。Với tư cách là nhân viên hoặc quản trị viên, tôi muốn tạo task theo mẫu chuẩn và giao đúng cho người phụ trách để tránh thiếu sót thông tin.
+6 ・ ユーザーは、定義済みテンプレートを選択して新規タスクを作成できること。・ タスク作成画面で、タイトル、説明、担当者、期限、優先度などの必須項目を入力できること。・ 必須項目が不足している場合、保存前に入力エラーが表示されること。・ 担当者に有効なユーザーのみを割り当て可能であること。・ タスク保存後、タスク一覧および担当者のビューに新規タスクが表示されること。・ 作成者、作成日時、初期ステータスが記録されること。・ 権限のないユーザーは、タスク作成画面へアクセスできないこと。。・ Người dùng có thể chọn template đã được định nghĩa để tạo task mới.・ Tại màn hình tạo task, người dùng có thể nhập các trường bắt buộc như tiêu đề, mô tả, người phụ trách, hạn hoàn thành và độ ưu tiên.・ Nếu thiếu trường bắt buộc, hệ thống phải hiển thị lỗi nhập liệu trước khi lưu.・ Chỉ những người dùng hợp lệ trong hệ thống mới có thể được chọn làm người phụ trách.・ Sau khi lưu task, task mới phải xuất hiện trong danh sách task và trong màn hình của người được giao.・ Hệ thống phải lưu người tạo, thời gian tạo và trạng thái khởi tạo của task.・ Người dùng không có quyền thì không được truy cập màn hình tạo task.
+完了 ・ Core MVP。テンプレート定義、通知、権限制御が依存。・ Đây là chức năng cốt lõi của MVP. Phụ thuộc vào template, thông báo và phân quyền.
+
+7 報連相・進捗報告Báo cáo Ho-Ren-So
+私はスタッフとして、決められた報連相フォーマットで進捗や問題点を報告し、情報漏れを防ぎたい。Với tư cách là nhân viên, tôi muốn báo cáo tiến độ và vấn đề theo đúng mẫu Ho-Ren-So để tránh thiếu thông tin trong quá trình làm việc.
+7 ・ ユーザーはタスク詳細画面から進捗報告フォームを開けること。・ フォームには、定義された報告フォーマットの項目が表示されること。・ 必須項目が未入力の場合、送信できず、対象項目にエラー表示されること。・ 送信済みの報告は、タスク単位で時系列に履歴表示されること。・ 報告内容には送信者、送信日時、対象タスクが紐づいて保存されること。・ 権限のある閲覧者のみが報告内容を閲覧できること。・ 報告送信後、必要に応じて関係者へ通知されること。・ Người dùng có thể mở form báo cáo tiến độ từ màn hình chi tiết task.・ Form phải hiển thị các trường đúng theo mẫu báo cáo đã được định nghĩa.・ Nếu chưa nhập đủ các trường bắt buộc, hệ thống không cho gửi và phải hiển thị lỗi tại đúng trường liên quan.・ Sau khi gửi, báo cáo phải được lưu và hiển thị theo lịch sử thời gian của từng task.・ Mỗi báo cáo phải gắn với người gửi, thời gian gửi và task liên quan.・ Chỉ những người có quyền mới được xem nội dung báo cáo.・ Sau khi báo cáo được gửi thành công, hệ thống có thể gửi thông báo đến những người liên quan theo rule đã định.
+完了 ・ Core MVP。報告テンプレートと通知ルールの定義が必要。・ Đây là chức năng cốt lõi của MVP. Cần định nghĩa rõ template báo cáo và rule gửi thông báo.
+8 マナー・文化Wiki閲覧Xem Wiki văn hóa
+私は日越スタッフとして、文化やビジネスマナーに関する記事をいつでも確認し、相互理解を深めたい。Với tư cách là nhân viên Nhật - Việt, tôi muốn có thể xem các bài viết về văn hóa và business manner bất cứ lúc nào để tăng sự thấu hiểu lẫn nhau.
+8 ・ ユーザーは記事一覧画面で、公開済みの Wiki 記事のみを閲覧できること。・ 記事一覧はカテゴリまたはタグで分類表示できること。・ ユーザーは一覧から記事詳細画面へ遷移できること。・ 記事詳細画面には、タイトル、本文、更新日時、必要に応じて添付情報が表示されること。・ 公開記事が存在しない場合、空状態メッセージが表示されること。・ 権限のない下書き記事や非公開記事は一般ユーザーに見えないこと。・ Người dùng chỉ có thể xem các bài viết Wiki đã được publish.・ Danh sách bài viết có thể được hiển thị theo category hoặc tag.・ Từ danh sách, người dùng có thể mở màn hình chi tiết bài viết.・ Màn hình chi tiết phải hiển thị tiêu đề, nội dung, thời gian cập nhật và thông tin đính kèm nếu có.・ Nếu chưa có bài viết được publish, hệ thống phải hiển thị trạng thái rỗng rõ ràng.・ Các bài draft hoặc bài chưa được publish không được hiển thị cho người dùng thông thường.
+対応中 ・ 検索、ブックマーク、言語表示方式は追加要件整理が必要。・ Search, bookmark và cách hiển thị ngôn ngữ cần được refine thêm nếu muốn đưa vào phạm vi.
+
+9 翻訳ボタンとチャット履歴検索機能の統合Tích hợp nút dịch và tìm kiếm lịch sử chat
+私は日越スタッフとして、過去のチャット履歴を検索したい。なぜなら、過去のやり取りを即座に確認したいからです。Với tư cách là nhân viên Nhật-Việt, tôi muốn tìm kiếm lịch sử chat, bởi vì tôi muốn xác nhận lại ngay lập tức các trao đổi cũ.
+9 ・ ユーザーはチャット履歴に対してキーワード検索を実行できること。・ 検索結果は、自分がアクセス権を持つ会話履歴のみを対象とすること。・ 検索結果には該当メッセージの一部、送信者、送信時刻が表示されること。・ ユーザーは検索結果を押下すると、該当メッセージ位置へ遷移できること。・ 各メッセージに対して翻訳ボタンを押すことで、そのメッセージ単位で翻訳表示できること。・ 検索結果が 0 件の場合、空状態メッセージが表示されること。・ 検索・翻訳のいずれかに失敗した場合、エラー表示と再試行手段があること。・ Người dùng có thể tìm kiếm lịch sử chat theo từ khóa.・ Kết quả tìm kiếm chỉ được lấy trong phạm vi các cuộc hội thoại mà người dùng có quyền truy cập.・ Kết quả tìm kiếm phải hiển thị một phần nội dung tin nhắn, người gửi và thời gian gửi.・ Khi nhấn vào một kết quả, hệ thống phải điều hướng đến đúng vị trí của tin nhắn trong đoạn chat.・ Mỗi tin nhắn phải có nút dịch để người dùng dịch riêng tin nhắn đó khi cần.・ Nếu không có kết quả phù hợp, hệ thống phải hiển thị trạng thái rỗng rõ ràng.・ Nếu tìm kiếm hoặc dịch thất bại, hệ thống phải hiển thị lỗi và cho phép thử lại.
+完了 ・ Core MVP。検索インデックス、履歴保存、権限制御に依存。・ Đây là chức năng quan trọng của MVP. Phụ thuộc vào index tìm kiếm, lưu lịch sử và phân quyền.
+10 掲示板（コミュニティ）Bảng tin cộng đồng (Giao lưu nội bộ)
+私は日越スタッフとして、業務に直接関係のない情報も読んだり交換したりできる場所がほしい。なぜなら、業務時間外でも同僚と簡単に繋がり、交流したいからです。Với tư cách là nhân viên Nhật - Việt, tôi muốn có một không gian để đọc và trao đổi các thông tin không liên quan trực tiếp đến dự án. Bởi vì tôi muốn dễ dàng kết nối, giao lưu với đồng nghiệp ngoài giờ làm việc.
+10 ・ユーザーは共通の掲示板で投稿やお知らせのリストを閲覧できること。・ユーザーは新しい投稿を作成できること（タイトル、内容、添付画像など）。・ユーザーは他の人の投稿にリアクション（絵文字）やコメントを残せること。・最新の投稿がリストの最上部に表示されること（時間順）。・Người dùng có thể xem danh sách các bài đăng/thông báo trên bảng tin chung.・Người dùng có thể tạo một bài đăng mới (có tiêu đề, nội dung, ảnh đính kèm nếu có).・Người dùng có thể thả biểu tượng cảm xúc (reaction) hoặc bình luận vào các bài đăng của người khác.・Bài đăng mới nhất phải được đẩy lên đầu tiên trong danh sách (sắp xếp theo thời gian).
+完了 ・チームの結束力を高める機能。・Tính năng thúc đẩy sự gắn kết team.
+
+11 コンテンツ管理Quản lý nội dung
+私は管理者として、Wikiや掲示板の内容を作成・承認・公開管理し、あわせてユーザーの投稿権限を設定したい。なぜなら、正確で安全な情報だけをユーザーに提供したいからです。私はユーザーとして、システム設定や通知設定を管理・制御したい。なぜなら、自分のニーズに合わせて利用環境をカスタマイズし、必要な情報だけを適切なタイミングで受け取りたいからです。Với tư cách là quản trị viên, tôi muốn tạo, phê duyệt và quản lý việc xuất bản nội dung trên Wiki và Bảng tin, đồng thời thiết lập quyền đăng bài cho người dùng, để chỉ cung cấp thông tin chính xác và an toàn cho người dùng.Với tư cách là người dùng, tôi muốn có thể kiểm soát cấu hình hệ thống và cài đặt thông báo, để tôi có thể tùy chỉnh môi trường sử dụng theo nhu cầu cá nhân và chỉ nhận những thông tin thực sự cần thiết.
+11 ・ Admin ユーザーのみが、コンテンツ管理画面へアクセスできること。・ 管理画面で、記事の新規作成、編集、下書き保存、公開、非公開、承認、却下ができること。・ 承認または却下を行う際、対象記事の状態が正しく更新されること。・ 却下時に理由入力が必要な場合、その入力を必須にできること。・ 一般ユーザーには、公開済みコンテンツのみが表示されること。・ すべての管理操作に対して、実行者、実行日時、操作内容が audit log に保存されること。・ ユーザーが、自身のシステム設定および通知設定画面へアクセスし、設定を変更できること。・ 通知設定に基づいて、システムから受け取る情報の種類や通知のオン・オフを制御できること。・ 変更した設定内容が、即座にユーザーのアカウントに保存され、利用環境に反映されること。・ Chỉ người dùng Admin mới có thể truy cập vào màn hình quản lý nội dung.・ Tại màn hình quản trị, Admin có thể tạo mới, chỉnh sửa, lưu nháp, publish, unpublish, approve và reject bài viết.・ Khi approve hoặc reject, trạng thái của bài viết phải được cập nhật chính xác.・ Nếu hệ thống yêu cầu nhập lý do khi reject, trường nhập lý do phải là bắt buộc.・ Người dùng thông thường chỉ được nhìn thấy các nội dung đã publish.・ Mọi thao tác quản lý phải được ghi vào audit log với người thực hiện, thời gian thực hiện và loại thao tác.・ Người dùng có thể truy cập vào màn hình cài đặt cá nhân để thay đổi cấu hình hệ thống và cài đặt thông báo.・ Người dùng có thể kiểm soát loại thông tin nhận được (bật/tắt thông báo) dựa trên các cài đặt thông báo đã thiết lập.・ Các cài đặt sau khi thay đổi phải được lưu trữ ngay lập tức và áp dụng chính xác vào môi trường sử dụng của người dùng.
+対応中 ・ 承認フローの段階数、公開条件、version管理は要件追加が必要。・ Cần làm rõ thêm số bước duyệt, điều kiện publish và cơ chế quản lý version.
+12 登録Đăng ký
+私は日本人スタッフ、またはベトナム人スタッフとして、個人情報と認証情報を登録してアカウントを作成したい。なぜなら、システムを利用し、自分の業務に必要な機能へアクセスしたいからです。Với tư cách là nhân viên Nhật hoặc nhân viên Việt Nam, tôi muốn đăng ký tài khoản bằng thông tin cá nhân và thông tin xác thực. Bởi vì tôi muốn sử dụng hệ thống và truy cập các chức năng cần thiết cho công việc của mình.
+12 ・ユーザーが必須情報（氏名、メールアドレス、パスワードなど）を正しく入力すると、アカウント登録が完了すること。・既に登録済みのメールアドレスを入力した場合、エラーメッセージが表示されること。・パスワードがセキュリティ条件を満たしていない場合、登録できないこと。・登録完了後、ログイン画面またはダッシュボード画面へ遷移すること。・Người dùng nhập đúng các thông tin bắt buộc (họ tên, email, mật khẩu...) thì đăng ký tài khoản thành công.・Nếu email đã tồn tại, hệ thống sẽ hiển thị thông báo lỗi.・Nếu mật khẩu không đáp ứng điều kiện bảo mật thì không thể đăng ký.・Sau khi đăng ký thành công, người dùng sẽ được chuyển sang màn hình đăng nhập hoặc Dashboard.
+対応中 ・Core MVP。ユーザー情報管理およびパスワード暗号化処理が必要です。・Core MVP. Cần quản lý thông tin người dùng và xử lý mã hóa mật khẩu.
+
+No. 確認項目
+Mục check
+確認すること
+Nội dung check
+POT
+セルフレビュー
+POT – Tự đánh giá
+開発Tレビュー
+Nhóm phát 
+triển đánh giá
+教師FB
+Phản hồi của 
+giáo viên
+1 機能
+Chức năng
+システム概要の機能一覧の内容と完全に一致しているか
+Có khớp hoàn toàn với danh sách chức năng ở sheet tổng quan hệ 
+thống không?
+2 ユーザーストーリー
+User story
+「誰が」「何をしたいか」「なぜなら」の要素が含まれているか
+Có đầy đủ các yếu tố: “Ai”, “Muốn làm gì”, “Tại sao” không?
+3 優先度
+Mức độ ưu tiên
+同じ優先度のアイテムが2つ以上ないか
+Có đảm bảo không có từ 2 mục trở lên được đặt cùng mức độ ưu 
+tiên không?
+4 受入条件
+Điều kiện tiếp nhận
+誰が見ても客観的に条件を達成できたかどうかを判断できるものになっているか
+Có viết điều kiện đảm bảo bất cứ ai nhìn vào cũng có thể đánh giá 
+khách quan được rằng ''đã/chưa thỏa mãn'' không?
+5 表記ゆれ
+Sự thống nhất về cách ghi
+システム概要・画面遷移図・画面設計書と同じ意味の言葉を違う表記で記載していないか
+Có đảm bảo các từ cùng nghĩa với các từ trong các sheet tổng quan 
+hệ thống, sơ đồ chuyển màn hình và thiết kế màn hình không bị ghi 
+bằng từ khác không?
+6 言語
+Ngôn ngữ
+日本語とベトナム語の記載があるか
+Có ghi đầy đủ cả tiếng Nhật và tiếng Việt không?
+7 体裁
+Layout
+空欄や罫線の破壊等がないか、必要な情報が見やすい状態になっているか
+Các ô đều được điền đầy đủ, đường kẻ bảng nguyên vẹn, và các 
+thông tin quan trọng được hiển thị dễ nhìn không?
+
+No 項目Mục 観点Quan điểm S01 S02 S03 S04
+1 日付Ngày 正しい期間が入力されているかCó nhập khoảng thời gian chính xác không?
+2 スプリントゴールMục tiêu Sprint POTと合意した内容がそのまま記載されているかCó ghi đúng nội dung đã thống nhất với POT không?
+3 スプリントバックログSprint Backlog
+「対応PID」「ID」「タスク」「PIC」「見積もり」「スプリントゴールとの関係」に空欄がないかCó đảm bảo không để trống các cột “PID liên quan”, “ID”, “Task”, “PIC”, “Ước lượng”, “Liên quan đến mục tiêu Sprint”  không?
+4 タスクTask スプリントバックログの各タスクが、スプリントゴール達成の構成要素として妥当かCác task trong Sprint Backlog có phù hợp để đạt được mục tiêu sprint hay không?
+5 タスク数Số lượng Task 1スプリントで完了できそうなタスク数かSố lượng task có khả năng hoàn thành trong 1 sprint không?
+6 PIC 特定のメンバーに負担が集中していないかCó đảm bảo không có thành viên nào bị quá tải với quá nhiều task không?
+7 前回からのタスクTask từ sprint trước前スプリントまでの進捗報告で発生したタスクが記載されているかCác task phát sinh từ báo cáo tiến độ sprint trước có được ghi đầy đủ không?
+8 スペルチェックKiểm tra chính tả表記の誤りはないかCó đảm bảo không có lỗi chính tả hoặc ghi sai không?
+9 表記ゆれSự thống nhất về cách ghi
+仕様書・プロダクトバックログと同じ意味の言葉を違う表記で記載していないかCó đảm bảo các từ cùng nghĩa với các từ trong tài liệu yêu cầu và product backlog không bị ghi bằng từ khác không?
+10 言語Ngôn ngữ 日本語とベトナム語の記載があるかCó ghi đầy đủ cả tiếng Nhật và tiếng Việt không?
+11 体裁Layout
+空欄や罫線の破壊等がないか、必要な情報が見やすい状態になっているかCác ô đều được điền đầy đủ, đường kẻ bảng nguyên vẹn, và các thông tin quan trọng được hiển thị dễ nhìn không?
+
+◆ スプリントプランニング
+スプリント期間 (yyyy/mm/dd)2026/05/06～ 2026/05/11
+スプリントゴール このスプリントで
+日越スタッフが安全にログインし、コミュニティ掲示板を通じて情報を更新するとともに、タスク管理から報告までのサイクルをシームレスに遂行できる。また、タスクをリスト形式で閲覧し、担当するタスクのステータスを更新することができる。Nhân viên có thể đăng nhập an toàn, cập nhật thông tin qua Bảng tin cộng đồng và thực hiện chu trình quản lý công việc, báo cáo một cách xuyên suốt, có thể xem danh sách các task dưới dạng danh sách, cập nhật trạng thái các task mà nhân viên đảm nhiệm.
+スプリントバックログチェックリストLink
+対応P_ID ID タスク PIC 見積もり(h) スプリントゴールとの関係 [1] 進捗 実績(h) 問題点 原因 対策 問題点への対応状況
+1 1 [DB] ER図作成とスキーマ定義[DB] Tạo sơ đồ ER và định nghĩa SchemaMinh 6 あり 100% 4 - - - 
+1 2 [DB] マイグレーション実行・初期化[DB] Thực thi migration và khởi tạo dữ liệuMinh 2 あり 100% 2 - - - 
+2 3 [Dev] 共通開発環境の構築[Dev] Thiết lập môi trường phát triển chungHùng 6 あり 100% 4 - - - 
+2 4 [Doc] 開発環境設定のマニュアル作成[Doc] Soạn tài liệu hướng dẫn thiết lập môi trường phát triển Hùng 2 あり 100% 2 - - - 
+1 5 [BE] Entity/Model実装[BE] Triển khai Entity/ModelMinh 2 あり 100% 2 - - - 
+3 6 [FE] ログイン画面のレイアウト実装[FE] Code layout màn hình Đăng nhậpHưng 4 あり 100% 3 - - - 
+3 7 [BE] ログイン・認証APIの実装[BE] Code API Xác thực và Đăng nhậpHưng 4 あり 100% 4 - - - 
+3 8 [QA] ログイン機能のテストケース作成及び検証[QA] Viết test case và Kiểm thử chức năng Đăng nhập Hùng 2 あり 100% 2 - - - 
+6 9 [FE] 従業員用タスク一覧画面のレイアウト実装[FE] Code layout màn hình danh sách task cho nhân viên Nam Anh3 あり 100% 3 - - - 
+6 10 [BE] タスク一覧取得APIの実装[BE] Code API lấy danh sách taskNam Anh3 あり 100% 2.5 - - - 
+6 11 [QA] タスク一覧表示機能のテストケース作成及び検証[QA] Viết test case và Kiểm thử cho chức năng xem danh sách task Long 2 あり 100% 2 - - - 
+7 12 [FE] 従業員用タスク詳細・報告画面のレイアウト実装[FE] Code layout màn hình chi tiết task và báo cáo cho nhân viên Thịnh 4 あり 100% 3 - - - 
+7 13 [BE] タスク詳細・報告取得APIの実装[BE] Code API lấy chi tiết task và báo cáoThịnh 4 あり 100% 4 - - - 
+7 14 [QA] タスク詳細・報告機能のテストケース作成及び検証[QA] Viết test case và Kiểm thử cho chức năng xem chi tiết task và báo cáoLong 2 あり 100% 2 - - - 
+10 15 [FE] コミュニティ掲示板画面のレイアウト実装[FE] Code layout màn hình bảng tin cộng đồngKhanh 3 あり 100% 3
+レイアウト実装中、掲示板の投稿タイトルが長すぎる場合、何文字目で文字列を省略（「...」を表示）すべきかPOTに問い合わせる必要があった。Trong quá trình code layout, phải liên hệ POT hỏi xem nếu tiêu đề của bài viết trên bảng tin quá dài thì cắt chuỗi (hiển thị dấu ...) ở ký tự thứ bao nhiêu.
+- POTから提供された画面設計書に、テキストがオーバーフローした際の例外パターンの記載がなかった。- 開発Tに、タスク受領時に例外パターンについて質問する習慣が定着していなかった。- Bản thiết kế màn hình của POT đưa cho team Dev không thể hiện trạng thái ngoại lệ khi text bị tràn.- Team Dev chưa có thói quen đặt câu hỏi về các trường hợp ngoại lệ lúc nhận task.
+- POTが確認し、「50文字以降は切り捨てて『...』を付与する」という仕様を画面設計書に追記した。- 次のスプリント以降、開発Tのルールとして「画面UI関連のタスクについては、スプリントプランニングの時点で、エッジケース（空データ、データ超過、ネットワークエラーなど）に関する質問を必ず2つ以上POTに提示すること」を義務付ける。- POT đã xác nhận và note lại quy tắc "Cắt chuỗi sau 50 ký tự và thêm ..." vào tài liệu màn hình.- Từ Sprint sau, Team Dev quy định: Bắt buộc phải đưa ra ít nhất 2 câu hỏi về Edge case (dữ liệu rỗng, dữ liệu quá dài, lỗi mạng) cho POT đối với các task giao diện ngay tại buổi Sprint Planning.
+解決済み
+
+10 16 [BE] 掲示板の一覧・詳細取得APIの実装[BE] Code API lấy danh sách và thông tin chi tiết của các tin Khanh 3 あり 100% 3 - - - 
+10 17 [QA] 掲示板表示機能のテストケース作成及び検証[QA] Viết test case và Kiểm thử cho chức năng xem Bảng tin Long 2 あり 100% 2 - - - 
+POTは上記のスプリントゴールとスプリントバックログを承認します。
+◆ スプリントレビュー　※スプリントプランニングでは記入しないこと
+スプリントレビュー準備チェックリストLink
+説明担当グエン・マイン・フンNguyễn Mạnh Hùngデモ担当 チン・ヴァン・ミンTrịnh Văn Minh書記 グエン・ドゥック・ティンNguyễn Đức Thịnh
+スプリントゴール達成度100%
+スプリントゴール達成度の理由
+チームはスプリントバックログ1の全タスクを期限内に完了しました。ログイン機能、従業員用タスク一覧・詳細機能、およびコミュニティ掲示板を含む各機能について、フロントエンド（FE）とバックエンド（BE）の実装を終え、QA検証まで完了しています。全タスクの実績時間は当初の見積もりの範囲内に収まりました。開発中にPOTへ確認・相談すべき問題点もいくつか発生しましたが、原因を特定し、迅速に対策を講じてタスクを完了できたため、スプリントバックログ全体の進捗に影響を及ぼすことはありませんでした。Nhóm đã hoàn thành các task trong Sprint Backlog 1 đúng thời hạn. Các tính năng bao gồm hệ thống Đăng nhập, Danh sách các task, chi tiết task của nhân viên và Bảng tin cộng đồng đã được triển khai đầy đủ cả về Front-end, Back-end và hoàn tất kiểm thử (QA). Tổng thời gian thực tế thực hiện các task đều nằm trong phạm vi ước lượng ban đầu, tuy có một số vấn đề cần trao đổi lại với POT, nhưng cũng đã tìm ra được nguyên nhân, xác định được giải pháp kịp thời để có thể hoàn thành task, không ảnh hưởng đến tiến độ Sprint Backlog.
+スプリントレビューNo FB箇所CheckList No FB内容 FBへの対応方針 対応する内容／対応しない理由対応方針承認
+1 - - POTの要求に対応した、使いやすい画面設計になっている。Giao diện màn hình tốt, đáp ứng được yêu cầu của POT対応しないこれ以上の措置は講じません。チームは次のスプリントに向けてペースを維持し続けます。không thực hiện thêm gì. nhóm sẽ tiếp tục duy trì tiến độ cho sprint tiếp theo
+スプリントゴール達成度100%
+スプリントゴール達成度の理由スプリント1の目標を基本的に達成できた。Đã đạt được cơ bản các mục tiêu của sprint 1
+次のスプリントで改善することスプリント計画段階では、スケジュールへの影響を避けるため、UI/UX関連のエッジケース（最大文字数、改行までの文字数など）の確認に特に注意を払う必要があります。さらに、スプリントレビューチェックリストは、次回のスプリントレビュー時にリアルタイムで更新する必要があります。Trong giai đoạn sprint planing, cần phải chú ý hơn trong việc xác nhận các egde case liên quan đến giao diện UI/UX (số kí tự tối đa được điền, số kí tự đến khi thực hiện ngắt dòng,...) để tránh ảnh hưởng đến tiến độ, đồng thời trong buổi sprint review tiếp theo cần chú ý cập nhật sprint review check list theo thời gian thực
+POTは上記の内容を妥当であると判断し、このスプリントレビューを承認します。
+
+POT 開発TDevT
+No.時間Time することTodo 判断材料Căn cứ đánh giá No.時間Time することTodo 判断材料Căn cứ đánh giá
+1 3 チーム内で役割分担を決めるQuyết định vai trò trong team
+全員がスプリントプランニングで話し合う内容をリアルタイムで把握できる体制になっているかĐã hình thành cơ chế để toàn bộ thành viên nắm được nội dung thảo luận trong Sprint Planning theo thời gian thực hay chưa?1 3 チーム内で役割分担を決めるQuyết định vai trò trong team
+全員がスプリントプランニングで話し合う内容をリアルタイムで把握できる体制になっているかĐã hình thành cơ chế để toàn bộ thành viên nắm được nội dung thảo luận trong Sprint Planning theo thời gian thực hay chưa?
+2 7 POT内で話し合って仮のスプリントゴールを決めるPOT thảo luận trong team để quyết định mục tiêu sprint tạm thời
+・プロダクトバックログの各アイテムの優先度・プロダクトバックログの各アイテムの規模（大／中／小）・事前学習「スプリントゴール」の内容・Độ ưu tiên của từng mục trong Product Backlog・Độ lớn của từng mục trong Product Backlog (lớn / vừa / nhỏ)・Nội dung của phần chuẩn bị bài “mục tiêu sprint”
+←別作業→←Task riêng→2 7 各メンバーが1週間に何時間開発できるかを確認するXác nhận xem các member có thể phát triển được bao nhiêu tiếng trên 1 tuần 
+・各メンバーのこれから1週間のスケジュール・各メンバーの技術力＆生成AI使用スキル（Codingが全くできない人はTesterなどで貢献してもらう）・Schedule trong 1 tuần tới của từng thành viên・Năng lực kỹ thuật và kỹ năng sử dụng AI của từng thành viên (những người hoàn toàn không code được có thể đóng góp với vai trò như Tester...)
+3 5
+開発Tと話し合ってスプリントゴールを決め、開発Tの記入が終わったら教師に口頭で報告する※スプリントゴールの記入は開発Tにしてもらうこと※No.3～5の時間は目安で、多少前後しても問題ないThảo luận với DevT để quyết định mục tiêu sprint, sau khi DevT hoàn tất việc ghi chép, báo cáo miệng lại cho giáo viên※Phần ghi mục tiêu sprint phải do DevT thực hiện※Thời gian ở các mục số 3–5 chỉ mang tính tham khảo, có thể xê dịch một chút cũng không sao
+・開発Tの各メンバーが開発に使える時間・2で決めた仮のスプリントゴール（多すぎる／少なすぎるなら調整する）・Thời gian mà từng thành viên DevT có thể dành cho việc phát triển・Mục tiêu sprint tạm thời đã quyết định ở 2 (nếu quá nhiều hoặc quá ít thì cần điều chỉnh)
+←話し合い→←Thảo luận→3 5
+POTと話し合ってスプリントゴールを決め、スプリントバックログにベトナム語で記入する※No.3～5の時間は目安で、多少前後しても問題ないThảo luận với POT để quyết định mục tiêu sprint, sau đó ghi mục tiêu sprint vào Sprint Backlog bằng tiếng Việt.※ Thời gian ở các mục số 3–5 chỉ mang tính tham khảo, có thể xê dịch một chút cũng không sao
+・開発Tの各メンバーが開発に使える時間・開発Tの技術力＆生成AI使用スキル・事前学習「スプリントゴール」の内容（POTの要求が悪いスプリントゴールの例と同じ場合、POTに修正案をFBすること）・Thời gian mà từng thành viên trong DevT có thể dành cho việc phát triển・Năng lực kỹ thuật của DevT & kỹ năng sử dụng AI・Nội dung của phần chuẩn bị bài “mục tiêu sprint”（Nếu yêu cầu mục tiêu sprint của POT giống với ví dụ về mục tiêu sprint NG, thì cần FB lại cho POT kèm đề xuất chỉnh sửa)
+4 25
+開発TとQ&Aをしながら、タスクの妥当性を確認するスプリントバックログ作成チェックリストも参照すること※待機時間が発生する場合、仕様書・プロダクトバックログの見直し等、開発Tが良いプロダクトを開発できるようにすることに時間を使うことQ&A với DevT để xác nhận tính hợp lý của các task.Tham khảo checklist tạo Sprint Backlog※Nếu phát sinh thời gian chờ, hãy sử dụng thời gian đó để rà soát lại tài liệu đặc tả, Product Backlog… để giúp DevT tạo ra sản phẩm tốt hơn
+・そのタスクはスプリントゴール達成と関係があるか・P_IDの受入条件を達成するために、タスクに不足がないか　※そのスプリントでP_IDの受入条件を達成する必要がない場合はタスクに不足があってもいい・そのタスクの開発に必要な情報が、仕様書・プロダクトバックログに不足なく記載されているか（されていない場合、修正が必要）・Task đó có liên quan trực tiếp đến việc đạt được mục tiêu sprint hay không?・Để đạt được điều kiện chấp nhận của P_ID, các task đã đầy đủ chưa?　※Trong trường hợp sprint không yêu cầu hoàn thành điều kiện chấp nhận của P_ID, thì việc task chưa đầy đủ vẫn có thể chấp nhận được・Các thông tin cần thiết cho việc phát triển task đã được ghi đầy đủ trong tài liệu đặc tả và Product Backlog hay chưa?（Nếu chưa thì cần chỉnh sửa）
+←話し合い→←Thảo luận→4 25
+スプリントゴールから必要なタスクを抽出し、スプリントバックログにベトナム語で記入する記入の際は、スプリントバックログ作成チェックリストも参照すること※この時点で日本語は不要Dựa vào mục tiêu sprint để lọc ra các task cần thiết và ghi vào Sprint Backlog bằng tiếng Việt.Khi ghi, cần tham khảo checklist tạo Sprint Backlog※ Ở bước này chưa cần dùng tiếng Nhật
+・そのタスクはスプリントゴール達成と関係があるか・P_IDの受入条件を達成するために、タスクに不足がないか　※そのスプリントでP_IDの受入条件を達成する必要がない場合はタスクに不足があってもいい・そのタスクの開発に必要な情報が、仕様書・プロダクトバックログに不足なく記載されているか（されていない場合、その場でPOTにFBすること）・Task đó có liên quan trực tiếp đến việc đạt được mục tiêu sprint hay không?・Để đạt được điều kiện chấp nhận của P_ID, các task đã đầy đủ chưa?　※Trong trường hợp sprint không yêu cầu hoàn thành điều kiện chấp nhận của P_ID, thì việc task chưa đầy đủ vẫn có thể chấp nhận được・Các thông tin cần thiết cho việc phát triển task đó đã được ghi đầy đủ trong tài liệu đặc tả và Product Backlog hay chưa?（Nếu chưa đầy đủ, cần FB ngay cho POT tại chỗ）
+5 5
+スプリントバックログ全体を確認し、問題なければ承認し、Slackの報告用スレッドでスプリントプランニング終了報告をするKiểm tra toàn bộ Sprint Backlog, nếu không có vấn đề thì phê duyệt và báo cáo kết thúc Sprint Planning trên thread báo cáo của Slack
+・スプリントバックログに記載されたタスクで、スプリントゴールが達成できそうか・開発Tが1週間で開発完了できる内容か／もっと開発できそうか・Có khả năng đạt được mục tiêu sprint với các task đã ghi trong Sprint Backlog hay không？・Khối lượng công việc đó DevT có thể phát triển xong trong 1 tuần hay không, hay là vẫn còn có thể phát triển thêm
+←話し合い→←Thảo luận→5 5
+スプリントバックログのベトナム語版をFIXする※この時点で日本語は不要Chốt bản tiếng Việt của Sprint Backlog※ Ở thời điểm này chưa cần dùng tiếng Nhật
+・スプリントバックログに記載されたタスクで、スプリントゴールが達成できそうか・1週間で開発完了できる内容か／もっと開発できそうか（できるならタスクの追加をPOTに提案する）・Có khả năng đạt được mục tiêu sprint với các task đã ghi trong Sprint Backlog hay không？・Nội dung đó có thể hoàn thành phát triển trong vòng 1 tuần hay không? hay còn có thể phát triển thêm（Nếu còn làm được thêm, đề xuất với POT việc bổ sung task）
+6 -
+（早く終わった場合）仕様書・プロダクトバックログに情報不足等がないか確認し、必要な場合修正し、開発Tに共有する(Nếu xong sớm) Kiểm tra xem tài liệu đặc tả và Product Backlog có thiếu thông tin hay không, nếu cần thì chỉnh sửa và chia sẻ lại cho DevT
+開発Tが開発をするために十分な情報が記載されているかCó ghi đầy đủ thông tin để DevT phát triển hay không ←別作業→←Task riêng→6 -
+（早く終わった場合）スプリントバックログに日本語訳を追加し、スプリントバックログ作成チェックリストに✅を入れる修正が発生する場合、POTに共有する(Nếu xong sớm) Bổ sung bản dịch tiếng Nhật vào Sprint Backlog và tích ✅ vào checklist tạo Sprint BacklogNếu có phát sinh chỉnh sửa, cần thông báo cho POT
+スプリントバックログ作成チェックリストの各項目を達成しているかKiểm tra đã đạt được từng mục trong check list tạo Sprint Backlog hay chưa?
+POTの注意事項Các điểm chú ý cho POT 開発Tの注意事項Các điểm chú ý cho DevT
+
+・画面設計書などに不備があると開発が予定より遅れる可能性があるため、スプリントプランニングの時間で開発Tの不明点をすべて解消すること　・POTの仕様書やプロダクトバックログに不備がある場合、開発進捗の遅れの責任は開発TではなくPOTにある　・仕様書やプロダクトバックログの修正が開発に間に合わない場合は、該当タスクの削除とスプリントゴールの修正も検討すること・開発Tが「難しいので無理」などと発言した場合、Product Ownerとしてそれを許容してはいけない。生成AIなどで解決させること・開発Tからの質問が少ない場合、POTから開発Tに質問をして、お互いの認識が合っているかどうかを確認すること　・質問の例：　　・「このタスク、何ができたら完了ですか？」　　・「この機能、私たちは来週デモを見ることができますか？」　　・「この機能の実現のために、どの画面を開発しますか？」・Nếu các tài liệu như thiết kế màn hình có thiếu sót, việc phát triển có thể bị chậm so với kế hoạch, vì vậy trong thời gian Sprint Planning cần làm rõ toàn bộ các điểm chưa rõ của DevT.　・Nếu tài liệu đặc tả hoặc Product Backlog do POT chuẩn bị có thiếu sót, thì trách nhiệm về việc chậm tiến độ phát triển thuộc về POT, không phải DevT.　・Nếu việc chỉnh sửa tài liệu đặc tả hoặc Product Backlog không theo kịp tiến độ phát triển, cần cân nhắc việc bỏ task tương ứng và điều chỉnh lại mục tiêu sprint.・Nếu DevT nói những điều như “khó nên không làm được”, Product Owner không được phép chấp nhận điều đó, mà cần yêu cầu DevT giải quyết bằng các biện pháp như sử dụng AI.・Nếu DevT đặt ít câu hỏi, POT cần chủ động đặt câu hỏi cho DevT để xác nhận xem hai bên có cùng cách hiểu hay không.　・Ví dụ câu hỏi:　　・“Task này thì làm được đến mức nào mới được xem là hoàn thành?”　　・ “Chức năng này thì tuần sau chúng tôi có thể xem demo không?”　　・“Để thực hiện chức năng này thì sẽ phát triển những màn hình nào?”
+・画面設計書など、開発に必要な情報がすべて入っているかを確認し、不明点があったらスプリントプランニングの時間で確認すること　※開発開始後に不明点が見つかると、POTへの問い合わせに時間がかかることになり、進捗が遅延する可能性がある・開発Tは「難しいので無理」などと発言してはいけない。生成AIなどで解決すること・すべてのタスクについて、POTにタスクの完了条件を確認し、合意すること・タスクを修正する場合、スプリントゴールに修正の必要がないかをPOTと一緒に確認すること・スプリントゴールやスプリントバックログは後で修正する可能性があるため、すべてベトナム語で作成し、内容がFIXしてから日本語を追加すること・Kiểm tra xem tất cả thông tin cần thiết cho việc phát triển (như tài liệu thiết kế màn hình,...) đã được cung cấp đầy đủ hay chưa, nếu có điểm nào chưa rõ thì phải xác nhận ngay trong thời gian Sprint Planning　※ Nếu sau khi bắt đầu phát triển mới phát hiện ra điểm chưa rõ, sẽ mất thời gian trao đổi với POT và có nguy cơ làm chậm tiến độ・DevT không được nói những câu như “khó nên không làm được”, cần sử dụng các công cụ ví dụ như AI để giải quyết vấn đề・Đối với tất cả các task, cần xác nhận và đạt được sự thống nhất với POT về điều kiện hoàn thành task・Khi chỉnh sửa task, cần cùng POT kiểm tra xem có cần chỉnh sửa mục tiêu sprint hay không・Vì mục tiêu sprint và Sprint Backlog có khả năng sẽ được chỉnh sửa về sau, nên ban đầu phải tạo toàn bộ bằng tiếng Việt; sau khi đã chốt nội dung thì mới bổ sung bản tiếng Nhật
+
+◆ スプリントプランニング
+スプリント期間 (yyyy/mm/dd)2026/05/13～ 2026/05/18
+スプリントゴール このスプリントで
+本スプリント終了後、一般ユーザーはダッシュボード（ホーム）からチャット、タスク、文化Wikiを確認できるようになる。また、チャット機能を通じて情報交換を行い、日本語とベトナム語間でメッセージの翻訳・ニュアンス変換ができる。さらに、文化Wikiや就業規則の確認、および個人設定のカスタマイズが可能となる。Sau sprint này, nhân viên có thể thông qua trang chủ để kiểm tra tin nhắn, các task và wiki văn hoá. Nhân viên có thể trao đổi thông tin thông qua chức năng chat, có thể dịch tin nhắn giữa 2 ngôn ngữ Nhật và Việt và có thể kiểm tra wiki văn hóa, quy tắc làm việc. Nhân viên có thể tuy chỉnh cài đặt cho phù hợp với nhu cầu.
+スプリントバックログチェックリストLink
+対応P_ID ID タスク PIC 見積もり(h) スプリントゴールとの関係 [2] 進捗 実績(h) 問題点 原因 対策 問題点への対応状況
+9 1 [FE] チャット画面のレイアウト実装[FE] Code layout cho màn hình tin nhắn, trao đổi công việc Hùng 3 あり 100% 3 - - - 
+9 2 [BE] チャット一覧取得APIの実装[BE] Code API lấy danh sách tin nhắn, gửi các tin nhắn Hùng 4 あり 100% 3 - - - 
+9 3 [QA] チャット機能のテストケース作成およびテスト実施[QA] Viết test case và kiểm thử cho chức năng trò chuyện Hưng 2 あり 100% 2 - - - 
+8 4 [FE] 文化Wiki記事一覧画面のレイアウト実装[FE] Code layout giao diện cho màn hình wiki văn hoá Minh 2 あり 100% 2 - - - 
+8 5 [BE] 文化Wiki記事一覧取得APIの実装[BE] Code API lấy các bài viết wiki văn hoáMinh 3 あり 100% 2
+開発の過程で、BEは文化Wiki記事一覧のソート順、フィルター条件、およびページネーションのルールについてPOTと確認・明確化する必要が生じ、タスクの予定進捗に影響を及ぼした。Trong quá trình phát triển, BE phải làm rõ với POT về quy tắc sắp xếp, bộ lọc và phân trang của danh sách bài viết Wiki văn hoá, gây ảnh hưởng đến tiến độ dự kiến của task.
+- POTがユーザーストーリーや仕様書を作成する際、主要な業務ロジック（コア機能）に集中しすぎたため、補助的な表示仕様の定義が漏れてしまった。- DevTがスプリントプランニングの際、初期段階で一覧の表示ロジックについてPOTへの確認や十分な逆質問（ファクトチェック）を行わなかったため、APIの実装段階になって初めてロジックの考慮漏れが発覚した。- Khi viết User Story và Spec, POT quá tập trung vào nghiệp vụ cốt lõi mà bỏ sót việc định nghĩa các thông số kỹ thuật hiển thị phụ trợ.- DevT Trong buổi họp Sprint Planning, không đặt câu hỏi phản biện cho POT về các logic hiển thị danh sách ngay từ đầu, dẫn đến việc đến khi code API mới phát hiện thiếu logic.
+- POTは、文化Wiki記事一覧のソート順、フィルター条件、およびページネーションに関する仕様（ルール）を即座に更新した。- DevTは今後のスプリントにおいて、表示関連のタスクに対象となるソート順、フィルター条件、ページネーションの仕様が揃っているかを事前に必ず確認する。もし不足している場合は、開発フェーズまで引き延ばさず、スプリントプランニング（会議）の段階で即座にPOTへ明確化を要求する。- POT đã cập nhật ngay các thông số, quy tắc về sắp xếp, bộ lọc và phân trang cho các bài viết wiki văn hoá.- DevT ở các Sprint sau, DevT bắt buộc phải check xem các task hiển thị đã đủ các thông số hay quy tắc về bộ lọc, phân trang nếu có; nếu thiếu, yêu cầu POT làm rõ ngay tại buổi họp chứ không đợi đến lúc dev.
+解決済み
+8 6 [QA] 文化Wiki画面のテストケース作成およびテスト実施[QA] Viết test case và kiểm thử cho màn hình wiki văn hoá Long 1 あり 100% 1 - - - 
+11 7 [FE] 個人設定画面のレイアウト実装[FE] Code layout giao diện cho màn hình cài đặt dành cho người dùng Nam Anh3 あり 100% 3 - - - 
+11 8 [BE] 個人設定APIの実装[BE] Code API cho cài đặt dành cho người dùngNam Anh4 あり 100% 3 - - - 
+11 9 [QA] 個人設定機能のテストケース作成およびテスト実施[QA] Viết test case và kiểm thử cho các tính năng cài đặt dành cho người dùngHùng 2 あり 100% 2 - - - 
+4,5 10 [FE] チャット詳細・変換画面のレイアウト実装[FE] Code layout giao diện dịch thuật trong cuộc trò chuyện Khanh 3 あり 100% 3 - - - 
+4,5 11 [BE] チャット翻訳・ニュアンス変換APIの実装[BE] Code API tính năng dịch thuật trong cuộc trò chuyện Khanh 4 あり 100% 3 - - - 
+
+4,5 12 [QA] チャット画面におけるリアルタイム翻訳・ニュアンス変換フローのテストケース作成およびテスト実施[QA] Viết test case và kiểm thử luồng dịch thuật trực tiếp trong cửa sổ trò chuyệnHưng 4 あり 100% 4 - - - 
+4, 6 13 [FE] ダッシュボード（ホーム）におけるタスク、文化Wiki、チャットの簡易表示レイアウト実装[FE] Code layout hiển thị các task, wiki, tin nhắn rút gọn trên trang chủ Thịnh 3 あり 100% 3 - - - 
+4, 6 14 [BE] ダッシュボード（ホーム）連携用タスク・文化Wiki・チャット簡易一覧取得APIの実装[BE] Code API lấy danh sách task, wiki, tin nhắn rút gọn kết nối với layout trang chủThịnh 4 あり 100% 3 - - - 
+4, 6 15 [QA] ダッシュボード（ホーム）画面のテストケース作成およびテスト実施[QA] Viết test case và kiểm thử cho màn hình trang chủ Long 2 あり 100% 2 - - - 
+- 16 [QA] S02の全機能の回帰テスト（リテスト）実施[QA] Kiểm thử lại toàn bộ các chức năng trong S02Long 4 あり 100% 4 - - - 
+POTは上記のスプリントゴールとスプリントバックログを承認します。
+◆ スプリントレビュー　※スプリントプランニングでは記入しないこと
+スプリントレビュー準備チェックリストLink
+説明担当グエン・マイン・フンNguyễn Mạnh Hùngデモ担当 チン・ヴァン・ミンTrịnh Văn Minh書記 グエン・ドゥック・ティンNguyễn Đức Thịnh
+スプリントゴール達成度100%
+スプリントゴール達成度の理由
+開発初期に文化Wikiのソート・ページネーション仕様など、一部の要件に曖昧な点があり、開発が一時停滞する課題が発生した。しかし、DevTからPOTへ早期にQ&Aを行い、両チームが密に連携してロジックやルールを確定させた。この迅速な対応により、DevTは遅延を取り戻して全タスクを予定通りに完了し、スプリントゴールを達成することができた。これにより、一般ユーザーはダッシュボード（ホーム）からチャット、タスク、文化Wikiを迅速に確認できるようになり、チャット機能を通じた情報交換や、日本語とベトナム語間でのメッセージの翻訳・ニュアンス変換が可能となった。また、個人設定画面を通じて、ニーズに合わせたカスタマイズも可能となった。さらに、QAはS02の全機能に対してテストケース作成およびテスト実施を完了し、仕様書の要求事項をすべて満たしていることを確認した。以上のことから、本スプリントの進捗率は100%に達したと判断する。Trong giai đoạn đầu, đã phát sinh vấn đề một số yêu cầu bị mơ hồ (logic sắp xếp/phân trang của Wiki văn hóa), khiến tiến độ dev bị tạm dừng một thời gian. Tuy nhiên, DevT đã chủ động làm rõ sớm với POT, hai bên phối hợp chặt chẽ để thống nhất logic, quy tắc, nên DevT vẫn có thể kịp tiến độ và hoàn thành toàn bộ task, giúp hoàn thành sprint goal. Nhân viên đã có thể thông qua trang chủ kiểm tra nhanh được các tin nhắn, task, wiki văn hoá, trao đổi thông tin qua chức năng trò chuyện, hỗ trợ dịch thuật 2 ngôn ngữ Việt, Nhật. Thông qua cài đặt có thể tuỳ chỉnh cho phù hợp với nhu cầu. QA đã thực hiện tạo test case và kiểm thử cho toàn bộ các chức năng ở sprint 2 và đã đáp ứng đầy đủ yêu cầu viết trong tài lieu. Vì vậy, team cho rang sprint này tiến độ đạt 100%
+スプリントレビューNo FB箇所CheckList No FB内容 FBへの対応方針 対応する内容／対応しない理由対応方針承認
+1 ID.8 5 文化Wiki閲覧画面に、前のページへ戻るボタンがありません。ở màn hình xem nội dung wiki văn hóa thiếu nút quay về trang trước 対応するSẽ bổ xung nút back lại màn danh sách wiki văn hoá ở màn chi tiết bài viết wiki văn hoá để cải thiện trải nghiệm
+2 ID.9 5 チャット画面の入力欄が画面下部に固定されていません。ở màn hình chat, khung nhập liệu không được cố định ở dưới chân màn hình 対応するsẽ sửa cố định vào 1 khung và các tin nhắn sẽ chỉ hiện thị trong khung đấy. sẽ hiện tin nhắn mới nhất. nhân viên có thể cuộn lên để xem các tin nhắn cũ hơn, cải thiện trải nghiệm
+スプリントゴール達成度100%
+スプリントゴール達成度の理由DEVチームはスプリント2の主な機能と要求をすべて作りました。レイアウトのエラーが少しありますが、問題ありません。スプリントの品質（クオリティ）には影響しませんTeam DEV đã hoàn thiện các chức năng và yêu cầu chính của Sprint 2, tuy vẫn còn một số lỗi về layout nhưng vẫn chấp nhận được và không ảnh hưởng đến chất lượng của Sprint
+次のスプリントで改善することDevT Chủ động làm rõ các spec/logic còn mơ hồ ngay từ đầu sprint (đặc biệt là logic sắp xếp, phân trang) với POT để tránh làm gián đoạn tiến độ dev. Đồng thời tập trung khắc phục triệt để các lỗi về layout và trải nghiệm người dùng ngay trong quá trình dev (ví dụ: cố định khung nhập liệu màn hình chat, thêm nút quay lại ở các màn hình chi tiết).Devチームは、開発の進捗を妨げないように、スプリントの初期段階でPOTと曖昧な仕様やロジック（特にソートやページネーションのロジック）を主体的に明確にします。また、開発中において、レイアウトやUX（ユーザー体験）のバグの徹底的な修正に注力します（例：チャット画面の入力エリアの固定、詳細画面への「戻る」ボタンの追加など）。
+POTは上記の内容を妥当であると判断し、このスプリントレビューを承認します。
+
+POT 開発TDevT
+No.時間Time することTodo 判断材料Căn cứ đánh giá No.時間Time することTodo 判断材料Căn cứ đánh giá
+1
+10
+スプリントバックログと「スプリントゴール達成度」と「スプリントゴール達成度の理由」を確認し、記入漏れがあればFB欄にベトナム語で記入するCheck Sprint Backlog với “mức độ đạt mục tiêu sprint” và “lý do của mức độ đạt mục tiêu sprint”, nếu có ghi thiếu gì thì ghi phản hồi bằng tiếng Việt vào cột FB
+記入漏れがないかCó ghi thiếu gì hay không?
+この時間、全チームがPOTとして活動するTrong khoảng thời gian này, tất cả các nhóm sẽ hoạt động với vai trò POT
+2
+開発Tが記入した問題点・原因・対策の妥当性を確認し、問題や不明点があればベトナム語でFB欄に記入するKiểm tra “vấn đề – nguyên nhân – biện pháp” do DevT ghi có hợp lý hay không, nếu có vấn đề hoặc điểm nào chưa rõ thì ghi FB bằng tiếng Việt vào cột FB
+以下のどちらかに該当する内容になっているか・今後類似のケースが発生しない対策になっている・今後類似のケースが発生しても簡単に解決できる対策になっているNội dung DevT ghi có thuộc 1 trong 2 trường hợp sau hay không:・Là biện pháp giúp ngăn không để case tương tự xảy ra trong tương lai・Là biện pháp giúp dễ dàng giải quyết kể cả trong trường hợp case tương tự xảy ra lần nữa
+3
+開発Tが記入した「スプリントゴール達成度」と「スプリントゴール達成度の理由」の妥当性を確認し、問題や不明点があればFB欄にベトナム語で記入するKiểm tra “mức độ đạt mục tiêu sprint” và “lý do của mức độ đạt mục tiêu sprint” do DevT ghi có hợp lý hay không, nếu có vấn đề hoặc điểm chưa rõ thì ghi FB bằng tiếng Việt.
+・スプリントバックログの進捗・スプリントバックログの問題点・問題点への対応状況・Tiến độ của Sprint Backlog・Các vấn đề trong Sprint Backlog và tình trạng xử lý các vấn đề đó
+4
+15
+記入したFBに沿って、開発Tに確認・質問する※No.4～8の時間は目安で、多少前後しても問題ないDựa trên các FB đã ghi, tiến hành xác nhận và đặt câu hỏi cho DevT.※Thời gian từ mục No.4–8 chỉ mang tính tham khảo, có thể xê dịch một chút cũng không sao.
+POTからの確認・質問に対して開発Tはすぐに明確に回答したか※検討が必要な場合も、「検討して〇日の〇時までに回答します」と回答できればOKDevT có trả lời ngay lập tức một cách rõ ràng đối với các xác nhận/ câu hỏi từ POT hay không?※Trường hợp cần thời gian xem xét, trường hợp cần thời gian xem xét, vẫn được chấp nhận nếu trả lời “chúng tôi sẽ xem xét và trả lời trước ...giờ ngày...”
+←話し合い→←Thảo luận→4
+15
+POTからのFBに回答する※No.4～8の時間は目安で、多少前後しても問題ないTrả lời các phản hồi (FB) từ POT※ Thời gian của các mục No.4–8 chỉ mang tính tham khảo, có thể xê dịch một chút cũng không sao.
+スプリントレビュー準備チェックリストNo.13Checklist chuẩn bị sprint review No.13
+5
+開発Tのデモを見て、問題や不明点があれば確認・質問し、FB欄にもベトナム語で記入するXem demo của DevT, nếu có vấn đề hoặc điểm chưa rõ thì xác nhận, đặt câu hỏi và ghi vào cột FB bằng tiếng Việt.
+・POTが指摘や質問をしなくても、開発Tのデモはスプリントゴール達成とプロダクトバックログの受入条件達成の是非が確認ができる内容になっていたか・画面設計書や画面遷移図の内容と完全に一致した開発をしているか・スプリントバックログの進捗とデモの内容に違いがないか・Nội dung demo của DevT có đạt được mục tiêu sprint và các điều kiện chấp nhận của Product Backlog hay không, ngay cả khi POT không có FB hay câu hỏi nào・Phát triển có hoàn toàn khớp với nội dung tài liệu thiết kế màn hình và sơ đồ chuyển màn hình hay không?・Có sự khác biệt nào giữa tiến độ ở Sprint Backlog và nội dung demo hay không?
+←話し合い→←Thảo luận→5
+①デモを実施する②POTからのFBに回答する① Thực hiện demo② Trả lời các FB từ POT
+スプリントレビュー準備チェックリストNo.14Checklist chuẩn bị sprint review No.14
+6
+8
+スプリントゴール達成度とその理由をベトナム語で記入するプロダクトバックログのステータスを更新するGhi mức độ đạt mục tiêu sprint và lý do bằng tiếng ViệtThay đổi trạng thái trong Product backlog
+このチェックリストのNo.2～5の結果Dựa trên kết quả của các mục No.2–5 trong checklist này←別作業→←Task riêng→6
+8
+POTのすべてのFBに対して「FBへの対応方針」「対応する内容／対応しない理由」をすべてベトナム語で記入するĐối với tất cả các FB từ POT, hãy ghi bằng tiếng Việt các nội dung: "Hướng xử lý FB" và "Nội dung sẽ xử lý / Lý do không xử lý"
+FBに対して明確で具体的な回答になっているかCâu trả lời cho FB có rõ ràng và cụ thể hay không?
+
+7
+8 開発Tが記入した「FBへの対応方針」「対応する内容／対応しない理由」を確認し、問題があれば開発Tに確認し、問題なければ「対応方針承認」に✅を入れるCheck “Hướng xử lý FB” và “nội dung xử lý/ lý do không xử lý” do DevT viết, nếu có vấn đề thì xác nhận lại với DevT, nếu không có vấn đề thì đánh dấu ✅ vào “Phê duyệt phương hướng xử lý"
+・すべてのFBに対して回答が記入されているか・FBに対して明確で具体的な回答になっているか・Tất cả các FB đã có câu trả lời hay chưa?・Câu trả lời cho FB có rõ ràng và cụ thể hay không?
+←別作業→←Task riêng→7
+8 POTが記入したスプリントゴール達成度とその理由を確認し、次のスプリントで具体的に何を改善するのかを開発T内で話し合い、「次のスプリントで改善すること」にベトナム語で記入するDevT kiểm tra mức độ đạt mục tiêu sprint và lý do đạt do POT ghi, thảo luận nội bộ xem cụ thể sẽ cải thiện những gì trong sprint tiếp theo, sau đó ghi bằng tiếng Việt vào mục “Những điểm cải thiện ở sprint tiếp theo”
+・今回のスプリントでPOTからFBされたことを反映しているか・明確で具体的な内容になっているか・Có phản ánh những nội dung đã được POT phản hồi trong sprint này hay không?・Nội dung có rõ ràng và cụ thể hay không?
+8 2
+開発Tが記入した「次のスプリントで改善すること」を確認し、問題があれば指摘し、問題なければ「POTは上記の内容を妥当であると判断し、このスプリントレビューを承認します。」に✅を入れるCheck “những điểm sẽ cải thiện ở sprint tiếp theo” do DevT viết, nếu có vấn đề thì chỉ ra, nếu không thì đánh dấu ✅ vào mục “POT đánh giá các nội dung trên là hợp lý và phê duyệt sprint review này.”
+今回のスプリントでFBしたことが反映されているかCác FB trong sprint này có được phản ánh hay không?←話し合い→←Thảo luận→8 2 POTのFBを聞くLắng nghe FB từ POT-
+9 -
+（早く終わった場合）スプリントレビューでPOTが記入した内容すべてに日本語訳を追加する(Nếu kết thúc sớm) bổ sung bản dịch tiếng Nhật cho toàn bộ nội dung mà POT đã ghi trong Sprint Review.
+- ←別作業→←Task riêng→9 -
+（早く終わった場合）スプリントレビューで開発Tが記入した内容すべてに日本語訳を追加する(Nếu kết thúc sớm) Bổ sung bản dịch tiếng Nhật cho toàn bộ nội dung mà DevT đã ghi trong sprint review.
+-
+
+◆ スプリントプランニング
+スプリント期間 (yyyy/mm/dd)2026/05/20～ 2026/05/25
+スプリントゴール このスプリントでSau sprint này, nhân viên có thể khôi phục lại mật khẩu của tài khoản nếu quên, nhân viên có thể tạo tài khoản mới, nhân viên có thể gửi feedback cho đồng nghiệp trong quá trình làm việc, admin có thể quản lý trạng thái của các tài khoản, duyệt bài viết wiki văn hóa và các thông tin trong bảng tin
+スプリントバックログチェックリストLink
+対応P_ID ID タスク PIC 見積もり(h) スプリントゴールとの関係 [3] 進捗 実績(h) 問題点 原因 対策 問題点への対応状況
+8 1 [FE] Bổ sung nút trở về ở layout trang chi tiết bài viết wiki Hùng 2 あり 0% 
+4 2 [FE] Xử lý cố định khung nhập liệu ở màn hình chatNam Anh3 あり 0% 
+4 3 [FE] code layout cho màn hình feedback giữa các nhân viên Hưng 2 あり 0% 
+4 4 [BE] Code API ghi nhận feedback giữa các nhân viên Thịnh 3 あり 0% 
+4 5 [QA] Viết Test Case Kiểm thử chức năng feedbackMinh 1 あり 0% 3 6 [FE] Code layout cho chức năng quên mật khẩuLong 3 あり 0% 3 7 [BE] Code API cho chức năng quên mật khẩuKhanh 2 あり 0% 3 8 [QA] Kiểm thử chức năng quên mật khẩuHùng 3 あり 0% 11 9 [FE] Code layout cho admin quản lý tài khoảnNam Anh2 あり 0% 11 10 [BE] Code API cho chức năng quản lý tài khoảnHưng 3 あり 0% 
+11 11 [QA] Viết Test Case và Kiểm thử chức năng quản lý tài khoản Thịnh 1 あり 0% 
+11 12 [FE] Code layout cho màn hình admin quản lý các bài viết cộng đồng, wiki văn hoá, các tài khoản trong hệ thống Minh 3 あり 0% 
+11 13 [BE] Code API cho chức năng duyệt bài viết cộng đồng Long 2 あり 0% 
+11 14 [BE] Code API cho chức năng duyệt wiki văn hoáKhanh 3 あり 0% 
+11 15 [BE] Code API cho chức năng quản lý trạng thái các tài khoản trong hệ thốngLong 2 あり 0% 
+11 16 [QA] Kiểm thử chức năng quản lý tài khoảnHùng 1 あり 0% 12 17 [FE] Code layout cho chức năng đăng ký tài khoảnNam Anh3 あり 0% 12 18 [BE] Code API cho chức năng đăng ký tài khoảnHưng 2 あり 0% 12 19 [QA] Kiểm thử chức năng đăng ký tài khoảnThịnh 1 あり 0% - 20 [QA] Kiểm thử toàn bộ sprintMinh 1 あり 0% 
+POTは上記のスプリントゴールとスプリントバックログを承認します。
+◆ スプリントレビュー　※スプリントプランニングでは記入しないこと
+スプリントレビュー準備チェックリストLink説明担当 デモ担当 書記
+スプリントゴール達成度
+スプリントゴール達成度の理由
+スプリントレビューNo FB箇所CheckList No FB内容 FBへの対応方針 対応する内容／対応しない理由対応方針承認
+スプリントゴール達成度
+
+スプリントゴール達成度の理由
+次のスプリントで改善すること
+POTは上記の内容を妥当であると判断し、このスプリントレビューを承認します。
+
+No 項目Mục 観点Giải thích S01 教師FBPhản hồi của giáo viênS02 教師FBPhản hồi của giáo viênS03 教師FBPhản hồi của giáo viênS04 教師FBPhản hồi của giáo viên
+1 スプリントバックログSprint Backlog進捗と実績に空欄がないかCó đảm bảo các mục “Tiến độ” và “Thực tế” không bị để trống không?
+2 進捗Tiến độ
+以下の定義に沿って正しく入力されているか・開発完了・テスト完了・バグ無し：100%・開発完了・テスト未完了：80%・開発一部未完了：60%・開発半分未完了：40%・開発大半未完了：20%・開発未着手：0%Có được điền đúng theo định nghĩa sau không:・Hoàn tất dev – hoàn tất test – không có bug: 100%・Hoàn tất dev – test chưa xong: 80%・Một phần dev chưa xong: 60%・Một nửa dev chưa xong: 40%・Phần lớn dev chưa xong: 20%・Chưa bắt đầu dev: 0%
+3 問題点Vấn đề
+以下のいずれかに該当するケースで空欄がないか・進捗が100%以外・見積もりに対して実績が超過・開発中にPOTに問い合わせをしたものCó điền đầy đủ các trường hợp thuộc một trong các loại sau không:・Tiến độ khác 100%・Thực tế vượt quá ước lượng ban đầu・Trong quá trình dev phải hỏi POT
+4 原因Nguyên nhân
+問題点に対して複数の観点で原因分析をしたか※問題点がない項目では空欄でOKĐã phân tích nguyên nhân của vấn đề từ nhiều góc độ chưa※ Những mục không có vấn đề thì có thể để trống
+5 対策Giải pháp
+原因に対する対策になっており、具体的で実現可能か※「努力する」「気をつける」などは具体的ではない※問題点がない項目では空欄でOKGiải pháp có phù hợp với nguyên nhân, mang tính cụ thể và khả thi không※ Không chấp nhận các mô tả chung chung như “cố gắng hơn”, “chú ý hơn”※ Những mục không có vấn đề thì có thể để trống
+6 問題点への対応状況Tình trạng xử lý vấn đề
+問題点がある項目で、空欄になっていないか※問題点がない項目では空欄でOKĐã điền cho các mục có vấn đề chưa?※ Những mục không có vấn đề thì có thể để trống
+7 スプリントレビュー準備Chuẩn bị Sprint Review
+説明担当、デモ担当、書記、スプリントゴール達成度、スプリントゴール達成度の理由を入力したかĐã điền đầy đủ thông tin về: người phụ trách giải thích, người phụ trách demo, người memo, mức độ đạt mục tiêu sprint và lý do của mức độ đạt mục tiêu sprint hay chưa?
+8 スプリントレビュー準備Chuẩn bị Sprint Review
+スプリントゴール達成度とスプリントゴール達成度の理由が、スプリントバックログの進捗に照らして妥当なものになっているかMức độ đạt mục tiêu sprint và lý do của mức độ đạt đó có hợp lý hay không khi đối chiếu với tiến độ của Sprint Backlog
+9 スペルチェックKiểm tra chính tả表記の誤りはないかCó đảm bảo không có lỗi chính tả hoặc ghi sai không?
+10 表記ゆれSự thống nhất về cách ghi仕様書・プロダクトバックログと同じ意味の言葉を違う表記で記載していないかCó đảm bảo các từ cùng nghĩa với các từ trong tài liệu yêu cầu và product backlog không bị ghi bằng từ khác không?
+11 言語Ngôn ngữ 日本語とベトナム語の記載があるかCó ghi đầy đủ cả tiếng Nhật và tiếng Việt không?
+12 体裁Layout 空欄や罫線の破壊等がないか、必要な情報が見やすい状態になっているかCác ô đều được điền đầy đủ, đường kẻ bảng nguyên vẹn, và các thông tin quan trọng được hiển thị dễ nhìn không?
+13 説明準備Chuẩn bị giải thích全タスクの進捗状況と問題点を確認し、わかりやすく説明する準備をしたかĐã kiểm tra tiến độ và vấn đề của tất cả task, và chuẩn bị nội dung giải thích dễ hiểu chưa?
+
+14 デモ準備Chuẩn bị demo
+スプリントゴール達成、プロダクトバックログの受入条件達成を証明するためのデモを準備したかĐã chuẩn bị phần demo để chứng minh đạt mục tiêu Sprint và thỏa mãn điều kiện chấp nhận của Product Backlog chưa?
+
+[1] 「なし」の場合、タスク欄にタスクの終了条件を明記すること※「あり」の場合はスプリントゴールで判断可能
+[2] 「なし」の場合、タスク欄にタスクの終了条件を明記すること※「あり」の場合はスプリントゴールで判断可能
+[3] 「なし」の場合、タスク欄にタスクの終了条件を明記すること※「あり」の場合はスプリントゴールで判断可能

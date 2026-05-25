@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import Avatar from "../../components/avatar";
 import { Heart, ThumbsUp, Sparkles, X, Search } from "lucide-react";
 
 type Post = {
@@ -47,7 +49,14 @@ export default function BoardPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [createError, setCreateError] = useState("");
+  const [createSuccess, setCreateSuccess] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newTopic, setNewTopic] = useState("");
+  const [newContent, setNewContent] = useState("");
   const [detailLoading, setDetailLoading] = useState(false);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     let mounted = true;
@@ -71,7 +80,7 @@ export default function BoardPage() {
             return {
               id: p.id,
               title: p.title,
-              author: p.author || p.name || "Unknown",
+              author: p.author || p.name || "不明 / Không rõ",
               date,
               postedAt,
               avatar: p.avatar || p.avatar_url || "",
@@ -81,7 +90,7 @@ export default function BoardPage() {
           setPosts(mapped);
           setError(null);
         } else {
-          setError("Invalid response from posts API");
+          setError("掲示板APIの応答が不正です / Phản hồi API bảng tin không hợp lệ");
         }
       })
       .catch((err) => {
@@ -130,7 +139,7 @@ export default function BoardPage() {
     const payload = await response.json();
 
     if (!response.ok || !payload?.ok) {
-      throw new Error(payload?.error || "Failed to fetch reactions");
+      throw new Error(payload?.error || "リアクションを取得できません / Không thể tải reaction");
     }
 
     setSelectedPostReactions(payload.data);
@@ -152,6 +161,16 @@ export default function BoardPage() {
       setDetailLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (loading || !posts.length) return;
+    const postId = searchParams?.get("postId");
+    if (!postId) return;
+    const matched = posts.find((post) => post.id === postId);
+    if (matched) {
+      void openPostDetail(matched);
+    }
+  }, [loading, posts, searchParams]);
 
   const submitReaction = async (reactionType: ReactionType) => {
     if (!selectedPost) return;
@@ -185,13 +204,73 @@ export default function BoardPage() {
       const payload = await response.json();
 
       if (!response.ok || !payload?.ok) {
-        throw new Error(payload?.error || "Failed to update reaction");
+        throw new Error(payload?.error || "リアクションを更新できません / Không thể cập nhật reaction");
       }
 
       await fetchPostReactions(selectedPost.id);
     } catch (reactionError) {
       console.error(reactionError);
-      alert(reactionError instanceof Error ? reactionError.message : "Có lỗi khi thả reaction");
+      alert(reactionError instanceof Error ? reactionError.message : "リアクションに失敗しました / Có lỗi khi thả reaction");
+    }
+  };
+
+  const createCommunityPost = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setCreateError("");
+    setCreateSuccess("");
+    setCreating(true);
+    try {
+      const token = getAuthToken();
+      const rawUser = localStorage.getItem("user");
+      const user = rawUser ? (JSON.parse(rawUser) as { id?: string }) : null;
+      const headers: HeadersInit = { "Content-Type": "application/json" };
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${apiBase}/api/posts`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          title: newTitle,
+          topic: newTopic,
+          content: newContent,
+          employee_id: user?.id,
+        }),
+      });
+      const payload = await response.json();
+      if (!response.ok || !payload?.ok) {
+        throw new Error(payload?.error || "Failed to create post");
+      }
+
+      const p = payload.data as {
+        id: string;
+        title: string;
+        author: string;
+        avatar: string;
+        content: string;
+        created_at: string;
+      };
+      const createdDate = new Date(p.created_at);
+      const mappedPost: Post = {
+        id: p.id,
+        title: p.title,
+        author: p.author || "Unknown",
+        date: Number.isNaN(createdDate.getTime()) ? "" : createdDate.toISOString().slice(0, 10),
+        postedAt: Number.isNaN(createdDate.getTime()) ? "" : createdDate.toTimeString().slice(0, 5),
+        avatar: p.avatar || "",
+        content: p.content,
+      };
+
+      setPosts((prev) => [mappedPost, ...prev]);
+      setNewTitle("");
+      setNewTopic("");
+      setNewContent("");
+      setCreateSuccess("Đăng bài cộng đồng thành công.");
+    } catch (submitError) {
+      setCreateError(submitError instanceof Error ? submitError.message : "Có lỗi khi đăng bài");
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -201,10 +280,12 @@ export default function BoardPage() {
         <div className="max-w-5xl mx-auto">
           <div className="mb-6">
             <h2 className="text-xl font-bold text-slate-900">
-              掲示板（コミュニティ）画面
+              <span className="block">掲示板（コミュニティ）画面</span>
+              <span className="block">Màn hình Bảng tin Cộng đồng</span>
             </h2>
             <p className="text-sm text-slate-500">
-              コミュニティ掲示板画面 / Màn hình Bảng tin Cộng đồng
+              <span className="block">コミュニティ掲示板画面</span>
+              <span className="block">Màn hình Bảng tin Cộng đồng</span>
             </p>
           </div>
 
@@ -213,11 +294,12 @@ export default function BoardPage() {
               <Search className="w-4 h-4 text-slate-400" />
               <input
                 className="w-full text-sm outline-none"
-                placeholder="タイトル・作者を検索 / Tìm theo tiêu đề, tác giả..."
+                placeholder="タイトル・作者を検索..."
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
               />
             </div>
+            <span className="text-[11px] text-slate-400">Tìm theo tiêu đề, tác giả...</span>
             <select
               value={authorFilter}
               onChange={(event) => setAuthorFilter(event.target.value)}
@@ -231,14 +313,54 @@ export default function BoardPage() {
               ))}
             </select>
             <span className="text-xs text-slate-400">
-              {filteredPosts.length} posts
+              <span className="block">{filteredPosts.length} 件</span>
+              <span className="block">{filteredPosts.length} bài viết</span>
             </span>
           </div>
+
+          <form
+            onSubmit={createCommunityPost}
+            className="mb-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm space-y-3"
+          >
+            <p className="text-sm font-semibold text-slate-800">
+              コミュニティ投稿作成 / Tạo bài viết cộng đồng
+            </p>
+            <input
+              value={newTitle}
+              onChange={(event) => setNewTitle(event.target.value)}
+              placeholder="Tiêu đề bài viết"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
+              required
+            />
+            <input
+              value={newTopic}
+              onChange={(event) => setNewTopic(event.target.value)}
+              placeholder="Chủ đề (không bắt buộc)"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
+            />
+            <textarea
+              value={newContent}
+              onChange={(event) => setNewContent(event.target.value)}
+              placeholder="Nội dung bài viết"
+              className="min-h-28 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
+              required
+            />
+            {createError ? <p className="text-xs text-red-500">{createError}</p> : null}
+            {createSuccess ? <p className="text-xs text-emerald-600">{createSuccess}</p> : null}
+            <button
+              type="submit"
+              disabled={creating}
+              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+            >
+              {creating ? "Đang đăng..." : "投稿する / Đăng bài"}
+            </button>
+          </form>
 
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm divide-y divide-slate-100">
             {filteredPosts.length === 0 ? (
               <div className="p-6 text-center text-sm text-slate-500">
-                該当する投稿がありません / Không có bài viết phù hợp.
+                <span className="block">該当する投稿がありません</span>
+                <span className="block">Không có bài viết phù hợp.</span>
               </div>
             ) : (
               filteredPosts.map((post) => (
@@ -272,10 +394,10 @@ export default function BoardPage() {
           >
             <div className="flex items-start justify-between gap-4 p-5 border-b border-slate-100">
               <div className="flex items-start gap-3">
-                <img
+                <Avatar
+                  name={selectedPost.author}
                   src={selectedPost.avatar}
-                  alt={`${selectedPost.author} avatar`}
-                  className="w-11 h-11 rounded-full bg-slate-200"
+                  className="w-11 h-11"
                 />
                 <div>
                   <h3 className="text-lg font-bold text-slate-900">
@@ -290,7 +412,7 @@ export default function BoardPage() {
               <button
                 type="button"
                 onClick={() => setSelectedPost(null)}
-                aria-label="Close popup"
+                aria-label="閉じる / Đóng"
                 className="p-2 rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-700"
               >
                 <X size={18} />
@@ -303,13 +425,19 @@ export default function BoardPage() {
 
             <div className="px-5 pb-5">
               <div className="mb-3 text-xs text-slate-500">
-                {detailLoading ? "Đang tải reaction..." : ""}
+                {detailLoading ? (
+                  <>
+                    <span className="block">リアクションを読み込み中...</span>
+                    <span className="block">Đang tải reaction...</span>
+                  </>
+                ) : ""}
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 {(Object.keys(reactionMeta) as ReactionType[]).map((reaction) => {
                   const meta = reactionMeta[reaction];
                   const Icon = meta.icon;
                   const count = selectedPostReactions?.counts?.[reaction] ?? 0;
+                  const [vi, ja] = meta.label.split(" / ");
                   return (
                     <button
                       key={reaction}
@@ -317,7 +445,12 @@ export default function BoardPage() {
                       className={reactionButtonClass(reaction)}
                       onClick={() => void submitReaction(reaction)}
                     >
-                      <Icon size={14} /> {meta.label} ({count})
+                      <Icon size={14} />
+                      <span className="leading-tight">
+                        <span className="block">{ja ?? meta.label}</span>
+                        <span className="block">{vi ?? meta.label}</span>
+                      </span>
+                      <span>({count})</span>
                     </button>
                   );
                 })}
@@ -330,7 +463,8 @@ export default function BoardPage() {
                 onClick={() => setSelectedPost(null)}
                 className="px-4 py-2 bg-teal-600 text-white font-medium rounded-lg hover:bg-teal-700 transition-colors"
               >
-                Đóng
+                <span className="block">閉じる</span>
+                <span className="block">Đóng</span>
               </button>
             </div>
           </div>
