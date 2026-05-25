@@ -99,23 +99,8 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
   const [displayName, setDisplayName] = useState("Tanaka K.");
   const [displayRole, setDisplayRole] = useState("日本人スタッフ");
   const [lastOnline, setLastOnline] = useState<string | null>(null);
-  const [currentRole, setCurrentRole] = useState<"employee" | "admin" | null>(() => {
-    if (typeof window === "undefined") {
-      return null;
-    }
-
-    try {
-      const rawUser = localStorage.getItem("user");
-      if (!rawUser) {
-        return null;
-      }
-
-      const user = JSON.parse(rawUser) as { role?: string };
-      return user.role === "admin" ? "admin" : "employee";
-    } catch {
-      return null;
-    }
-  });
+  // Keep the first render deterministic for SSR/CSR; role is hydrated in effects.
+  const [currentRole, setCurrentRole] = useState<"employee" | "admin" | null>(null);
   const [avatarSeed, setAvatarSeed] = useState("Tanaka");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [themeMode, setThemeMode] = useState<ThemeMode>("light");
