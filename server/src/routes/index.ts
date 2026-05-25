@@ -19,6 +19,7 @@ import {
   updateTaskStatusHandler,
 } from "./tasks.js";
 import {
+  createPostHandler,
   deletePostReactionHandler,
   getPostReactionsHandler,
   postsDetailHandler,
@@ -41,6 +42,7 @@ import {
   listTaskReportsHandler,
 } from "./report.js";
 import {
+  createWikiArticleHandler,
   getWikiArticleDetailHandler,
   listWikiArticlesHandler,
 } from "./wiki.js";
@@ -70,6 +72,7 @@ export const registerRoutes = (router: Router) => {
   
   // Posts routes
   router.get("/posts", postsListHandler);
+  router.post("/posts", createPostHandler);
   router.get("/posts/:id", postsDetailHandler);
   router.get("/posts/:id/reactions", getPostReactionsHandler);
   router.post("/posts/:id/reactions", postReactionsHandler);
@@ -88,6 +91,7 @@ export const registerRoutes = (router: Router) => {
 
   // Wiki routes
   router.get("/wiki", listWikiArticlesHandler);
+  router.post("/wiki", createWikiArticleHandler);
   router.get("/wiki/:slug", getWikiArticleDetailHandler);
 
   // Notifications routes

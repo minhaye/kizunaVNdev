@@ -49,6 +49,12 @@ export default function BoardPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [createError, setCreateError] = useState("");
+  const [createSuccess, setCreateSuccess] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newTopic, setNewTopic] = useState("");
+  const [newContent, setNewContent] = useState("");
   const [detailLoading, setDetailLoading] = useState(false);
   const searchParams = useSearchParams();
 
@@ -208,6 +214,66 @@ export default function BoardPage() {
     }
   };
 
+  const createCommunityPost = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setCreateError("");
+    setCreateSuccess("");
+    setCreating(true);
+    try {
+      const token = getAuthToken();
+      const rawUser = localStorage.getItem("user");
+      const user = rawUser ? (JSON.parse(rawUser) as { id?: string }) : null;
+      const headers: HeadersInit = { "Content-Type": "application/json" };
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${apiBase}/api/posts`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          title: newTitle,
+          topic: newTopic,
+          content: newContent,
+          employee_id: user?.id,
+        }),
+      });
+      const payload = await response.json();
+      if (!response.ok || !payload?.ok) {
+        throw new Error(payload?.error || "Failed to create post");
+      }
+
+      const p = payload.data as {
+        id: string;
+        title: string;
+        author: string;
+        avatar: string;
+        content: string;
+        created_at: string;
+      };
+      const createdDate = new Date(p.created_at);
+      const mappedPost: Post = {
+        id: p.id,
+        title: p.title,
+        author: p.author || "Unknown",
+        date: Number.isNaN(createdDate.getTime()) ? "" : createdDate.toISOString().slice(0, 10),
+        postedAt: Number.isNaN(createdDate.getTime()) ? "" : createdDate.toTimeString().slice(0, 5),
+        avatar: p.avatar || "",
+        content: p.content,
+      };
+
+      setPosts((prev) => [mappedPost, ...prev]);
+      setNewTitle("");
+      setNewTopic("");
+      setNewContent("");
+      setCreateSuccess("Đăng bài cộng đồng thành công.");
+    } catch (submitError) {
+      setCreateError(submitError instanceof Error ? submitError.message : "Có lỗi khi đăng bài");
+    } finally {
+      setCreating(false);
+    }
+  };
+
   return (
     <>
       <main className="flex-1 overflow-auto p-8 bg-slate-50/50">
@@ -251,6 +317,44 @@ export default function BoardPage() {
               <span className="block">{filteredPosts.length} bài viết</span>
             </span>
           </div>
+
+          <form
+            onSubmit={createCommunityPost}
+            className="mb-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm space-y-3"
+          >
+            <p className="text-sm font-semibold text-slate-800">
+              コミュニティ投稿作成 / Tạo bài viết cộng đồng
+            </p>
+            <input
+              value={newTitle}
+              onChange={(event) => setNewTitle(event.target.value)}
+              placeholder="Tiêu đề bài viết"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
+              required
+            />
+            <input
+              value={newTopic}
+              onChange={(event) => setNewTopic(event.target.value)}
+              placeholder="Chủ đề (không bắt buộc)"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
+            />
+            <textarea
+              value={newContent}
+              onChange={(event) => setNewContent(event.target.value)}
+              placeholder="Nội dung bài viết"
+              className="min-h-28 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
+              required
+            />
+            {createError ? <p className="text-xs text-red-500">{createError}</p> : null}
+            {createSuccess ? <p className="text-xs text-emerald-600">{createSuccess}</p> : null}
+            <button
+              type="submit"
+              disabled={creating}
+              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+            >
+              {creating ? "Đang đăng..." : "投稿する / Đăng bài"}
+            </button>
+          </form>
 
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm divide-y divide-slate-100">
             {filteredPosts.length === 0 ? (

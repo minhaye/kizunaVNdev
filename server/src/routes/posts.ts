@@ -218,6 +218,81 @@ export const postsDetailHandler = async (req: Request, res: Response) => {
   }
 };
 
+export const createPostHandler = async (req: Request, res: Response) => {
+  try {
+    const employeeId = getActorEmployeeId(req);
+    const title = typeof req.body?.title === "string" ? req.body.title.trim() : "";
+    const topicRaw = typeof req.body?.topic === "string" ? req.body.topic.trim() : "";
+    const content = typeof req.body?.content === "string" ? req.body.content.trim() : "";
+
+    if (!employeeId) {
+      return res.status(401).json({
+        ok: false,
+        error: "employee_id or Bearer token is required",
+      });
+    }
+
+    if (!title) {
+      return res.status(400).json({ ok: false, error: "title is required" });
+    }
+
+    if (!content) {
+      return res.status(400).json({ ok: false, error: "content is required" });
+    }
+
+    const { data, error } = await supabase
+      .from("posts")
+      .insert({
+        topic: topicRaw.length > 0 ? topicRaw : null,
+        title,
+        content,
+        created_by: employeeId,
+      })
+      .select(`
+        id,
+        topic,
+        title,
+        content,
+        created_at,
+        created_by,
+        employees:created_by(
+          name,
+          avatar_url
+        )
+      `)
+      .single();
+
+    if (error) {
+      return res.status(500).json({ ok: false, error: error.message });
+    }
+
+    const employee = firstRelatedEmployee(data.employees) as {
+      name?: string;
+      avatar_url?: string;
+    } | null;
+
+    return res.status(201).json({
+      ok: true,
+      data: {
+        id: data.id,
+        topic: data.topic,
+        title: data.title,
+        author: employee?.name || "Unknown",
+        avatar: employee?.avatar_url || "",
+        content: data.content,
+        created_by: data.created_by,
+        created_at: data.created_at,
+      } satisfies Post,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      error: "Internal server error",
+      details: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
+
 export const postReactionsHandler = async (req: Request, res: Response) => {
   try {
     const { id: postId } = req.params;
