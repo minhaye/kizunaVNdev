@@ -163,7 +163,7 @@ export default function WikiListPage() {
             <Search className="w-4 h-4 text-slate-400" />
             <input
               className="w-full text-sm outline-none"
-              placeholder="記事・タグを検索..."
+              placeholder="記事・タグを検索... / Tìm bài viết, tag..."
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
@@ -263,20 +263,20 @@ export default function WikiListPage() {
               <input
                 value={newTitle}
                 onChange={(event) => setNewTitle(event.target.value)}
-                placeholder="Tiêu đề bài viết"
+                placeholder="記事タイトル / Tiêu đề bài viết"
                 className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
                 required
               />
               <input
                 value={newTag}
                 onChange={(event) => setNewTag(event.target.value)}
-                placeholder="Tag / Chủ đề (không bắt buộc)"
+                placeholder="タグ（任意） / Chủ đề (không bắt buộc)"
                 className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
               />
               <textarea
                 value={newContent}
                 onChange={(event) => setNewContent(event.target.value)}
-                placeholder="Nội dung bài viết"
+                placeholder="記事内容 / Nội dung bài viết"
                 className="min-h-28 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
                 required
               />

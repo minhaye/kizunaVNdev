@@ -136,7 +136,7 @@ export default function SignupPage() {
           <div className="relative">
             <input
               type={showConfirmPassword ? "text" : "password"}
-              placeholder="パスワード確認 / Xác nhận mật khẩu"
+              placeholder="パスワード再入力 / Xác nhận mật khẩu"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               disabled={loading}

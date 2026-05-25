@@ -436,7 +436,7 @@ export default function TaskBoardPage() {
               <Search className="w-4 h-4 text-slate-400" />
               <input
                 className="w-full text-sm outline-none"
-                placeholder="タスク、トピック、依頼者、担当者で検索..."
+                placeholder="タスク・トピック・依頼者・担当者で検索... / Tìm task, topic, người giao, người nhận..."
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
               />

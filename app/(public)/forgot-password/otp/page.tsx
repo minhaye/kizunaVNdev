@@ -120,7 +120,7 @@ function ForgotPasswordOtpContent() {
           maxLength={6}
           value={otp}
           onChange={(event) => setOtp(event.target.value.replace(/\D/g, ""))}
-          placeholder="Mã OTP"
+          placeholder="OTPコード / Mã OTP"
           required
           className="w-full rounded-lg border border-gray-200 px-4 py-3 text-center text-lg tracking-[0.35em] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
         />
