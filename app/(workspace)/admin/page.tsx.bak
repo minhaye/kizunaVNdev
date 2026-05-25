@@ -1,0 +1,541 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+type RoleKey = "staff" | "admin";
+
+type RoleInfo = {
+  key: RoleKey;
+  ja: string;
+  vi: string;
+  description: string;
+  permissions: string[];
+};
+
+type UserRole = "employee" | "leader" | "admin";
+
+type UserRow = {
+  id: string;
+  name: string;
+  email: string;
+  team: string;
+  role: UserRole;
+  source: "employees" | "admins";
+  avatar_url: string | null;
+  last_online: string | null;
+};
+
+const roles: RoleInfo[] = [
+  {
+    key: "staff",
+    ja: "日越スタッフ",
+    vi: "Nhân viên Nhật - Việt",
+    description:
+      "日々のChat/Task/Wiki/掲示板で業務を行うメンバー / Thành viên làm việc hàng ngày trên Chat, Task, Wiki và Bảng tin cộng đồng.",
+    permissions: [
+      "社内チャット・1対1連絡 / Chat nội bộ và trao đổi 1-1",
+      "個人・チームTaskの作成更新 / Tạo/Cập nhật task cá nhân và theo nhóm",
+      "Wikiの閲覧と修正提案 / Đọc và đề xuất chỉnh sửa Wiki",
+      "掲示板通知の閲覧とリアクション / Xem thông báo và react trên bảng tin",
+    ],
+  },
+  {
+    key: "admin",
+    ja: "管理者",
+    vi: "Quản trị viên",
+    description:
+      "システム運用・アカウント管理・権限設定・コンテンツ審査を担当 / Vai trò vận hành hệ thống, quản lý tài khoản, cấu hình quyền và kiểm duyệt nội dung.",
+    permissions: [
+      "ユーザー/ロールのフル管理 / Toàn quyền quản lý user/role",
+      "Wiki・掲示板コンテンツの審査/非表示 / Duyệt và ẩn nội dung Wiki/Bảng tin",
+      "システム通知の管理 / Quản lý thông báo hệ thống",
+      "操作ログ・セキュリティ監査 / Xem nhật ký hoạt động và bảo mật",
+    ],
+  },
+];
+
+const roleLabel = (role: UserRole) => {
+  if (role === "admin") return "管理者 / Quản trị viên";
+  return "日越スタッフ / Nhân viên";
+};
+
+export default function AdminPage() {
+  const API_BASE_URL =
+    process.env.NEXT_PUBLIC_API_BASE_URL ??
+    process.env.NEXT_PUBLIC_API_BASE ??
+    "http://localhost:4000";
+  const [currentRole, setCurrentRole] = useState<"employee" | "admin" | null>(null);
+  const [userQuery, setUserQuery] = useState("");
+  const [themeMode, setThemeMode] = useState<"light" | "dark">("light");
+  const [messageTaskNotifications, setMessageTaskNotifications] = useState(true);
+  const [loginRetentionDays, setLoginRetentionDays] = useState<30 | 60 | 90>(30);
+  const [showActiveStatus, setShowActiveStatus] = useState(true);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const [users, setUsers] = useState<UserRow[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [usersError, setUsersError] = useState<string | null>(null);
+  const [showAllUsers, setShowAllUsers] = useState(false);
+
+  useEffect(() => {
+    try {
+      const rawUser = localStorage.getItem("user");
+      if (!rawUser) return;
+
+      const user = JSON.parse(rawUser) as { role?: string };
+      const nextRole = (user.role === "admin") ? "admin" : "employee";
+      setCurrentRole(nextRole);
+    } catch {
+      setCurrentRole("employee");
+    }
+  }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    if (!token) return;
+
+    let active = true;
+
+    const loadSettings = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/settings/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await response.json() as {
+          settings?: {
+            theme_mode?: "light" | "dark";
+            message_task_notifications?: boolean;
+            login_retention_days?: 30 | 60 | 90;
+            show_active_status?: boolean;
+          };
+        };
+
+        if (!response.ok || !data.settings || !active) return;
+
+        setThemeMode(data.settings.theme_mode === "dark" ? "dark" : "light");
+        setMessageTaskNotifications(data.settings.message_task_notifications ?? true);
+        setLoginRetentionDays(data.settings.login_retention_days ?? 30);
+        setShowActiveStatus(data.settings.show_active_status ?? true);
+      } catch {
+        // Keep local defaults if the backend is unavailable.
+      } finally {
+        if (active) {
+          setSettingsLoaded(true);
+        }
+      }
+    };
+
+    void loadSettings();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", themeMode);
+  }, [themeMode]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    if (!token) return;
+
+    let active = true;
+    const loadUsers = async () => {
+      setUsersLoading(true);
+      setUsersError(null);
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/users`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await response.json() as {
+          users?: Array<{
+            id: string;
+            name: string;
+            email: string;
+            team: string;
+            role: UserRole;
+            source: "employees" | "admins";
+            avatar_url: string | null;
+            last_online: string | null;
+            is_online: boolean;
+          }>;
+          error?: string;
+        };
+
+        if (!active) return;
+
+        if (!response.ok) {
+          setUsersError(data.error ?? "Không tải được danh sách người dùng.");
+          return;
+        }
+
+        const nextUsers = (data.users ?? []).map((user) => ({
+          ...user,
+        }));
+
+        setUsers(nextUsers);
+      } catch {
+        if (active) {
+          setUsersError("Không tải được danh sách người dùng.");
+        }
+      } finally {
+        if (active) {
+          setUsersLoading(false);
+        }
+      }
+    };
+
+    void loadUsers();
+
+    return () => {
+      active = false;
+    };
+  }, [API_BASE_URL]);
+
+  useEffect(() => {
+    if (!settingsLoaded) return;
+
+    const token = localStorage.getItem("authToken");
+    if (!token) return;
+
+    const timer = window.setTimeout(() => {
+      const payload = {
+        theme_mode: themeMode,
+        message_task_notifications: messageTaskNotifications,
+        login_retention_days: loginRetentionDays,
+        show_active_status: showActiveStatus,
+      };
+
+      window.dispatchEvent(
+        new CustomEvent("account-settings-updated", {
+          detail: {
+            themeMode,
+            messageTaskNotifications,
+            showActiveStatus,
+          },
+        }),
+      );
+
+      void fetch(`${API_BASE_URL}/api/settings/me`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+    }, 250);
+
+    return () => window.clearTimeout(timer);
+  }, [API_BASE_URL, themeMode, messageTaskNotifications, loginRetentionDays, showActiveStatus, settingsLoaded]);
+
+  const isPrivilegedRole = currentRole === "admin";
+  const isAdminView = isPrivilegedRole;
+  const normalizedUserQuery = userQuery.trim().toLowerCase();
+  const filteredUsers = users.filter((user) => {
+    const matchesQuery =
+      normalizedUserQuery.length === 0 ||
+      [user.name, user.team, user.email, roleLabel(user.role)].some((value) =>
+        value.toLowerCase().includes(normalizedUserQuery),
+      );
+    return matchesQuery;
+  });
+  const sortedFilteredUsers = [...filteredUsers].sort((left, right) =>
+    left.name.localeCompare(right.name, "vi", { sensitivity: "base" }),
+  );
+  const visibleUsers = showAllUsers ? sortedFilteredUsers : sortedFilteredUsers.slice(0, 5);
+
+  return (
+    <main className="flex-1 overflow-auto p-8 bg-slate-50/50">
+      <div className="max-w-5xl mx-auto space-y-5">
+        <header className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-bold text-slate-900">管理者設定画面</h2>
+            <p className="text-xs text-slate-500 mt-1">
+              {isAdminView
+                ? "管理者表示 / Admin view: full settings"
+                : "ユーザー表示 / User view: configuration only"}
+            </p>
+          </div>
+        </header>
+
+        {isAdminView && isPrivilegedRole && (
+          <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
+            <h3 className="font-semibold text-slate-800 mb-3">
+              Role Matrix / 権限ロール
+            </h3>
+            <div className="grid md:grid-cols-2 gap-3">
+              {roles.map((role) => (
+                <article
+                  key={role.key}
+                  className="rounded-xl border border-slate-200 p-4 bg-slate-50/40"
+                >
+                  <h4 className="text-sm font-bold text-slate-900">
+                    {role.ja} / {role.vi}
+                  </h4>
+                  <p className="text-xs text-slate-500 mt-1">
+                    {role.description}
+                  </p>
+                  <ul className="mt-3 space-y-1.5 text-xs text-slate-700">
+                    {role.permissions.map((permission) => (
+                      <li key={permission}>- {permission}</li>
+                    ))}
+                  </ul>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {isAdminView && isPrivilegedRole && (
+          <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-slate-800">
+                ユーザー管理 / Quản lý người dùng
+              </h3>
+              <button
+                type="button"
+                className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+              >
+                + ユーザー追加 / Thêm người dùng
+              </button>
+            </div>
+
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50/60 px-3 py-2 text-xs text-slate-600">
+              <span>
+                {showAllUsers
+                  ? `Đang hiển thị toàn bộ ${sortedFilteredUsers.length} user.`
+                  : `Đang hiển thị 5 user đầu theo alphabet.`}
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowAllUsers((value) => !value)}
+                className="rounded-md border border-slate-200 bg-white px-3 py-1.5 font-medium text-slate-700 hover:bg-slate-50"
+              >
+                {showAllUsers ? "Thu gọn" : "Xem tất cả"}
+              </button>
+            </div>
+
+            <div className="mb-3 flex flex-wrap items-center gap-3">
+              <input
+                className="flex-1 min-w-55 rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                placeholder="ユーザー検索 / Tìm user..."
+                value={userQuery}
+                onChange={(event) => setUserQuery(event.target.value)}
+              />
+              <span className="text-xs text-slate-400">
+                {sortedFilteredUsers.length} users
+              </span>
+            </div>
+
+            {usersLoading ? (
+              <div className="py-6 text-center text-sm text-slate-500">
+                Đang tải danh sách người dùng...
+              </div>
+            ) : usersError ? (
+              <div className="rounded-lg border border-rose-100 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+                {usersError}
+              </div>
+            ) : null}
+
+            <div className="overflow-x-auto mt-3">
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-slate-500 border-b border-slate-100">
+                    <th className="py-2 pr-3 font-medium">Name</th>
+                    <th className="py-2 pr-3 font-medium">Team</th>
+                    <th className="py-2 pr-3 font-medium">Role</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {!usersLoading && !usersError && visibleUsers.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={3}
+                        className="py-6 text-center text-xs text-slate-500"
+                      >
+                        該当するユーザーがいません / Không có user phù hợp.
+                      </td>
+                    </tr>
+                  ) : (
+                    visibleUsers.map((u) => (
+                      <tr
+                        key={u.id}
+                        className="border-b border-slate-100 last:border-b-0"
+                      >
+                        <td className="py-3 pr-3 text-slate-800">
+                          <div className="flex items-center gap-3">
+                            <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-semibold text-slate-600 overflow-hidden">
+                              {u.avatar_url ? (
+                                <img src={u.avatar_url} alt={u.name} className="h-full w-full object-cover" />
+                              ) : (
+                                <span>{u.name.slice(0, 2).toUpperCase()}</span>
+                              )}
+                            </div>
+                            <div>
+                              <div className="font-medium text-slate-900">{u.name}</div>
+                              <div className="text-xs text-slate-400">{u.email}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-3 pr-3 text-slate-600">{u.team}</td>
+                        <td className="py-3 pr-3 text-slate-700">
+                          {roleLabel(u.role)}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {!showAllUsers && sortedFilteredUsers.length > 5 && (
+              <p className="mt-2 text-xs text-slate-500">
+                Đang ẩn {sortedFilteredUsers.length - 5} user còn lại.
+              </p>
+            )}
+          </section>
+        )}
+
+        <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
+          <h3 className="font-semibold text-slate-800 mb-3">
+            システム設定 / Cấu hình hệ thống
+          </h3>
+          <div className="grid md:grid-cols-2 gap-3">
+            <label className="rounded-lg border border-slate-100 p-3 flex flex-col gap-2">
+              <span>
+                <span className="block text-sm font-medium text-slate-800">
+                  Chế độ sáng tối / テーマ設定
+                </span>
+                <span className="text-xs text-slate-500">
+                  Tùy chỉnh giao diện hiển thị / 表示テーマを選択します。
+                </span>
+              </span>
+              <select
+                value={themeMode}
+                onChange={(event) => setThemeMode(event.target.value as "light" | "dark")}
+                className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
+              >
+                <option value="light">Sáng / ライト</option>
+                <option value="dark">Tối / ダーク</option>
+              </select>
+            </label>
+
+            <label className="flex items-start gap-3 rounded-lg border border-slate-100 p-3">
+              <input
+                type="checkbox"
+                checked={messageTaskNotifications}
+                onChange={(event) => setMessageTaskNotifications(event.target.checked)}
+                className="mt-0.5"
+              />
+              <span>
+                <span className="block text-sm font-medium text-slate-800">
+                  Bật thông báo tin nhắn / メッセージ通知
+                </span>
+                <span className="text-xs text-slate-500">
+                  Khi có tin nhắn hoặc task mới, chuông góc phải sẽ hiển thị số chưa đọc.
+                </span>
+              </span>
+            </label>
+
+            <label className="rounded-lg border border-slate-100 p-3 flex flex-col gap-2">
+              <span>
+                <span className="block text-sm font-medium text-slate-800">
+                  Lưu đăng nhập / ログイン保持
+                </span>
+                <span className="text-xs text-slate-500">
+                  Giữ đăng nhập trên thiết bị này trong số ngày bạn chọn.
+                </span>
+              </span>
+              <select
+                value={loginRetentionDays}
+                onChange={(event) => setLoginRetentionDays(Number(event.target.value) as 30 | 60 | 90)}
+                className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
+              >
+                <option value={30}>30 ngày</option>
+                <option value={60}>60 ngày</option>
+                <option value={90}>90 ngày</option>
+              </select>
+            </label>
+
+            <label className="flex items-start gap-3 rounded-lg border border-slate-100 p-3">
+              <input
+                type="checkbox"
+                checked={showActiveStatus}
+                onChange={(event) => setShowActiveStatus(event.target.checked)}
+                className="mt-0.5"
+              />
+              <span className="min-w-0">
+                <span className="block text-sm font-medium text-slate-800">
+                  Trạng thái hoạt động / オンライン状態
+                </span>
+                <span className="text-xs text-slate-500">
+                  Hiển thị chấm màu ở góc tài khoản để biết đang online hay offline.
+                </span>
+              </span>
+            </label>
+          </div>
+
+        </section>
+
+        {isAdminView && isPrivilegedRole && (
+          <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
+            <h3 className="font-semibold text-slate-800 mb-2">
+              コンテンツ管理 / Quản lý nội dung
+            </h3>
+            <p className="text-sm text-slate-600">
+              Wiki審査フロー、掲示板通知、公開スケジュール、ロール別編集ログを設定
+              / Thiết lập quy trình duyệt bài Wiki, quản lý thông báo bảng tin,
+              lịch xuất bản và nhật ký chỉnh sửa theo từng role.
+            </p>
+            <div className="mt-3 grid sm:grid-cols-3 gap-3 text-xs">
+              <div className="rounded-lg bg-slate-50 border border-slate-100 p-3">
+                <div className="text-slate-500">
+                  審査待ち記事 / Bài chờ duyệt
+                </div>
+                <div className="mt-1 text-lg font-bold text-slate-900">12</div>
+              </div>
+              <div className="rounded-lg bg-slate-50 border border-slate-100 p-3">
+                <div className="text-slate-500">
+                  予約済み通知 / Thông báo đã lên lịch
+                </div>
+                <div className="mt-1 text-lg font-bold text-slate-900">5</div>
+              </div>
+              <div className="rounded-lg bg-slate-50 border border-slate-100 p-3">
+                <div className="text-slate-500">
+                  モデレーション警告 / Cảnh báo moderation
+                </div>
+                <div className="mt-1 text-lg font-bold text-slate-900">2</div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
+          <h3 className="font-semibold text-slate-800 mb-2">
+            通知設定 / Cài đặt thông báo
+          </h3>
+          <div className="grid md:grid-cols-2 gap-3 text-sm text-slate-700">
+            <label className="rounded-lg border border-slate-100 p-3 flex items-center justify-between">
+              <span>日次メール要約 / Email digest hàng ngày</span>
+              <input type="checkbox" defaultChecked />
+            </label>
+            <label className="rounded-lg border border-slate-100 p-3 flex items-center justify-between">
+              <span>期限超過タスク警告 / Cảnh báo task quá hạn</span>
+              <input type="checkbox" defaultChecked />
+            </label>
+            <label className="rounded-lg border border-slate-100 p-3 flex items-center justify-between">
+              <span>Wikiレビュー通知 / Nhắc review Wiki</span>
+              <input type="checkbox" defaultChecked />
+            </label>
+            <label className="rounded-lg border border-slate-100 p-3 flex items-center justify-between">
+              <span>新規ログイン通知 / Thông báo đăng nhập mới</span>
+              <input type="checkbox" defaultChecked />
+            </label>
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}

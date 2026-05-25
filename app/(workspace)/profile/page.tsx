@@ -10,6 +10,7 @@ type CurrentUser = {
   role?: string;
   nationality?: string;
   avatar_url?: string | null;
+  last_online?: string | null;
 };
 
 type FeedbackItem = {

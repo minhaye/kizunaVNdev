@@ -1,16 +1,31 @@
 import type { Request, Response } from "express";
-import { supabase } from "../supabase";
+import { getSessionFromRequest } from "../lib/session.js";
+import { listUserNotifications, markAllUserNotificationsRead } from "../lib/notifications.js";
 
-export const listNotificationsHandler = async (_req: Request, res: Response) => {
-  const { data, error } = await supabase
-    .from("notifications")
-    .select("id, created_at, topic, title, content")
-    .order("created_at", { ascending: false });
+export const listNotificationsHandler = async (req: Request, res: Response) => {
+  try {
+    const session = getSessionFromRequest(req);
+    if (!session) {
+      return res.status(401).json({ error: "Token không hợp lệ hoặc hết hạn" });
+    }
 
-  if (error) {
-    res.status(500).json({ error: error.message });
-    return;
+    const result = await listUserNotifications(session);
+    return res.json(result);
+  } catch (error) {
+    return res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
   }
+};
 
-  res.json({ notifications: data ?? [] });
+export const markNotificationsReadHandler = async (req: Request, res: Response) => {
+  try {
+    const session = getSessionFromRequest(req);
+    if (!session) {
+      return res.status(401).json({ error: "Token không hợp lệ hoặc hết hạn" });
+    }
+
+    await markAllUserNotificationsRead(session);
+    return res.json({ success: true });
+  } catch (error) {
+    return res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
+  }
 };

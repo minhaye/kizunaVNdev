@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import crypto from "node:crypto";
 import { env } from "../env.js";
+import { insertUserNotifications } from "../lib/notifications.js";
 import { supabase } from "../supabase.js";
 
 type ChatRoomRow = {
@@ -109,6 +110,8 @@ const isRecentOnline = (lastOnline: string | null) => {
   if (Number.isNaN(timestamp)) return false;
   return Date.now() - timestamp <= 5 * 60 * 1000;
 };
+
+const isMemberOnline = (member: ChatMemberRow) => isRecentOnline(member.employees?.last_online ?? null);
 
 const formatRoomName = (room: ChatRoomRow, members: ChatMemberRow[], actorEmployeeId: string) => {
   const explicitName = room.name?.trim();
@@ -249,9 +252,11 @@ const buildRoomSummary = (
   const hasUnreadActivity = actorEmployeeId !== null && isRoomUnread(actorMembership);
   const unreadMessages = hasUnreadActivity ? 1 : 0;
 
-  const online = members.some(
-    (member) => member.employee_id !== actorEmployeeId && isRecentOnline(member.employees?.last_online ?? null),
-  );
+  const online = room.room_type === "group"
+    ? members.some((member) => isMemberOnline(member))
+    : members.some(
+        (member) => member.employee_id !== actorEmployeeId && isMemberOnline(member),
+      );
 
   return {
     id: room.id,
@@ -520,6 +525,28 @@ export const createChatMessageHandler = async (req: Request, res: Response) => {
     if (error) {
       return res.status(500).json({ ok: false, error: error.message });
     }
+
+    const { data: recipientRows, error: recipientError } = await supabase
+      .from("chat_members")
+      .select("employee_id")
+      .eq("chat_room_id", id)
+      .neq("employee_id", actorEmployeeId);
+
+    if (recipientError) {
+      return res.status(500).json({ ok: false, error: recipientError.message });
+    }
+
+    const messageText = content.length > 80 ? `${content.slice(0, 77)}...` : content;
+    await insertUserNotifications(
+      (recipientRows ?? []).map((recipient) => ({
+        source: "employees",
+        subject_id: recipient.employee_id as string,
+        topic: "Chat",
+        title: "Có tin nhắn mới",
+        content: messageText,
+        link: `/chat/${id}`,
+      })),
+    ).catch(() => null);
 
     await Promise.all([
       supabase

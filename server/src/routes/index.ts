@@ -11,6 +11,7 @@ import {
   signUpHandler,
 } from "./auth.js";
 import { employeeFeedbacksHandler, employeesHandler } from "./employees.js";
+import { createUserHandler, usersHandler } from "./users.js";
 import {
   claimTaskHandler,
   createTaskHandler,
@@ -40,6 +41,8 @@ export const registerRoutes = (router: Router) => {
   router.get("/health", healthHandler);
   router.get("/db/ping", dbPingHandler);
   router.get("/employees", employeesHandler);
+  router.get("/users", usersHandler);
+  router.post("/users", createUserHandler);
   router.get("/employees/:id/feedbacks", employeeFeedbacksHandler);
   router.get("/tasks", listTasksHandler);
   router.get("/tasks/:id", getTaskHandler);

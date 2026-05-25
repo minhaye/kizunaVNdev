@@ -25,6 +25,8 @@ type RoleInfo = {
   permissions: string[];
 };
 
+type UserRole = "employee" | "leader" | "admin";
+
 type ManagedUser = {
   id: string;
   source: UserSource;
@@ -588,6 +590,169 @@ export default function AdminPage() {
                 </tbody>
               </table>
             </div>
+
+            {!showAllUsers && sortedFilteredUsers.length > 5 && (
+              <p className="mt-2 text-xs text-slate-500">
+                Đang ẩn {sortedFilteredUsers.length - 5} user còn lại.
+              </p>
+            )}
+
+            {isCreateUserOpen && (
+              <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <h4 className="text-sm font-semibold text-slate-800">Thêm người dùng</h4>
+                  <button
+                    type="button"
+                    className="text-xs font-medium text-slate-500 hover:text-slate-700"
+                    onClick={() => setIsCreateUserOpen(false)}
+                  >
+                    Đóng
+                  </button>
+                </div>
+
+                {createUserError && (
+                  <div className="mb-3 rounded-lg border border-rose-100 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+                    {createUserError}
+                  </div>
+                )}
+
+                {createUserSuccess && (
+                  <div className="mb-3 rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+                    {createUserSuccess}
+                  </div>
+                )}
+
+                <div className="grid gap-3 md:grid-cols-2">
+                  <label className="flex flex-col gap-1 text-sm">
+                    <span className="text-slate-700">Name *</span>
+                    <input
+                      className="rounded-lg border border-slate-200 bg-white px-3 py-2"
+                      value={createUserForm.name}
+                      onChange={(event) => setCreateUserForm((prev) => ({ ...prev, name: event.target.value }))}
+                      placeholder="Tên hiển thị"
+                    />
+                  </label>
+
+                  <label className="flex flex-col gap-1 text-sm">
+                    <span className="text-slate-700">Email *</span>
+                    <input
+                      type="email"
+                      className="rounded-lg border border-slate-200 bg-white px-3 py-2"
+                      value={createUserForm.email}
+                      onChange={(event) => setCreateUserForm((prev) => ({ ...prev, email: event.target.value }))}
+                      placeholder="user@example.com"
+                    />
+                  </label>
+
+                  <label className="flex flex-col gap-1 text-sm">
+                    <span className="text-slate-700">Password *</span>
+                    <input
+                      type="password"
+                      className="rounded-lg border border-slate-200 bg-white px-3 py-2"
+                      value={createUserForm.password}
+                      onChange={(event) => setCreateUserForm((prev) => ({ ...prev, password: event.target.value }))}
+                      placeholder="Mật khẩu đăng nhập"
+                    />
+                  </label>
+
+                  <label className="flex flex-col gap-1 text-sm">
+                    <span className="text-slate-700">Nationality *</span>
+                    <select
+                      className="rounded-lg border border-slate-200 bg-white px-3 py-2"
+                      value={createUserForm.nationality}
+                      onChange={(event) => setCreateUserForm((prev) => ({ ...prev, nationality: event.target.value as "vn" | "jp" }))}
+                    >
+                      <option value="vn">VN</option>
+                      <option value="jp">JP</option>
+                    </select>
+                  </label>
+
+                  <label className="flex flex-col gap-1 text-sm">
+                    <span className="text-slate-700">Role *</span>
+                    <select
+                      className="rounded-lg border border-slate-200 bg-white px-3 py-2"
+                      value={createUserForm.role}
+                      onChange={(event) => setCreateUserForm((prev) => ({ ...prev, role: event.target.value as "employee" | "leader" }))}
+                    >
+                      <option value="employee">Employee</option>
+                      <option value="leader">Leader</option>
+                    </select>
+                  </label>
+
+                  <label className="flex flex-col gap-1 text-sm md:col-span-2">
+                    <span className="text-slate-700">Avatar URL</span>
+                    <input
+                      className="rounded-lg border border-slate-200 bg-white px-3 py-2"
+                      value={createUserForm.avatar_url}
+                      onChange={(event) => setCreateUserForm((prev) => ({ ...prev, avatar_url: event.target.value }))}
+                      placeholder="https://..."
+                    />
+                  </label>
+                </div>
+
+                <div className="mt-4 flex items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                    onClick={() => setIsCreateUserOpen(false)}
+                    disabled={createUserSubmitting}
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="button"
+                    className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-70"
+                    disabled={createUserSubmitting}
+                    onClick={async () => {
+                      const token = localStorage.getItem("authToken");
+                      if (!token) return;
+
+                      setCreateUserError(null);
+                      setCreateUserSuccess(null);
+                      setCreateUserSubmitting(true);
+
+                      try {
+                        const response = await fetch(`${API_BASE_URL}/api/users`, {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
+                          },
+                          body: JSON.stringify(createUserForm),
+                        });
+                        const data = await response.json() as { user?: UserRow; error?: string };
+
+                        if (!response.ok) {
+                          setCreateUserError(data.error ?? "Không tạo được user mới.");
+                          return;
+                        }
+
+                        const createdUser = data.user;
+                        if (createdUser) {
+                          setUsers((prev) => sortUsersByName([...prev, createdUser]));
+                        }
+
+                        setCreateUserSuccess("Tạo user thành công.");
+                        setCreateUserForm({
+                          name: "",
+                          email: "",
+                          password: "",
+                          nationality: "vn",
+                          role: "employee",
+                          avatar_url: "",
+                        });
+                      } catch {
+                        setCreateUserError("Không tạo được user mới.");
+                      } finally {
+                        setCreateUserSubmitting(false);
+                      }
+                    }}
+                  >
+                    {createUserSubmitting ? "Đang lưu..." : "Tạo người dùng"}
+                  </button>
+                </div>
+              </div>
+            )}
           </section>
         )}
 
@@ -638,6 +803,15 @@ export default function AdminPage() {
                   Giữ phiên đăng nhập lâu hơn. / ログイン状態を保持します。
                 </span>
               </span>
+              <select
+                value={loginRetentionDays}
+                onChange={(event) => setLoginRetentionDays(Number(event.target.value) as 30 | 60 | 90)}
+                className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
+              >
+                <option value={30}>30 ngày</option>
+                <option value={60}>60 ngày</option>
+                <option value={90}>90 ngày</option>
+              </select>
             </label>
 
             <label className="flex items-start gap-3 rounded-lg border border-slate-100 p-4">

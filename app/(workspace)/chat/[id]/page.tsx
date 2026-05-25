@@ -226,6 +226,12 @@ export default function ChatDetailPage() {
 
   const roomName = room?.name ?? roomId ?? "Chat";
   const roomTopic = room?.topic ?? "";
+  const isRecentOnline = (value: string | null | undefined) => {
+    if (!value) return false;
+    const timestamp = new Date(value).getTime();
+    if (Number.isNaN(timestamp)) return false;
+    return Date.now() - timestamp <= 5 * 60 * 1000;
+  };
 
   return (
     <main className="flex-1 overflow-hidden p-8 bg-slate-50/50">
@@ -243,22 +249,27 @@ export default function ChatDetailPage() {
                 className={`relative w-11 h-11 rounded-full flex items-center justify-center font-bold text-sm ${getAvatarClass(getAvatarSeed(roomName))}`}
               >
                 {getAvatarInitials(roomName)}
-                {room?.online && (
-                  <span className="absolute right-0 bottom-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white" />
-                )}
+                <span
+                  className={`absolute right-0 bottom-0 w-3 h-3 rounded-full border-2 border-white ${room?.online ? "bg-emerald-500" : "bg-amber-400"}`}
+                />
               </div>
               <div className="min-w-0">
                 <h2 className="text-base font-bold text-slate-900 truncate">
                   {roomName}
                 </h2>
-                <p className="text-xs text-emerald-600 font-medium">
-                  {room?.online ? (
-                    <span className="block">オンライン中</span>
-                  ) : (
-                    <span className="block">オフライン</span>
-                  )}
-                  <span className="block">{room?.online ? "Đang hoạt động" : "Ngoại tuyến"}</span>
-                </p>
+{room?.room_type !== "group" && (
+        <div className="flex items-center gap-1.5">
+          <span className={`h-2 w-2 rounded-full ${room?.online ? "bg-emerald-500" : "bg-amber-400"}`} />
+          <p className={`text-xs font-medium ${room?.online ? "text-emerald-600" : "text-slate-500"}`}>
+            {room?.online ? (
+              <span className="block">オンライン中</span>
+            ) : (
+              <span className="block">オフライン</span>
+            )}
+            <span className="block">{room?.online ? "Đang hoạt động" : "Ngoại tuyến"}</span>
+          </p>
+        </div>
+      )}
                 {roomTopic && (
                   <p className="text-[11px] text-slate-500 mt-0.5">{roomTopic}</p>
                 )}
@@ -277,7 +288,30 @@ export default function ChatDetailPage() {
             </div>
           </header>
 
-          <div className="flex-1 min-h-0 p-5 overflow-y-auto space-y-4 bg-slate-50/40">
+{room?.room_type === "group" && room.members.length > 0 && (
+        <div className="px-5 py-3 border-b border-slate-100 bg-white">
+          <div className="flex items-center gap-2 overflow-x-auto">
+            {room.members.map((member) => {
+              const memberName = member.employees?.name ?? "Unknown";
+              const memberOnline = isRecentOnline(member.employees?.last_online);
+
+              return (
+                <div key={member.employee_id} className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-2 py-1 shrink-0">
+                  <div className={`relative w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold ${getAvatarClass(getAvatarSeed(memberName))}`}>
+                    {getAvatarInitials(memberName)}
+                    <span className={`absolute right-0 bottom-0 w-2.5 h-2.5 rounded-full border-2 border-white ${memberOnline ? "bg-emerald-500" : "bg-amber-400"}`} />
+                  </div>
+                  <span className="text-xs font-medium text-slate-700 whitespace-nowrap">
+                    {memberName}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <div className="flex-1 min-h-0 p-5 overflow-y-auto space-y-4 bg-slate-50/40">
             {loading ? (
               <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-6 text-center text-sm text-slate-500">
                 <span className="block">会話を読み込み中...</span>
@@ -304,7 +338,7 @@ export default function ChatDetailPage() {
                       </div>
                     )}
                     <div
-                      className={`max-w-[75%] rounded-2xl px-4 py-2 text-sm shadow-sm ${mine ? "rounded-tr-md bg-blue-600 text-white" : "rounded-tl-md bg-white border border-slate-200 text-slate-700"}`}
+                      className={`chat-bubble max-w-[75%] rounded-2xl px-4 py-2 text-sm shadow-sm ${mine ? "chat-bubble-mine rounded-tr-md bg-blue-600 text-white" : "chat-bubble-other rounded-tl-md bg-white border border-slate-200 text-slate-700"}`}
                     >
                       {!mine && (
                         <p className="mb-1 text-[11px] font-semibold text-slate-400">
