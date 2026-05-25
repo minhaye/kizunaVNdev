@@ -19,6 +19,7 @@ type ChatMemberRow = {
   chat_room_id: string;
   role: "member" | "chat_admin";
   joined_at: string;
+  is_read: boolean;
   last_read_at: string | null;
   employees?: {
     id: string;
@@ -44,6 +45,13 @@ type MessageRow = {
     avatar_url: string | null;
     last_online: string | null;
   } | null;
+};
+
+type FeedbackRow = {
+  id: string;
+  receiver_id: string;
+  sender_id: string;
+  content: string;
 };
 
 const firstEmployee = (value: unknown) => {
@@ -137,7 +145,7 @@ const loadMembershipsForRooms = async (roomIds: string[]) => {
 
   const { data, error } = await supabase
     .from("chat_members")
-    .select("chat_room_id,last_read_at,role,joined_at,employees:employee_id(id,name,avatar_url,last_online)")
+    .select("employee_id,chat_room_id,is_read,last_read_at,role,joined_at,employees:employee_id(id,name,avatar_url,last_online)")
     .in("chat_room_id", roomIds);
 
   if (error) {
@@ -204,9 +212,28 @@ const loadMessagesForRooms = async (roomIds: string[]) => {
   })) as MessageRow[];
 };
 
+const loadExistingFeedback = async (receiverId: string, senderId: string) => {
+  const { data, error } = await supabase
+    .from("feedbacks")
+    .select("id,receiver_id,sender_id,content")
+    .eq("receiver_id", receiverId)
+    .eq("sender_id", senderId)
+    .limit(1);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return ((data ?? [])[0] ?? null) as FeedbackRow | null;
+};
+
 const getRoomActorMembership = (members: ChatMemberRow[], actorEmployeeId: string | null) => {
   if (!actorEmployeeId) return null;
   return members.find((member) => member.employee_id === actorEmployeeId) ?? null;
+};
+
+const isRoomUnread = (membership: ChatMemberRow | null) => {
+  return membership?.is_read === false;
 };
 
 const buildRoomSummary = (
@@ -219,14 +246,8 @@ const buildRoomSummary = (
   const visibleMessages = messages.filter((message) => message.deleted_at === null);
   const latestMessage = visibleMessages[0] ?? null;
   const actorMembership = getRoomActorMembership(members, actorEmployeeId);
-  const unreadCount = actorMembership?.last_read_at
-    ? visibleMessages.filter(
-        (message) =>
-          actorEmployeeId !== null &&
-          message.sender_id !== actorEmployeeId &&
-          new Date(message.sent_at).getTime() > new Date(actorMembership.last_read_at ?? "").getTime(),
-      ).length
-    : 0;
+  const hasUnreadActivity = actorEmployeeId !== null && isRoomUnread(actorMembership);
+  const unreadMessages = hasUnreadActivity ? 1 : 0;
 
   const online = members.some(
     (member) => member.employee_id !== actorEmployeeId && isRecentOnline(member.employees?.last_online ?? null),
@@ -238,7 +259,8 @@ const buildRoomSummary = (
     topic: room.topic?.trim() || (room.room_type === "direct" ? "Direct" : "Group"),
     latest: latestMessage?.content ?? "",
     latest_at: latestMessage?.sent_at ?? room.last_message_at ?? room.updated_at,
-    unread: unreadCount,
+    unread_messages: unreadMessages,
+    unread: hasUnreadActivity ? 1 : 0,
     online,
     pinned: pinnedRoomIds.has(room.id),
     room_type: room.room_type,
@@ -321,7 +343,7 @@ export const getChatRoomDetailHandler = async (req: Request, res: Response) => {
 
     const { data: membership, error: membershipError } = await supabase
       .from("chat_members")
-      .select("chat_room_id,last_read_at,role,joined_at,employees:employee_id(id,name,avatar_url,last_online)")
+      .select("chat_room_id,is_read,last_read_at,role,joined_at,employees:employee_id(id,name,avatar_url,last_online)")
       .eq("employee_id", actorEmployeeId || "")
       .eq("chat_room_id", id)
       .maybeSingle<ChatMemberRow>();
@@ -342,7 +364,7 @@ export const getChatRoomDetailHandler = async (req: Request, res: Response) => {
         .maybeSingle<ChatRoomRow>(),
       supabase
         .from("chat_members")
-        .select("employee_id,chat_room_id,role,joined_at,last_read_at,employees:employee_id(id,name,avatar_url,last_online)")
+        .select("employee_id,chat_room_id,role,joined_at,is_read,last_read_at,employees:employee_id(id,name,avatar_url,last_online)")
         .eq("chat_room_id", id),
       supabase
         .from("messages")
@@ -388,22 +410,15 @@ export const getChatRoomDetailHandler = async (req: Request, res: Response) => {
     const latestMessage = visibleMessages[0] ?? null;
     const roomName = formatRoomName(room, members, actorEmployeeId ?? members[0]?.employee_id ?? "");
     const actorMembership = getRoomActorMembership(members, actorEmployeeId);
-    const unread = actorMembership?.last_read_at
-      ? visibleMessages.filter(
-          (message) =>
-            actorEmployeeId !== null &&
-            message.sender_id !== actorEmployeeId &&
-            new Date(message.sent_at).getTime() > new Date(actorMembership.last_read_at ?? "").getTime(),
-        ).length
-      : 0;
+    const hasUnreadActivity = actorEmployeeId !== null && isRoomUnread(actorMembership);
     const online = members.some(
       (member) => member.employee_id !== actorEmployeeId && isRecentOnline(member.employees?.last_online ?? null),
     );
 
-    if (actorMembership && actorMembership.last_read_at !== room.last_message_at) {
+    if (actorMembership && hasUnreadActivity) {
       await supabase
         .from("chat_members")
-        .update({ last_read_at: new Date().toISOString() })
+        .update({ is_read: true, last_read_at: room.updated_at })
         .eq("employee_id", actorEmployeeId)
         .eq("chat_room_id", id);
     }
@@ -419,7 +434,8 @@ export const getChatRoomDetailHandler = async (req: Request, res: Response) => {
         updated_at: room.updated_at,
         created_by: room.created_by,
         last_message_at: room.last_message_at,
-        unread,
+        unread_messages: hasUnreadActivity ? 1 : 0,
+        unread: hasUnreadActivity ? 1 : 0,
         pinned: Boolean(pinnedResult.data),
         online,
         members,
@@ -512,12 +528,93 @@ export const createChatMessageHandler = async (req: Request, res: Response) => {
         .eq("id", id),
       supabase
         .from("chat_members")
-        .update({ last_read_at: sentAt })
+        .update({ is_read: false, last_read_at: null })
+        .eq("chat_room_id", id)
+        .neq("employee_id", actorEmployeeId),
+      supabase
+        .from("chat_members")
+        .update({ is_read: true, last_read_at: sentAt })
         .eq("employee_id", actorEmployeeId)
         .eq("chat_room_id", id),
     ]);
 
     return res.status(201).json({ ok: true, data });
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      error: "Internal server error",
+      details: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
+
+export const markChatRoomReadHandler = async (req: Request, res: Response) => {
+  try {
+    const actorEmployeeId = getActorEmployeeId(req);
+    if (!actorEmployeeId) {
+      return res.status(401).json({ ok: false, error: "employee_id or Bearer token is required" });
+    }
+
+    const { id } = req.params;
+    if (!id || typeof id !== "string") {
+      return res.status(400).json({ ok: false, error: "Invalid chat room ID" });
+    }
+
+    const [membershipResult, roomResult] = await Promise.all([
+      supabase
+        .from("chat_members")
+        .select("employee_id,chat_room_id")
+        .eq("employee_id", actorEmployeeId)
+        .eq("chat_room_id", id)
+        .maybeSingle(),
+      supabase
+        .from("chat_rooms")
+        .select("id")
+        .eq("id", id)
+        .maybeSingle(),
+    ]);
+
+    if (membershipResult.error) {
+      return res.status(500).json({ ok: false, error: membershipResult.error.message });
+    }
+
+    if (roomResult.error) {
+      return res.status(500).json({ ok: false, error: roomResult.error.message });
+    }
+
+    if (!roomResult.data) {
+      return res.status(404).json({ ok: false, error: "Chat room not found" });
+    }
+
+    if (!membershipResult.data) {
+      return res.status(403).json({ ok: false, error: "You are not a member of this chat room" });
+    }
+
+    const roomData = await supabase
+      .from("chat_rooms")
+      .select("updated_at")
+      .eq("id", id)
+      .maybeSingle<{ updated_at: string }>();
+
+    if (roomData.error) {
+      return res.status(500).json({ ok: false, error: roomData.error.message });
+    }
+
+    if (!roomData.data) {
+      return res.status(404).json({ ok: false, error: "Chat room not found" });
+    }
+
+    const { error } = await supabase
+      .from("chat_members")
+      .update({ is_read: true, last_read_at: roomData.data.updated_at })
+      .eq("employee_id", actorEmployeeId)
+      .eq("chat_room_id", id);
+
+    if (error) {
+      return res.status(500).json({ ok: false, error: error.message });
+    }
+
+    return res.json({ ok: true, data: { chat_room_id: id, is_read: true, last_read_at: roomData.data.updated_at } });
   } catch (error) {
     return res.status(500).json({
       ok: false,
@@ -587,6 +684,270 @@ export const unpinChatRoomHandler = async (req: Request, res: Response) => {
     }
 
     return res.json({ ok: true, action: "unpinned" });
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      error: "Internal server error",
+      details: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
+
+export const getChatFeedbackHandler = async (req: Request, res: Response) => {
+  try {
+    const actorEmployeeId = getActorEmployeeId(req);
+    if (!actorEmployeeId) {
+      return res.status(401).json({ ok: false, error: "employee_id or Bearer token is required" });
+    }
+
+    const { id } = req.params;
+    if (!id || typeof id !== "string") {
+      return res.status(400).json({ ok: false, error: "Invalid chat room ID" });
+    }
+
+    const receiverId = typeof req.query.receiver_id === "string" ? req.query.receiver_id.trim() : "";
+    if (!receiverId) {
+      return res.status(400).json({ ok: false, error: "receiver_id is required" });
+    }
+
+    const { data: memberships, error: membershipError } = await supabase
+      .from("chat_members")
+      .select("employee_id")
+      .eq("chat_room_id", id)
+      .in("employee_id", [actorEmployeeId, receiverId]);
+
+    if (membershipError) {
+      return res.status(500).json({ ok: false, error: membershipError.message });
+    }
+
+    const memberIds = new Set((memberships ?? []).map((membership: { employee_id: string }) => membership.employee_id));
+    if (!memberIds.has(actorEmployeeId)) {
+      return res.status(403).json({ ok: false, error: "You are not a member of this chat room" });
+    }
+
+    if (!memberIds.has(receiverId)) {
+      return res.status(404).json({ ok: false, error: "Feedback target is not in this chat room" });
+    }
+
+    const feedback = await loadExistingFeedback(receiverId, actorEmployeeId);
+
+    return res.json({
+      ok: true,
+      data: feedback,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      error: "Internal server error",
+      details: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
+
+export const saveChatFeedbackHandler = async (req: Request, res: Response) => {
+  try {
+    const actorEmployeeId = getActorEmployeeId(req);
+    if (!actorEmployeeId) {
+      return res.status(401).json({ ok: false, error: "employee_id or Bearer token is required" });
+    }
+
+    const { id } = req.params;
+    if (!id || typeof id !== "string") {
+      return res.status(400).json({ ok: false, error: "Invalid chat room ID" });
+    }
+
+    const receiverId = typeof req.body?.receiver_id === "string" ? req.body.receiver_id.trim() : "";
+    const content = typeof req.body?.content === "string" ? req.body.content.trim() : "";
+
+    if (!receiverId) {
+      return res.status(400).json({ ok: false, error: "receiver_id is required" });
+    }
+
+    if (!content) {
+      return res.status(400).json({ ok: false, error: "content is required" });
+    }
+
+    if (receiverId === actorEmployeeId) {
+      return res.status(400).json({ ok: false, error: "Cannot leave feedback for yourself" });
+    }
+
+    const { data: memberships, error: membershipError } = await supabase
+      .from("chat_members")
+      .select("employee_id")
+      .eq("chat_room_id", id)
+      .in("employee_id", [actorEmployeeId, receiverId]);
+
+    if (membershipError) {
+      return res.status(500).json({ ok: false, error: membershipError.message });
+    }
+
+    const memberIds = new Set((memberships ?? []).map((membership: { employee_id: string }) => membership.employee_id));
+    if (!memberIds.has(actorEmployeeId)) {
+      return res.status(403).json({ ok: false, error: "You are not a member of this chat room" });
+    }
+
+    if (!memberIds.has(receiverId)) {
+      return res.status(404).json({ ok: false, error: "Feedback target is not in this chat room" });
+    }
+
+    const existingFeedback = await loadExistingFeedback(receiverId, actorEmployeeId);
+    const payload = {
+      receiver_id: receiverId,
+      sender_id: actorEmployeeId,
+      content,
+    };
+
+    if (existingFeedback) {
+      const { data, error } = await supabase
+        .from("feedbacks")
+        .update({ content })
+        .eq("id", existingFeedback.id)
+        .select("id,receiver_id,sender_id,content")
+        .single();
+
+      if (error) {
+        return res.status(500).json({ ok: false, error: error.message });
+      }
+
+      return res.json({
+        ok: true,
+        action: "updated",
+        data,
+      });
+    }
+
+    const { data, error } = await supabase
+      .from("feedbacks")
+      .insert(payload)
+      .select("id,receiver_id,sender_id,content")
+      .single();
+
+    if (error) {
+      return res.status(500).json({ ok: false, error: error.message });
+    }
+
+    return res.status(201).json({
+      ok: true,
+      action: "created",
+      data,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      error: "Internal server error",
+      details: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
+
+const normalizeMemberIds = (memberIds: unknown[]) => {
+  const unique = new Set<string>();
+  for (const value of memberIds) {
+    if (typeof value === "string") {
+      const trimmed = value.trim();
+      if (trimmed) unique.add(trimmed);
+    }
+  }
+  return Array.from(unique);
+};
+
+const findExistingDirectRoom = async (actorEmployeeId: string, otherEmployeeId: string) => {
+  const [actorRoomsResult, otherRoomsResult] = await Promise.all([
+    supabase.from("chat_members").select("chat_room_id").eq("employee_id", actorEmployeeId),
+    supabase.from("chat_members").select("chat_room_id").eq("employee_id", otherEmployeeId),
+  ]);
+
+  if (actorRoomsResult.error) {
+    throw new Error(actorRoomsResult.error.message);
+  }
+
+  if (otherRoomsResult.error) {
+    throw new Error(otherRoomsResult.error.message);
+  }
+
+  const actorRoomIds = new Set(
+    (actorRoomsResult.data ?? []).map((membership: { chat_room_id: string }) => membership.chat_room_id),
+  );
+
+  const sharedRoomIds = (otherRoomsResult.data ?? [])
+    .map((membership: { chat_room_id: string }) => membership.chat_room_id)
+    .filter((id) => actorRoomIds.has(id));
+
+  if (sharedRoomIds.length === 0) {
+    return null;
+  }
+
+  const rooms = await loadRoomsByIds(sharedRoomIds);
+  return rooms.find((room) => room.room_type === "direct") ?? null;
+};
+
+export const createChatRoomHandler = async (req: Request, res: Response) => {
+  try {
+    const actorEmployeeId = getActorEmployeeId(req);
+    if (!actorEmployeeId) {
+      return res.status(401).json({ ok: false, error: "employee_id or Bearer token is required" });
+    }
+
+    const roomType = req.body?.room_type === "direct" ? "direct" : "group";
+    const name = typeof req.body?.name === "string" ? req.body.name.trim() : "";
+    const topic = typeof req.body?.topic === "string" ? req.body.topic.trim() : "";
+    const requestedMemberIds = normalizeMemberIds(
+      Array.isArray(req.body?.member_ids) ? req.body.member_ids : [],
+    ).filter((id) => id !== actorEmployeeId);
+
+    const memberIds = normalizeMemberIds([actorEmployeeId, ...requestedMemberIds]);
+
+    if (roomType === "direct") {
+      const otherMemberId = requestedMemberIds.find((id) => id !== actorEmployeeId) ?? "";
+      if (!otherMemberId || requestedMemberIds.length !== 1) {
+        return res
+          .status(400)
+          .json({ ok: false, error: "direct chat requires exactly 1 other member" });
+      }
+
+      const existing = await findExistingDirectRoom(actorEmployeeId, otherMemberId);
+      if (existing) {
+        return res.json({ ok: true, action: "existing", data: { id: existing.id, room_type: "direct" } });
+      }
+    }
+
+    if (roomType === "group" && memberIds.length < 2) {
+      return res.status(400).json({ ok: false, error: "group chat requires at least 2 members" });
+    }
+
+    const timestamp = new Date().toISOString();
+    const { data: room, error: roomError } = await supabase
+      .from("chat_rooms")
+      .insert({
+        room_type: roomType,
+        name: roomType === "group" ? (name.length > 0 ? name : null) : null,
+        topic: topic.length > 0 ? topic : null,
+        created_at: timestamp,
+        updated_at: timestamp,
+        created_by: actorEmployeeId,
+      })
+      .select("id,room_type,name,topic,created_at,updated_at,created_by,last_message_at")
+      .single();
+
+    if (roomError) {
+      return res.status(500).json({ ok: false, error: roomError.message });
+    }
+
+    const membersPayload = memberIds.map((memberId) => ({
+      employee_id: memberId,
+      chat_room_id: room.id,
+      role: memberId === actorEmployeeId ? "chat_admin" : "member",
+      joined_at: timestamp,
+      is_read: memberId === actorEmployeeId,
+      last_read_at: memberId === actorEmployeeId ? timestamp : null,
+    }));
+
+    const { error: memberError } = await supabase.from("chat_members").insert(membersPayload);
+    if (memberError) {
+      return res.status(500).json({ ok: false, error: memberError.message });
+    }
+
+    return res.status(201).json({ ok: true, action: "created", data: room });
   } catch (error) {
     return res.status(500).json({
       ok: false,

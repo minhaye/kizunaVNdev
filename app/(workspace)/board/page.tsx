@@ -74,7 +74,7 @@ export default function BoardPage() {
             return {
               id: p.id,
               title: p.title,
-              author: p.author || p.name || "Unknown",
+              author: p.author || p.name || "不明 / Không rõ",
               date,
               postedAt,
               avatar: p.avatar || p.avatar_url || "",
@@ -84,7 +84,7 @@ export default function BoardPage() {
           setPosts(mapped);
           setError(null);
         } else {
-          setError("Invalid response from posts API");
+          setError("掲示板APIの応答が不正です / Phản hồi API bảng tin không hợp lệ");
         }
       })
       .catch((err) => {
@@ -133,7 +133,7 @@ export default function BoardPage() {
     const payload = await response.json();
 
     if (!response.ok || !payload?.ok) {
-      throw new Error(payload?.error || "Failed to fetch reactions");
+      throw new Error(payload?.error || "リアクションを取得できません / Không thể tải reaction");
     }
 
     setSelectedPostReactions(payload.data);
@@ -198,13 +198,13 @@ export default function BoardPage() {
       const payload = await response.json();
 
       if (!response.ok || !payload?.ok) {
-        throw new Error(payload?.error || "Failed to update reaction");
+        throw new Error(payload?.error || "リアクションを更新できません / Không thể cập nhật reaction");
       }
 
       await fetchPostReactions(selectedPost.id);
     } catch (reactionError) {
       console.error(reactionError);
-      alert(reactionError instanceof Error ? reactionError.message : "Có lỗi khi thả reaction");
+      alert(reactionError instanceof Error ? reactionError.message : "リアクションに失敗しました / Có lỗi khi thả reaction");
     }
   };
 
@@ -214,10 +214,12 @@ export default function BoardPage() {
         <div className="max-w-5xl mx-auto">
           <div className="mb-6">
             <h2 className="text-xl font-bold text-slate-900">
-              掲示板（コミュニティ）画面
+              <span className="block">掲示板（コミュニティ）画面</span>
+              <span className="block">Màn hình Bảng tin Cộng đồng</span>
             </h2>
             <p className="text-sm text-slate-500">
-              コミュニティ掲示板画面 / Màn hình Bảng tin Cộng đồng
+              <span className="block">コミュニティ掲示板画面</span>
+              <span className="block">Màn hình Bảng tin Cộng đồng</span>
             </p>
           </div>
 
@@ -226,11 +228,12 @@ export default function BoardPage() {
               <Search className="w-4 h-4 text-slate-400" />
               <input
                 className="w-full text-sm outline-none"
-                placeholder="タイトル・作者を検索 / Tìm theo tiêu đề, tác giả..."
+                placeholder="タイトル・作者を検索..."
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
               />
             </div>
+            <span className="text-[11px] text-slate-400">Tìm theo tiêu đề, tác giả...</span>
             <select
               value={authorFilter}
               onChange={(event) => setAuthorFilter(event.target.value)}
@@ -244,14 +247,16 @@ export default function BoardPage() {
               ))}
             </select>
             <span className="text-xs text-slate-400">
-              {filteredPosts.length} posts
+              <span className="block">{filteredPosts.length} 件</span>
+              <span className="block">{filteredPosts.length} bài viết</span>
             </span>
           </div>
 
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm divide-y divide-slate-100">
             {filteredPosts.length === 0 ? (
               <div className="p-6 text-center text-sm text-slate-500">
-                該当する投稿がありません / Không có bài viết phù hợp.
+                <span className="block">該当する投稿がありません</span>
+                <span className="block">Không có bài viết phù hợp.</span>
               </div>
             ) : (
               filteredPosts.map((post) => (
@@ -303,7 +308,7 @@ export default function BoardPage() {
               <button
                 type="button"
                 onClick={() => setSelectedPost(null)}
-                aria-label="Close popup"
+                aria-label="閉じる / Đóng"
                 className="p-2 rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-700"
               >
                 <X size={18} />
@@ -316,13 +321,19 @@ export default function BoardPage() {
 
             <div className="px-5 pb-5">
               <div className="mb-3 text-xs text-slate-500">
-                {detailLoading ? "Đang tải reaction..." : ""}
+                {detailLoading ? (
+                  <>
+                    <span className="block">リアクションを読み込み中...</span>
+                    <span className="block">Đang tải reaction...</span>
+                  </>
+                ) : ""}
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 {(Object.keys(reactionMeta) as ReactionType[]).map((reaction) => {
                   const meta = reactionMeta[reaction];
                   const Icon = meta.icon;
                   const count = selectedPostReactions?.counts?.[reaction] ?? 0;
+                  const [vi, ja] = meta.label.split(" / ");
                   return (
                     <button
                       key={reaction}
@@ -330,7 +341,12 @@ export default function BoardPage() {
                       className={reactionButtonClass(reaction)}
                       onClick={() => void submitReaction(reaction)}
                     >
-                      <Icon size={14} /> {meta.label} ({count})
+                      <Icon size={14} />
+                      <span className="leading-tight">
+                        <span className="block">{ja ?? meta.label}</span>
+                        <span className="block">{vi ?? meta.label}</span>
+                      </span>
+                      <span>({count})</span>
                     </button>
                   );
                 })}
@@ -343,7 +359,8 @@ export default function BoardPage() {
                 onClick={() => setSelectedPost(null)}
                 className="px-4 py-2 bg-teal-600 text-white font-medium rounded-lg hover:bg-teal-700 transition-colors"
               >
-                Đóng
+                <span className="block">閉じる</span>
+                <span className="block">Đóng</span>
               </button>
             </div>
           </div>

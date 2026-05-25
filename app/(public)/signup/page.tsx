@@ -23,12 +23,12 @@ export default function SignupPage() {
     setSuccess("");
 
     if (password !== confirmPassword) {
-      setError("Mật khẩu không khớp");
+      setError("パスワードが一致しません / Mật khẩu không khớp");
       return;
     }
 
     if (password.length < 6) {
-      setError("Mật khẩu phải có ít nhất 6 ký tự");
+      setError("パスワードは6文字以上必要です / Mật khẩu phải có ít nhất 6 ký tự");
       return;
     }
 
@@ -46,17 +46,17 @@ export default function SignupPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Đăng ký thất bại");
+        setError(data.error || "登録失敗 / Đăng ký thất bại");
         return;
       }
 
-      setSuccess(data.message || "Đăng ký thành công! Vui lòng kiểm tra email để xác nhận.");
+      setSuccess(data.message || "登録完了！/ Đăng ký thành công! Vui lòng kiểm tra email để xác nhận.");
 
       setTimeout(() => {
         router.push("/login");
       }, 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Có lỗi xảy ra");
+      setError(err instanceof Error ? err.message : "エラーが発生しました / Có lỗi xảy ra");
     } finally {
       setLoading(false);
     }
@@ -66,8 +66,11 @@ export default function SignupPage() {
     <main className="min-h-screen grid place-items-center bg-gradient-to-br from-slate-100 to-blue-50 px-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Đăng ký tài khoản / 新規登録</h1>
-          <p className="text-sm text-slate-500 mt-2">Tạo tài khoản mới để bắt đầu. / 新しいアカウントを作成します。</p>
+          <h1 className="text-3xl font-bold text-slate-900">KizunaVN Đăng ký / 新規登録</h1>
+           <p className="text-sm text-slate-500 mt-2">
+           <span className="block">Tạo tài khoản mới để bắt đầu.</span>
+            <span className="block">新しいアカウントを作成します。</span>
+      </p>
         </div>
 
         {error && (
@@ -99,7 +102,7 @@ export default function SignupPage() {
           <div>
             <input
               type="email"
-              placeholder="Email"
+              placeholder="メール / Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
@@ -112,7 +115,7 @@ export default function SignupPage() {
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
-              placeholder="Mật khẩu / パスワード"
+              placeholder="パスワード / Mật khẩu"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
@@ -133,7 +136,7 @@ export default function SignupPage() {
           <div className="relative">
             <input
               type={showConfirmPassword ? "text" : "password"}
-              placeholder="Nhập lại mật khẩu / パスワード再入力"
+              placeholder="パスワード確認 / Xác nhận mật khẩu"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               disabled={loading}
@@ -156,13 +159,25 @@ export default function SignupPage() {
             disabled={loading}
             className="w-full bg-blue-600 text-white rounded-lg py-3 text-base font-semibold hover:bg-blue-700 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            {loading ? "Đang đăng ký..." : "Đăng ký / 登録"}
+            {loading ? (
+              <span className="block">登録中... / Đang đăng ký...</span>
+            ) : (
+              <span className="leading-tight">
+                <span className="block">登録</span>
+                <span className="block">Đăng ký</span>
+              </span>
+            )}
           </button>
         </form>
 
         {/* Login Link */}
         <p className="mt-6 text-center text-sm text-slate-600">
-          Đã có tài khoản? <Link href="/login" className="text-blue-600 hover:underline font-medium">Đăng nhập / ログインはこちら</Link>
+          <span className="block">すでにアカウントがありますか？</span>
+          <span className="block">Đã có tài khoản?</span>
+          <Link href="/login" className="text-blue-600 hover:underline font-medium">
+            <span className="block">ログイン</span>
+            <span className="block">Đăng nhập ngay</span>
+          </Link>
         </p>
       </div>
     </main>

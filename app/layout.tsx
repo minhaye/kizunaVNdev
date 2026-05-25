@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "KizunaVN",
-  description: "KizunaVN - Nen tang giao tiep va hop tac Nhat Viet.",
+  description: "KizunaVN - Nền tảng giao tiếp và hợp tác Nhật Việt.",
   icons: {
     icon: "/icon.svg",
     shortcut: "/icon.svg",
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "KizunaVN",
-    description: "Nen tang giao tiep va hop tac Nhat Viet.",
+    description: "Nền tảng giao tiếp và hợp tác Nhật Việt.",
     images: ["/icon.svg"],
   },
 };
