@@ -16,6 +16,7 @@ export type ChatMember = {
   chat_room_id: string;
   role: "member" | "chat_admin";
   joined_at: string;
+  is_read: boolean;
   last_read_at: string | null;
   employees?: {
     id: string;
@@ -66,6 +67,8 @@ const getApiBaseUrl = () =>
   process.env.NEXT_PUBLIC_API_BASE_URL ??
   process.env.NEXT_PUBLIC_API_BASE ??
   "http://localhost:4000";
+
+export const CHAT_UNREAD_CHANGED_EVENT = "kizunavn:chat-unread-changed";
 
 const getAuthToken = () => {
   if (typeof window === "undefined") return null;
@@ -118,6 +121,7 @@ const buildQueryString = (params: Record<string, string>) => {
 export const fetchChatRooms = async () => {
   const response = await fetch(`${getApiBaseUrl()}/api/chat/rooms${buildEmployeeIdQuery()}`, {
     headers: buildHeaders(),
+    cache: "no-store",
   });
   const payload = await response.json();
 
@@ -133,6 +137,7 @@ export const fetchChatRoomDetail = async (roomId: string) => {
     `${getApiBaseUrl()}/api/chat/rooms/${encodeURIComponent(roomId)}${buildEmployeeIdQuery()}`,
     {
       headers: buildHeaders(),
+      cache: "no-store",
     },
   );
   const payload = await response.json();
@@ -142,6 +147,21 @@ export const fetchChatRoomDetail = async (roomId: string) => {
   }
 
   return payload.data as ChatRoomDetail;
+};
+
+export const markChatRoomRead = async (roomId: string) => {
+  const response = await fetch(`${getApiBaseUrl()}/api/chat/rooms/${encodeURIComponent(roomId)}/read`, {
+    method: "POST",
+    headers: buildHeaders(),
+    body: JSON.stringify({ employee_id: getStoredEmployeeId() }),
+  });
+  const payload = await response.json();
+
+  if (!response.ok || !payload?.ok) {
+    throw new Error(payload?.error || "チャットを既読にできません / Không thể đánh dấu đã đọc");
+  }
+
+  return payload.data as { chat_room_id: string; is_read: boolean; last_read_at: string };
 };
 
 export const sendChatMessage = async (roomId: string, content: string) => {
@@ -238,6 +258,11 @@ export const formatRoomTime = (value: string) => {
 };
 
 export const getStoredEmployeeId = () => getStoredUser()?.id ?? null;
+
+export const notifyChatUnreadChanged = () => {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(CHAT_UNREAD_CHANGED_EVENT));
+};
 
 export const fetchChatFeedback = async (roomId: string, receiverId: string) => {
   const response = await fetch(

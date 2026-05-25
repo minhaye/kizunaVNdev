@@ -23,6 +23,7 @@ import {
   getChatFeedbackHandler,
   getChatRoomDetailHandler,
   listChatRoomsHandler,
+  markChatRoomReadHandler,
   pinChatRoomHandler,
   saveChatFeedbackHandler,
   unpinChatRoomHandler,
@@ -67,6 +68,7 @@ export const registerRoutes = (router: Router) => {
   router.get("/chat/rooms", listChatRoomsHandler);
   router.post("/chat/rooms", createChatRoomHandler);
   router.get("/chat/rooms/:id", getChatRoomDetailHandler);
+  router.post("/chat/rooms/:id/read", markChatRoomReadHandler);
   router.get("/chat/rooms/:id/feedback", getChatFeedbackHandler);
   router.post("/chat/rooms/:id/messages", createChatMessageHandler);
   router.post("/chat/rooms/:id/feedback", saveChatFeedbackHandler);

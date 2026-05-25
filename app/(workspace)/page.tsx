@@ -1,14 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { AlertCircle, CheckSquare, Clock, MessageSquare } from "lucide-react";
 import {
+  CHAT_UNREAD_CHANGED_EVENT,
   fetchChatRooms,
   formatRoomTime,
   getAvatarClass,
   getAvatarInitials,
   getAvatarSeed,
+  markChatRoomRead,
+  notifyChatUnreadChanged,
   type ChatRoomSummary,
 } from "./chat/chat-api";
 
@@ -177,6 +181,9 @@ export default function DashboardPage() {
   const [loadingTasks, setLoadingTasks] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(true);
   const [loadingAnnouncements, setLoadingAnnouncements] = useState(true);
+  const messagesRequestRef = useRef(0);
+  const router = useRouter();
+  const pathname = usePathname();
 
   const currentUser = useMemo(() => readStoredUser(), []);
 
@@ -217,35 +224,48 @@ export default function DashboardPage() {
     void loadTasks();
   }, [currentUser?.id]);
 
+  const loadMessages = useCallback(async () => {
+    const requestId = ++messagesRequestRef.current;
+    try {
+      setLoadingMessages(true);
+      setMessageError("");
+      const rooms = await fetchChatRooms();
+      if (requestId !== messagesRequestRef.current) return;
+      const unreadRooms = rooms
+        .filter((room) => room.unread > 0)
+        .filter((room) => room.latest_at)
+        .sort(
+          (a, b) =>
+            new Date(b.latest_at).getTime() - new Date(a.latest_at).getTime(),
+        )
+        .slice(0, 4);
+      setLatestMessages(unreadRooms.map(mapMessageCard));
+      setUnreadCount(unreadRooms.length);
+    } catch (error) {
+      if (requestId !== messagesRequestRef.current) return;
+      setMessageError(
+        error instanceof Error ? error.message : "メッセージを読み込めません / Không thể tải tin nhắn",
+      );
+      setUnreadCount(0);
+    } finally {
+      if (requestId !== messagesRequestRef.current) return;
+      setLoadingMessages(false);
+    }
+  }, []);
+
   useEffect(() => {
-    const loadMessages = async () => {
-      try {
-        setLoadingMessages(true);
-        setMessageError("");
-        const rooms = await fetchChatRooms();
-        const sorted = rooms
-          .filter((room) => room.latest_at)
-          .sort(
-            (a, b) =>
-              new Date(b.latest_at).getTime() - new Date(a.latest_at).getTime(),
-          )
-          .slice(0, 4);
-        setLatestMessages(sorted.map(mapMessageCard));
-        setUnreadCount(
-          rooms.reduce((sum, room) => sum + (room.unread ?? 0), 0),
-        );
-      } catch (error) {
-        setMessageError(
-          error instanceof Error ? error.message : "メッセージを読み込めません / Không thể tải tin nhắn",
-        );
-        setUnreadCount(0);
-      } finally {
-        setLoadingMessages(false);
-      }
+    void loadMessages();
+
+    const handleChatUnreadChanged = () => {
+      void loadMessages();
     };
 
-    void loadMessages();
-  }, []);
+    window.addEventListener(CHAT_UNREAD_CHANGED_EVENT, handleChatUnreadChanged);
+
+    return () => {
+      window.removeEventListener(CHAT_UNREAD_CHANGED_EVENT, handleChatUnreadChanged);
+    };
+  }, [loadMessages, pathname]);
 
   useEffect(() => {
     const loadAnnouncements = async () => {
@@ -387,6 +407,12 @@ export default function DashboardPage() {
                   <Link
                     key={msg.id}
                     href={`/chat/${encodeURIComponent(msg.id)}`}
+                    onClick={async (event) => {
+                      event.preventDefault();
+                      await markChatRoomRead(msg.id).catch(() => null);
+                      notifyChatUnreadChanged();
+                      router.push(`/chat/${encodeURIComponent(msg.id)}`);
+                    }}
                     className="block"
                   >
                     <div className="py-3 flex items-start cursor-pointer hover:bg-slate-50 px-2 -mx-2 rounded-lg transition-colors">

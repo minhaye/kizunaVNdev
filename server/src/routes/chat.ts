@@ -19,6 +19,7 @@ type ChatMemberRow = {
   chat_room_id: string;
   role: "member" | "chat_admin";
   joined_at: string;
+  is_read: boolean;
   last_read_at: string | null;
   employees?: {
     id: string;
@@ -144,7 +145,7 @@ const loadMembershipsForRooms = async (roomIds: string[]) => {
 
   const { data, error } = await supabase
     .from("chat_members")
-    .select("chat_room_id,last_read_at,role,joined_at,employees:employee_id(id,name,avatar_url,last_online)")
+    .select("employee_id,chat_room_id,is_read,last_read_at,role,joined_at,employees:employee_id(id,name,avatar_url,last_online)")
     .in("chat_room_id", roomIds);
 
   if (error) {
@@ -231,10 +232,8 @@ const getRoomActorMembership = (members: ChatMemberRow[], actorEmployeeId: strin
   return members.find((member) => member.employee_id === actorEmployeeId) ?? null;
 };
 
-const getLastReadTimestamp = (lastReadAt: string | null) => {
-  if (!lastReadAt) return null;
-  const timestamp = new Date(lastReadAt).getTime();
-  return Number.isNaN(timestamp) ? null : timestamp;
+const isRoomUnread = (membership: ChatMemberRow | null) => {
+  return membership?.is_read === false;
 };
 
 const buildRoomSummary = (
@@ -247,14 +246,8 @@ const buildRoomSummary = (
   const visibleMessages = messages.filter((message) => message.deleted_at === null);
   const latestMessage = visibleMessages[0] ?? null;
   const actorMembership = getRoomActorMembership(members, actorEmployeeId);
-  const lastReadTimestamp = getLastReadTimestamp(actorMembership?.last_read_at ?? null);
-  const unreadMessages = visibleMessages.filter((message) => {
-    if (actorEmployeeId === null) return false;
-    if (message.sender_id === actorEmployeeId) return false;
-    const sentAt = new Date(message.sent_at).getTime();
-    if (Number.isNaN(sentAt)) return false;
-    return lastReadTimestamp === null ? true : sentAt > lastReadTimestamp;
-  }).length;
+  const hasUnreadActivity = actorEmployeeId !== null && isRoomUnread(actorMembership);
+  const unreadMessages = hasUnreadActivity ? 1 : 0;
 
   const online = members.some(
     (member) => member.employee_id !== actorEmployeeId && isRecentOnline(member.employees?.last_online ?? null),
@@ -267,7 +260,7 @@ const buildRoomSummary = (
     latest: latestMessage?.content ?? "",
     latest_at: latestMessage?.sent_at ?? room.last_message_at ?? room.updated_at,
     unread_messages: unreadMessages,
-    unread: unreadMessages > 0 ? 1 : 0,
+    unread: hasUnreadActivity ? 1 : 0,
     online,
     pinned: pinnedRoomIds.has(room.id),
     room_type: room.room_type,
@@ -350,7 +343,7 @@ export const getChatRoomDetailHandler = async (req: Request, res: Response) => {
 
     const { data: membership, error: membershipError } = await supabase
       .from("chat_members")
-      .select("chat_room_id,last_read_at,role,joined_at,employees:employee_id(id,name,avatar_url,last_online)")
+      .select("chat_room_id,is_read,last_read_at,role,joined_at,employees:employee_id(id,name,avatar_url,last_online)")
       .eq("employee_id", actorEmployeeId || "")
       .eq("chat_room_id", id)
       .maybeSingle<ChatMemberRow>();
@@ -371,7 +364,7 @@ export const getChatRoomDetailHandler = async (req: Request, res: Response) => {
         .maybeSingle<ChatRoomRow>(),
       supabase
         .from("chat_members")
-        .select("employee_id,chat_room_id,role,joined_at,last_read_at,employees:employee_id(id,name,avatar_url,last_online)")
+        .select("employee_id,chat_room_id,role,joined_at,is_read,last_read_at,employees:employee_id(id,name,avatar_url,last_online)")
         .eq("chat_room_id", id),
       supabase
         .from("messages")
@@ -417,22 +410,15 @@ export const getChatRoomDetailHandler = async (req: Request, res: Response) => {
     const latestMessage = visibleMessages[0] ?? null;
     const roomName = formatRoomName(room, members, actorEmployeeId ?? members[0]?.employee_id ?? "");
     const actorMembership = getRoomActorMembership(members, actorEmployeeId);
-    const lastReadTimestamp = getLastReadTimestamp(actorMembership?.last_read_at ?? null);
-    const unreadMessages = visibleMessages.filter((message) => {
-      if (!actorEmployeeId) return false;
-      if (message.sender_id === actorEmployeeId) return false;
-      const sentAt = new Date(message.sent_at).getTime();
-      if (Number.isNaN(sentAt)) return false;
-      return lastReadTimestamp === null ? true : sentAt > lastReadTimestamp;
-    }).length;
+    const hasUnreadActivity = actorEmployeeId !== null && isRoomUnread(actorMembership);
     const online = members.some(
       (member) => member.employee_id !== actorEmployeeId && isRecentOnline(member.employees?.last_online ?? null),
     );
 
-    if (actorMembership && actorMembership.last_read_at !== room.last_message_at) {
+    if (actorMembership && hasUnreadActivity) {
       await supabase
         .from("chat_members")
-        .update({ last_read_at: new Date().toISOString() })
+        .update({ is_read: true, last_read_at: room.updated_at })
         .eq("employee_id", actorEmployeeId)
         .eq("chat_room_id", id);
     }
@@ -448,8 +434,8 @@ export const getChatRoomDetailHandler = async (req: Request, res: Response) => {
         updated_at: room.updated_at,
         created_by: room.created_by,
         last_message_at: room.last_message_at,
-        unread_messages: unreadMessages,
-        unread: unreadMessages > 0 ? 1 : 0,
+        unread_messages: hasUnreadActivity ? 1 : 0,
+        unread: hasUnreadActivity ? 1 : 0,
         pinned: Boolean(pinnedResult.data),
         online,
         members,
@@ -542,12 +528,93 @@ export const createChatMessageHandler = async (req: Request, res: Response) => {
         .eq("id", id),
       supabase
         .from("chat_members")
-        .update({ last_read_at: sentAt })
+        .update({ is_read: false, last_read_at: null })
+        .eq("chat_room_id", id)
+        .neq("employee_id", actorEmployeeId),
+      supabase
+        .from("chat_members")
+        .update({ is_read: true, last_read_at: sentAt })
         .eq("employee_id", actorEmployeeId)
         .eq("chat_room_id", id),
     ]);
 
     return res.status(201).json({ ok: true, data });
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      error: "Internal server error",
+      details: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
+
+export const markChatRoomReadHandler = async (req: Request, res: Response) => {
+  try {
+    const actorEmployeeId = getActorEmployeeId(req);
+    if (!actorEmployeeId) {
+      return res.status(401).json({ ok: false, error: "employee_id or Bearer token is required" });
+    }
+
+    const { id } = req.params;
+    if (!id || typeof id !== "string") {
+      return res.status(400).json({ ok: false, error: "Invalid chat room ID" });
+    }
+
+    const [membershipResult, roomResult] = await Promise.all([
+      supabase
+        .from("chat_members")
+        .select("employee_id,chat_room_id")
+        .eq("employee_id", actorEmployeeId)
+        .eq("chat_room_id", id)
+        .maybeSingle(),
+      supabase
+        .from("chat_rooms")
+        .select("id")
+        .eq("id", id)
+        .maybeSingle(),
+    ]);
+
+    if (membershipResult.error) {
+      return res.status(500).json({ ok: false, error: membershipResult.error.message });
+    }
+
+    if (roomResult.error) {
+      return res.status(500).json({ ok: false, error: roomResult.error.message });
+    }
+
+    if (!roomResult.data) {
+      return res.status(404).json({ ok: false, error: "Chat room not found" });
+    }
+
+    if (!membershipResult.data) {
+      return res.status(403).json({ ok: false, error: "You are not a member of this chat room" });
+    }
+
+    const roomData = await supabase
+      .from("chat_rooms")
+      .select("updated_at")
+      .eq("id", id)
+      .maybeSingle<{ updated_at: string }>();
+
+    if (roomData.error) {
+      return res.status(500).json({ ok: false, error: roomData.error.message });
+    }
+
+    if (!roomData.data) {
+      return res.status(404).json({ ok: false, error: "Chat room not found" });
+    }
+
+    const { error } = await supabase
+      .from("chat_members")
+      .update({ is_read: true, last_read_at: roomData.data.updated_at })
+      .eq("employee_id", actorEmployeeId)
+      .eq("chat_room_id", id);
+
+    if (error) {
+      return res.status(500).json({ ok: false, error: error.message });
+    }
+
+    return res.json({ ok: true, data: { chat_room_id: id, is_read: true, last_read_at: roomData.data.updated_at } });
   } catch (error) {
     return res.status(500).json({
       ok: false,
@@ -871,7 +938,8 @@ export const createChatRoomHandler = async (req: Request, res: Response) => {
       chat_room_id: room.id,
       role: memberId === actorEmployeeId ? "chat_admin" : "member",
       joined_at: timestamp,
-      last_read_at: null,
+      is_read: memberId === actorEmployeeId,
+      last_read_at: memberId === actorEmployeeId ? timestamp : null,
     }));
 
     const { error: memberError } = await supabase.from("chat_members").insert(membersPayload);

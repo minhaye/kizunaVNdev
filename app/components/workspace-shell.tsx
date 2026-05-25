@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import Avatar from "./avatar";
-import { fetchChatRooms } from "../(workspace)/chat/chat-api";
+import { CHAT_UNREAD_CHANGED_EVENT, fetchChatRooms } from "../(workspace)/chat/chat-api";
 
 type MenuItem = {
   href: string;
@@ -177,6 +177,10 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
     void fetchNotifications();
 
     void loadChatUnread();
+    const handleChatUnreadChanged = () => {
+      void loadChatUnread();
+    };
+    window.addEventListener(CHAT_UNREAD_CHANGED_EVENT, handleChatUnreadChanged);
     const interval = window.setInterval(() => {
       if (!active) return;
       void loadChatUnread();
@@ -184,9 +188,10 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
 
     return () => {
       active = false;
+      window.removeEventListener(CHAT_UNREAD_CHANGED_EVENT, handleChatUnreadChanged);
       window.clearInterval(interval);
     };
-  }, [API_BASE_URL, loadChatUnread]);
+  }, [API_BASE_URL, loadChatUnread, pathname]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
