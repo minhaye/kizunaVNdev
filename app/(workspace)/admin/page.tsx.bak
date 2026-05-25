@@ -23,16 +23,6 @@ type UserRow = {
   source: "employees" | "admins";
   avatar_url: string | null;
   last_online: string | null;
-  status: "active";
-};
-
-type CreateUserForm = {
-  name: string;
-  email: string;
-  password: string;
-  nationality: "vn" | "jp";
-  role: "employee" | "leader";
-  avatar_url: string;
 };
 
 const roles: RoleInfo[] = [
@@ -69,11 +59,6 @@ const roleLabel = (role: UserRole) => {
   return "日越スタッフ / Nhân viên";
 };
 
-const sortUsersByName = (list: UserRow[]) =>
-  [...list].sort((left, right) =>
-    left.name.localeCompare(right.name, "vi", { sensitivity: "base" }),
-  );
-
 export default function AdminPage() {
   const API_BASE_URL =
     process.env.NEXT_PUBLIC_API_BASE_URL ??
@@ -90,18 +75,6 @@ export default function AdminPage() {
   const [usersLoading, setUsersLoading] = useState(false);
   const [usersError, setUsersError] = useState<string | null>(null);
   const [showAllUsers, setShowAllUsers] = useState(false);
-  const [isCreateUserOpen, setIsCreateUserOpen] = useState(false);
-  const [createUserSubmitting, setCreateUserSubmitting] = useState(false);
-  const [createUserError, setCreateUserError] = useState<string | null>(null);
-  const [createUserSuccess, setCreateUserSuccess] = useState<string | null>(null);
-  const [createUserForm, setCreateUserForm] = useState<CreateUserForm>({
-    name: "",
-    email: "",
-    password: "",
-    nationality: "vn",
-    role: "employee",
-    avatar_url: "",
-  });
 
   useEffect(() => {
     try {
@@ -139,7 +112,7 @@ export default function AdminPage() {
         if (!response.ok || !data.settings || !active) return;
 
         setThemeMode(data.settings.theme_mode === "dark" ? "dark" : "light");
-  setMessageTaskNotifications(data.settings.message_task_notifications ?? true);
+        setMessageTaskNotifications(data.settings.message_task_notifications ?? true);
         setLoginRetentionDays(data.settings.login_retention_days ?? 30);
         setShowActiveStatus(data.settings.show_active_status ?? true);
       } catch {
@@ -186,7 +159,6 @@ export default function AdminPage() {
             avatar_url: string | null;
             last_online: string | null;
             is_online: boolean;
-            status: "active";
           }>;
           error?: string;
         };
@@ -281,43 +253,17 @@ export default function AdminPage() {
           <div>
             <h2 className="text-xl font-bold text-slate-900">管理者設定画面</h2>
             <p className="text-xs text-slate-500 mt-1">
-                {viewMode === "admin" ? (
-                  <>
-                    <span className="block">管理者表示</span>
-                    <span className="block">Chế độ quản trị (đầy đủ)</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="block">ユーザー表示</span>
-                    <span className="block">Chế độ người dùng (chỉ cấu hình)</span>
-                  </>
-                )}
+              {isAdminView
+                ? "管理者表示 / Admin view: full settings"
+                : "ユーザー表示 / User view: configuration only"}
             </p>
-          </div>
-
-          <div className="rounded-lg border border-slate-200 bg-white p-1 shadow-sm">
-            <button
-              type="button"
-              className={switchClass("user")}
-              onClick={() => setViewMode("user")}
-            >
-              ユーザー / Người dùng
-            </button>
-            <button
-              type="button"
-              className={switchClass("admin")}
-              onClick={() => setViewMode("admin")}
-            >
-              管理者 / Admin
-            </button>
           </div>
         </header>
 
         {isAdminView && isPrivilegedRole && (
           <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
             <h3 className="font-semibold text-slate-800 mb-3">
-               <span className="block">権限ロール</span>
-               <span className="block text-slate-400">Ma trận quyền</span>
+              Role Matrix / 権限ロール
             </h3>
             <div className="grid md:grid-cols-2 gap-3">
               {roles.map((role) => (
@@ -326,23 +272,15 @@ export default function AdminPage() {
                   className="rounded-xl border border-slate-200 p-4 bg-slate-50/40"
                 >
                   <h4 className="text-sm font-bold text-slate-900">
-                    <span className="block">{role.ja}</span>
-                    <span className="block">{role.vi}</span>
+                    {role.ja} / {role.vi}
                   </h4>
                   <p className="text-xs text-slate-500 mt-1">
-                      <span className="block">{role.description.split(" / ")[0]}</span>
-                      <span className="block">{role.description.split(" / ")[1] ?? ""}</span>
+                    {role.description}
                   </p>
                   <ul className="mt-3 space-y-1.5 text-xs text-slate-700">
-                    {role.permissions.map((permission) => {
-                      const [ja, vi] = permission.split(" / ");
-                      return (
-                        <li key={permission}>
-                          <span className="block">- {ja}</span>
-                          <span className="block">{vi}</span>
-                        </li>
-                      );
-                    })}
+                    {role.permissions.map((permission) => (
+                      <li key={permission}>- {permission}</li>
+                    ))}
                   </ul>
                 </article>
               ))}
@@ -354,58 +292,41 @@ export default function AdminPage() {
           <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-slate-800">
-                <span className="block">ユーザー管理</span>
-                <span className="block">Quản lý người dùng</span>
+                ユーザー管理 / Quản lý người dùng
               </h3>
               <button
                 type="button"
                 className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
-                onClick={() => {
-                  setCreateUserError(null);
-                  setCreateUserSuccess(null);
-                  setIsCreateUserOpen(true);
-                }}
               >
-                 <span className="block">+ ユーザー追加</span>
-                 <span className="block">Thêm người dùng</span>
+                + ユーザー追加 / Thêm người dùng
+              </button>
+            </div>
+
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50/60 px-3 py-2 text-xs text-slate-600">
+              <span>
+                {showAllUsers
+                  ? `Đang hiển thị toàn bộ ${sortedFilteredUsers.length} user.`
+                  : `Đang hiển thị 5 user đầu theo alphabet.`}
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowAllUsers((value) => !value)}
+                className="rounded-md border border-slate-200 bg-white px-3 py-1.5 font-medium text-slate-700 hover:bg-slate-50"
+              >
+                {showAllUsers ? "Thu gọn" : "Xem tất cả"}
               </button>
             </div>
 
             <div className="mb-3 flex flex-wrap items-center gap-3">
               <input
                 className="flex-1 min-w-55 rounded-lg border border-slate-200 px-3 py-2 text-sm"
-                placeholder="ユーザー検索 / Tìm người dùng..."
+                placeholder="ユーザー検索 / Tìm user..."
                 value={userQuery}
                 onChange={(event) => setUserQuery(event.target.value)}
               />
-<select
-          value={statusFilter}
-          onChange={(event) =>
-            setStatusFilter(
-              event.target.value as "all" | "active" | "pending",
-            )
-          }
-          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
-        >
-          <option value="all">すべて / Tất cả</option>
-          <option value="active">有効 / Đang hoạt động</option>
-          <option value="pending">保留 / Chờ xử lý</option>
-        </select>
-        <span className="text-xs text-slate-400">
-          <span className="block">{sortedFilteredUsers.length} 件</span>
-          <span className="block">{sortedFilteredUsers.length} người dùng</span>
-        </span>
+              <span className="text-xs text-slate-400">
+                {sortedFilteredUsers.length} users
               </span>
-            </div>
-
-            <div className="mb-3 flex items-center justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setShowAllUsers((value) => !value)}
-                className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
-              >
-                {showAllUsers ? "Thu gọn" : "Xem tất cả"}
-              </button>
             </div>
 
             {usersLoading ? (
@@ -422,33 +343,19 @@ export default function AdminPage() {
               <table className="min-w-full text-sm">
                 <thead>
                   <tr className="text-left text-xs text-slate-500 border-b border-slate-100">
-                    <th className="py-2 pr-3 font-medium">
-                      <span className="block">氏名</span>
-                      <span className="block">Tên</span>
-                    </th>
-                    <th className="py-2 pr-3 font-medium">
-                      <span className="block">チーム</span>
-                      <span className="block">Nhóm</span>
-                    </th>
-                    <th className="py-2 pr-3 font-medium">
-                      <span className="block">ロール</span>
-                      <span className="block">Vai trò</span>
-                    </th>
-                    <th className="py-2 font-medium">
-                      <span className="block">状態</span>
-                      <span className="block">Trạng thái</span>
-                    </th>
+                    <th className="py-2 pr-3 font-medium">Name</th>
+                    <th className="py-2 pr-3 font-medium">Team</th>
+                    <th className="py-2 pr-3 font-medium">Role</th>
                   </tr>
                 </thead>
                 <tbody>
                   {!usersLoading && !usersError && visibleUsers.length === 0 ? (
                     <tr>
                       <td
-                              colSpan={4}
+                        colSpan={3}
                         className="py-6 text-center text-xs text-slate-500"
                       >
-                        <span className="block">該当するユーザーがいません</span>
-                        <span className="block">Không có user phù hợp.</span>
+                        該当するユーザーがいません / Không có user phù hợp.
                       </td>
                     </tr>
                   ) : (
@@ -476,17 +383,6 @@ export default function AdminPage() {
                         <td className="py-3 pr-3 text-slate-700">
                           {roleLabel(u.role)}
                         </td>
-                        <td className="py-3">
-                          <span
-                            className={
-                              u.status === "active"
-                                ? "inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700"
-                                : "inline-flex rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700"
-                            }
-                          >
-                            {u.status === "active" ? "有効 / Đang hoạt động" : "保留 / Chờ xử lý"}
-                          </span>
-                        </td>
                       </tr>
                     ))
                   )}
@@ -499,170 +395,12 @@ export default function AdminPage() {
                 Đang ẩn {sortedFilteredUsers.length - 5} user còn lại.
               </p>
             )}
-
-            {isCreateUserOpen && (
-              <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
-                <div className="flex items-center justify-between gap-3 mb-3">
-                  <h4 className="text-sm font-semibold text-slate-800">Thêm người dùng</h4>
-                  <button
-                    type="button"
-                    className="text-xs font-medium text-slate-500 hover:text-slate-700"
-                    onClick={() => setIsCreateUserOpen(false)}
-                  >
-                    Đóng
-                  </button>
-                </div>
-
-                {createUserError && (
-                  <div className="mb-3 rounded-lg border border-rose-100 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-                    {createUserError}
-                  </div>
-                )}
-
-                {createUserSuccess && (
-                  <div className="mb-3 rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-                    {createUserSuccess}
-                  </div>
-                )}
-
-                <div className="grid gap-3 md:grid-cols-2">
-                  <label className="flex flex-col gap-1 text-sm">
-                    <span className="text-slate-700">Name *</span>
-                    <input
-                      className="rounded-lg border border-slate-200 bg-white px-3 py-2"
-                      value={createUserForm.name}
-                      onChange={(event) => setCreateUserForm((prev) => ({ ...prev, name: event.target.value }))}
-                      placeholder="Tên hiển thị"
-                    />
-                  </label>
-
-                  <label className="flex flex-col gap-1 text-sm">
-                    <span className="text-slate-700">Email *</span>
-                    <input
-                      type="email"
-                      className="rounded-lg border border-slate-200 bg-white px-3 py-2"
-                      value={createUserForm.email}
-                      onChange={(event) => setCreateUserForm((prev) => ({ ...prev, email: event.target.value }))}
-                      placeholder="user@example.com"
-                    />
-                  </label>
-
-                  <label className="flex flex-col gap-1 text-sm">
-                    <span className="text-slate-700">Password *</span>
-                    <input
-                      type="password"
-                      className="rounded-lg border border-slate-200 bg-white px-3 py-2"
-                      value={createUserForm.password}
-                      onChange={(event) => setCreateUserForm((prev) => ({ ...prev, password: event.target.value }))}
-                      placeholder="Mật khẩu đăng nhập"
-                    />
-                  </label>
-
-                  <label className="flex flex-col gap-1 text-sm">
-                    <span className="text-slate-700">Nationality *</span>
-                    <select
-                      className="rounded-lg border border-slate-200 bg-white px-3 py-2"
-                      value={createUserForm.nationality}
-                      onChange={(event) => setCreateUserForm((prev) => ({ ...prev, nationality: event.target.value as "vn" | "jp" }))}
-                    >
-                      <option value="vn">VN</option>
-                      <option value="jp">JP</option>
-                    </select>
-                  </label>
-
-                  <label className="flex flex-col gap-1 text-sm">
-                    <span className="text-slate-700">Role *</span>
-                    <select
-                      className="rounded-lg border border-slate-200 bg-white px-3 py-2"
-                      value={createUserForm.role}
-                      onChange={(event) => setCreateUserForm((prev) => ({ ...prev, role: event.target.value as "employee" | "leader" }))}
-                    >
-                      <option value="employee">Employee</option>
-                      <option value="leader">Leader</option>
-                    </select>
-                  </label>
-
-                  <label className="flex flex-col gap-1 text-sm md:col-span-2">
-                    <span className="text-slate-700">Avatar URL</span>
-                    <input
-                      className="rounded-lg border border-slate-200 bg-white px-3 py-2"
-                      value={createUserForm.avatar_url}
-                      onChange={(event) => setCreateUserForm((prev) => ({ ...prev, avatar_url: event.target.value }))}
-                      placeholder="https://..."
-                    />
-                  </label>
-                </div>
-
-                <div className="mt-4 flex items-center justify-end gap-2">
-                  <button
-                    type="button"
-                    className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                    onClick={() => setIsCreateUserOpen(false)}
-                    disabled={createUserSubmitting}
-                  >
-                    Hủy
-                  </button>
-                  <button
-                    type="button"
-                    className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-70"
-                    disabled={createUserSubmitting}
-                    onClick={async () => {
-                      const token = localStorage.getItem("authToken");
-                      if (!token) return;
-
-                      setCreateUserError(null);
-                      setCreateUserSuccess(null);
-                      setCreateUserSubmitting(true);
-
-                      try {
-                        const response = await fetch(`${API_BASE_URL}/api/users`, {
-                          method: "POST",
-                          headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${token}`,
-                          },
-                          body: JSON.stringify(createUserForm),
-                        });
-                        const data = await response.json() as { user?: UserRow; error?: string };
-
-                        if (!response.ok) {
-                          setCreateUserError(data.error ?? "Không tạo được user mới.");
-                          return;
-                        }
-
-                        const createdUser = data.user;
-                        if (createdUser) {
-                          setUsers((prev) => sortUsersByName([...prev, createdUser]));
-                        }
-
-                        setCreateUserSuccess("Tạo user thành công.");
-                        setCreateUserForm({
-                          name: "",
-                          email: "",
-                          password: "",
-                          nationality: "vn",
-                          role: "employee",
-                          avatar_url: "",
-                        });
-                      } catch {
-                        setCreateUserError("Không tạo được user mới.");
-                      } finally {
-                        setCreateUserSubmitting(false);
-                      }
-                    }}
-                  >
-                    {createUserSubmitting ? "Đang lưu..." : "Tạo người dùng"}
-                  </button>
-                </div>
-              </div>
-            )}
           </section>
         )}
 
         <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
           <h3 className="font-semibold text-slate-800 mb-3">
-              <span className="block">システム設定</span>
-              <span className="block">Cấu hình hệ thống</span>
+            システム設定 / Cấu hình hệ thống
           </h3>
           <div className="grid md:grid-cols-2 gap-3">
             <label className="rounded-lg border border-slate-100 p-3 flex flex-col gap-2">
@@ -691,7 +429,7 @@ export default function AdminPage() {
                 onChange={(event) => setMessageTaskNotifications(event.target.checked)}
                 className="mt-0.5"
               />
-              <span className="min-w-0">
+              <span>
                 <span className="block text-sm font-medium text-slate-800">
                   Bật thông báo tin nhắn / メッセージ通知
                 </span>
@@ -738,13 +476,13 @@ export default function AdminPage() {
               </span>
             </label>
           </div>
+
         </section>
 
         {isAdminView && isPrivilegedRole && (
           <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
             <h3 className="font-semibold text-slate-800 mb-2">
-              <span className="block">コンテンツ管理</span>
-              <span className="block">Quản lý nội dung</span>
+              コンテンツ管理 / Quản lý nội dung
             </h3>
             <p className="text-sm text-slate-600">
               Wiki審査フロー、掲示板通知、公開スケジュール、ロール別編集ログを設定
@@ -774,6 +512,29 @@ export default function AdminPage() {
           </section>
         )}
 
+        <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
+          <h3 className="font-semibold text-slate-800 mb-2">
+            通知設定 / Cài đặt thông báo
+          </h3>
+          <div className="grid md:grid-cols-2 gap-3 text-sm text-slate-700">
+            <label className="rounded-lg border border-slate-100 p-3 flex items-center justify-between">
+              <span>日次メール要約 / Email digest hàng ngày</span>
+              <input type="checkbox" defaultChecked />
+            </label>
+            <label className="rounded-lg border border-slate-100 p-3 flex items-center justify-between">
+              <span>期限超過タスク警告 / Cảnh báo task quá hạn</span>
+              <input type="checkbox" defaultChecked />
+            </label>
+            <label className="rounded-lg border border-slate-100 p-3 flex items-center justify-between">
+              <span>Wikiレビュー通知 / Nhắc review Wiki</span>
+              <input type="checkbox" defaultChecked />
+            </label>
+            <label className="rounded-lg border border-slate-100 p-3 flex items-center justify-between">
+              <span>新規ログイン通知 / Thông báo đăng nhập mới</span>
+              <input type="checkbox" defaultChecked />
+            </label>
+          </div>
+        </section>
       </div>
     </main>
   );
