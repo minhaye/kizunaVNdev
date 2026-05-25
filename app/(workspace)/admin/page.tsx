@@ -25,8 +25,6 @@ type RoleInfo = {
   permissions: string[];
 };
 
-type UserRole = "employee" | "leader" | "admin";
-
 type ManagedUser = {
   id: string;
   source: UserSource;
@@ -38,6 +36,8 @@ type ManagedUser = {
   nationality?: "vn" | "jp";
   avatar_url?: string | null;
 };
+
+type UserRow = ManagedUser;
 
 type UserDraft = {
   name: string;
@@ -64,6 +64,7 @@ const apiBase =
   process.env.NEXT_PUBLIC_API_BASE_URL ??
   process.env.NEXT_PUBLIC_API_BASE ??
   "http://localhost:4000";
+const API_BASE_URL = apiBase;
 
 const emptyUserDraft: UserDraft = {
   name: "",
@@ -74,6 +75,20 @@ const emptyUserDraft: UserDraft = {
   role: "employee",
   status: "active",
 };
+
+const emptyCreateUserForm = {
+  name: "",
+  email: "",
+  password: "",
+  nationality: "vn" as "vn" | "jp",
+  role: "employee" as "employee" | "leader",
+  avatar_url: "",
+};
+
+const sortUsersByName = (list: ManagedUser[]) =>
+  [...list].sort((left, right) =>
+    left.name.localeCompare(right.name, "vi", { sensitivity: "base" }),
+  );
 
 const roles: RoleInfo[] = [
   {
@@ -151,6 +166,11 @@ export default function AdminPage() {
   const [editingUser, setEditingUser] = useState<ManagedUser | null>(null);
   const [userDraft, setUserDraft] = useState<UserDraft>(emptyUserDraft);
   const [savingUser, setSavingUser] = useState(false);
+  const [isCreateUserOpen, setIsCreateUserOpen] = useState(false);
+  const [createUserForm, setCreateUserForm] = useState(emptyCreateUserForm);
+  const [createUserError, setCreateUserError] = useState<string | null>(null);
+  const [createUserSuccess, setCreateUserSuccess] = useState<string | null>(null);
+  const [createUserSubmitting, setCreateUserSubmitting] = useState(false);
 
   const [pendingPosts, setPendingPosts] = useState<PendingPost[]>([]);
   const [postsLoading, setPostsLoading] = useState(false);
@@ -159,6 +179,7 @@ export default function AdminPage() {
   const [selectedPost, setSelectedPost] = useState<PendingPost | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [moderatingPostId, setModeratingPostId] = useState<string | null>(null);
+  const [loginRetentionDays, setLoginRetentionDays] = useState<30 | 60 | 90>(30);
 
   useEffect(() => {
     const storedTheme = localStorage.getItem("themeMode") as ThemeMode | null;
@@ -186,6 +207,8 @@ export default function AdminPage() {
       return matchesQuery && matchesStatus;
     });
   }, [statusFilter, userQuery, users]);
+  const showAllUsers = true;
+  const sortedFilteredUsers = filteredUsers;
 
   const filteredPendingPosts = useMemo(() => {
     if (postFilter === "all") return pendingPosts;
