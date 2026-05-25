@@ -296,7 +296,7 @@ function BoardContent() {
               <Search className="w-4 h-4 text-slate-400" />
               <input
                 className="w-full text-sm outline-none"
-                placeholder="タイトル・作者を検索..."
+                placeholder="タイトル・作者を検索... / Tìm tiêu đề, tác giả..."
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
               />
@@ -473,20 +473,20 @@ function BoardContent() {
               <input
                 value={newTitle}
                 onChange={(event) => setNewTitle(event.target.value)}
-                placeholder="Tiêu đề bài viết"
+                placeholder="記事タイトル / Tiêu đề bài viết"
                 className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
                 required
               />
               <input
                 value={newTopic}
                 onChange={(event) => setNewTopic(event.target.value)}
-                placeholder="Chủ đề (không bắt buộc)"
+                placeholder="トピック（任意） / Chủ đề (không bắt buộc)"
                 className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
               />
               <textarea
                 value={newContent}
                 onChange={(event) => setNewContent(event.target.value)}
-                placeholder="Nội dung bài viết"
+                placeholder="投稿内容 / Nội dung bài viết"
                 className="min-h-28 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
                 required
               />
