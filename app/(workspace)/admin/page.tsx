@@ -103,6 +103,16 @@ export default function AdminPage() {
     avatar_url: "",
   });
 
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "pending">("all");
+  const [viewMode, setViewMode] = useState<"user" | "admin">("user");
+
+  const switchClass = (m: "user" | "admin") =>
+    `rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+      viewMode === m
+        ? "bg-slate-800 text-white shadow-sm"
+        : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+    }`;
+
   useEffect(() => {
     try {
       const rawUser = localStorage.getItem("user");
@@ -259,7 +269,6 @@ export default function AdminPage() {
   }, [API_BASE_URL, themeMode, messageTaskNotifications, loginRetentionDays, showActiveStatus, settingsLoaded]);
 
   const isPrivilegedRole = currentRole === "admin";
-  const isAdminView = isPrivilegedRole;
   const normalizedUserQuery = userQuery.trim().toLowerCase();
   const filteredUsers = users.filter((user) => {
     const matchesQuery =
@@ -267,7 +276,8 @@ export default function AdminPage() {
       [user.name, user.team, user.email, roleLabel(user.role)].some((value) =>
         value.toLowerCase().includes(normalizedUserQuery),
       );
-    return matchesQuery;
+    const matchesStatus = statusFilter === "all" || user.status === statusFilter;
+    return matchesQuery && matchesStatus;
   });
   const sortedFilteredUsers = [...filteredUsers].sort((left, right) =>
     left.name.localeCompare(right.name, "vi", { sensitivity: "base" }),
@@ -278,24 +288,24 @@ export default function AdminPage() {
     <main className="flex-1 overflow-auto p-8 bg-slate-50/50">
       <div className="max-w-5xl mx-auto space-y-5">
         <header className="flex items-start justify-between gap-3">
-          <div>
-            <h2 className="text-xl font-bold text-slate-900">管理者設定画面</h2>
-            <p className="text-xs text-slate-500 mt-1">
-                {viewMode === "admin" ? (
-                  <>
-                    <span className="block">管理者表示</span>
-                    <span className="block">Chế độ quản trị (đầy đủ)</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="block">ユーザー表示</span>
-                    <span className="block">Chế độ người dùng (chỉ cấu hình)</span>
-                  </>
-                )}
-            </p>
-          </div>
-
-          <div className="rounded-lg border border-slate-200 bg-white p-1 shadow-sm">
+          <select
+            value={statusFilter}
+            onChange={(event) =>
+              setStatusFilter(
+                event.target.value as "all" | "active" | "pending",
+              )
+            }
+            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
+          >
+            <option value="all">すべて / Tất cả</option>
+            <option value="active">有効 / Đang hoạt động</option>
+            <option value="pending">保留 / Chờ xử理</option>
+          </select>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-slate-400">
+              <span className="block">{sortedFilteredUsers.length} 件</span>
+              <span className="block">{sortedFilteredUsers.length} người dùng</span>
+            </span>
             <button
               type="button"
               className={switchClass("user")}
@@ -313,7 +323,7 @@ export default function AdminPage() {
           </div>
         </header>
 
-        {isAdminView && isPrivilegedRole && (
+        {viewMode === "admin" && isPrivilegedRole && (
           <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
             <h3 className="font-semibold text-slate-800 mb-3">
                <span className="block">権限ロール</span>
@@ -350,7 +360,7 @@ export default function AdminPage() {
           </section>
         )}
 
-        {isAdminView && isPrivilegedRole && (
+        {viewMode === "user" && isPrivilegedRole && (
           <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-slate-800">
@@ -378,23 +388,22 @@ export default function AdminPage() {
                 value={userQuery}
                 onChange={(event) => setUserQuery(event.target.value)}
               />
-<select
-          value={statusFilter}
-          onChange={(event) =>
-            setStatusFilter(
-              event.target.value as "all" | "active" | "pending",
-            )
-          }
-          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
-        >
-          <option value="all">すべて / Tất cả</option>
-          <option value="active">有効 / Đang hoạt động</option>
-          <option value="pending">保留 / Chờ xử lý</option>
-        </select>
-        <span className="text-xs text-slate-400">
-          <span className="block">{sortedFilteredUsers.length} 件</span>
-          <span className="block">{sortedFilteredUsers.length} người dùng</span>
-        </span>
+              <select
+                value={statusFilter}
+                onChange={(event) =>
+                  setStatusFilter(
+                    event.target.value as "all" | "active" | "pending",
+                  )
+                }
+                className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
+              >
+                <option value="all">すべて / Tất cả</option>
+                <option value="active">有効 / Đang hoạt động</option>
+                <option value="pending">保留 / Chờ xử lý</option>
+              </select>
+              <span className="text-xs text-slate-400">
+                <span className="block">{sortedFilteredUsers.length} 件</span>
+                <span className="block">{sortedFilteredUsers.length} người dùng</span>
               </span>
             </div>
 
@@ -740,7 +749,7 @@ export default function AdminPage() {
           </div>
         </section>
 
-        {isAdminView && isPrivilegedRole && (
+        {viewMode === "admin" && isPrivilegedRole && (
           <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
             <h3 className="font-semibold text-slate-800 mb-2">
               <span className="block">コンテンツ管理</span>
