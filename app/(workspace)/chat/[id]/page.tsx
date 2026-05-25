@@ -398,7 +398,7 @@ export default function ChatDetailPage() {
               <textarea
                 className="w-full resize-none bg-transparent text-sm text-slate-800 outline-none py-2"
                 rows={2}
-                placeholder="送信内容を入力..."
+                placeholder="送信内容を入力... / Nhập nội dung gửi..."
                 value={draft}
                 onChange={(event) => setDraft(event.target.value)}
                 onKeyDown={(event) => {
@@ -489,7 +489,7 @@ export default function ChatDetailPage() {
                 </span>
                 <textarea
                   className="min-h-32 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-400 disabled:bg-slate-50"
-                  placeholder="フィードバックを入力..."
+                  placeholder="フィードバックを入力... / Nhập feedback..."
                   value={feedbackDraft}
                   onChange={(event) => setFeedbackDraft(event.target.value)}
                   disabled={feedbackLoading || feedbackSaving || !selectedFeedbackTarget}

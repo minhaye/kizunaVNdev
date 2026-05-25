@@ -623,13 +623,16 @@ export default function AdminPage() {
             {isCreateUserOpen && (
               <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
                 <div className="flex items-center justify-between gap-3 mb-3">
-                  <h4 className="text-sm font-semibold text-slate-800">Thêm người dùng</h4>
+                  <h4 className="text-sm font-semibold text-slate-800">
+                    <span className="block">ユーザー追加</span>
+                    <span className="block">Thêm người dùng</span>
+                  </h4>
                   <button
                     type="button"
                     className="text-xs font-medium text-slate-500 hover:text-slate-700"
                     onClick={() => setIsCreateUserOpen(false)}
                   >
-                    Đóng
+                    閉じる / Đóng
                   </button>
                 </div>
 
@@ -647,12 +650,12 @@ export default function AdminPage() {
 
                 <div className="grid gap-3 md:grid-cols-2">
                   <label className="flex flex-col gap-1 text-sm">
-                    <span className="text-slate-700">Name *</span>
+                    <span className="text-slate-700">氏名 / Name *</span>
                     <input
                       className="rounded-lg border border-slate-200 bg-white px-3 py-2"
                       value={createUserForm.name}
                       onChange={(event) => setCreateUserForm((prev) => ({ ...prev, name: event.target.value }))}
-                      placeholder="Tên hiển thị"
+                      placeholder="表示名 / Tên hiển thị"
                     />
                   </label>
 
@@ -663,23 +666,23 @@ export default function AdminPage() {
                       className="rounded-lg border border-slate-200 bg-white px-3 py-2"
                       value={createUserForm.email}
                       onChange={(event) => setCreateUserForm((prev) => ({ ...prev, email: event.target.value }))}
-                      placeholder="user@example.com"
+                      placeholder="例: user@example.com / VD: user@example.com"
                     />
                   </label>
 
                   <label className="flex flex-col gap-1 text-sm">
-                    <span className="text-slate-700">Password *</span>
+                    <span className="text-slate-700">パスワード / Password *</span>
                     <input
                       type="password"
                       className="rounded-lg border border-slate-200 bg-white px-3 py-2"
                       value={createUserForm.password}
                       onChange={(event) => setCreateUserForm((prev) => ({ ...prev, password: event.target.value }))}
-                      placeholder="Mật khẩu đăng nhập"
+                      placeholder="ログイン用パスワード / Mật khẩu đăng nhập"
                     />
                   </label>
 
                   <label className="flex flex-col gap-1 text-sm">
-                    <span className="text-slate-700">Nationality *</span>
+                    <span className="text-slate-700">国籍 / Nationality *</span>
                     <select
                       className="rounded-lg border border-slate-200 bg-white px-3 py-2"
                       value={createUserForm.nationality}
@@ -691,7 +694,7 @@ export default function AdminPage() {
                   </label>
 
                   <label className="flex flex-col gap-1 text-sm">
-                    <span className="text-slate-700">Role *</span>
+                    <span className="text-slate-700">ロール / Role *</span>
                     <select
                       className="rounded-lg border border-slate-200 bg-white px-3 py-2"
                       value={createUserForm.role}
@@ -703,12 +706,12 @@ export default function AdminPage() {
                   </label>
 
                   <label className="flex flex-col gap-1 text-sm md:col-span-2">
-                    <span className="text-slate-700">Avatar URL</span>
+                    <span className="text-slate-700">アバターURL / Avatar URL</span>
                     <input
                       className="rounded-lg border border-slate-200 bg-white px-3 py-2"
                       value={createUserForm.avatar_url}
                       onChange={(event) => setCreateUserForm((prev) => ({ ...prev, avatar_url: event.target.value }))}
-                      placeholder="https://..."
+                      placeholder="例: https://... / VD: https://..."
                     />
                   </label>
                 </div>
@@ -720,7 +723,7 @@ export default function AdminPage() {
                     onClick={() => setIsCreateUserOpen(false)}
                     disabled={createUserSubmitting}
                   >
-                    Hủy
+                    キャンセル / Hủy
                   </button>
                   <button
                     type="button"
@@ -771,7 +774,7 @@ export default function AdminPage() {
                       }
                     }}
                   >
-                    {createUserSubmitting ? "Đang lưu..." : "Tạo người dùng"}
+                    {createUserSubmitting ? "保存中... / Đang lưu..." : "作成 / Tạo người dùng"}
                   </button>
                 </div>
               </div>

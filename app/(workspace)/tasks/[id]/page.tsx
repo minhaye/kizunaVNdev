@@ -426,7 +426,7 @@ export default function TaskDetailPage() {
                       onChange={(e) => setReportText(e.target.value)}
                       rows={4}
                       className="w-full mt-1 rounded-md border border-slate-200 p-2 text-sm"
-                      placeholder="報告を入力..."
+                      placeholder="報告を入力... / Nhập báo cáo..."
                       disabled={mutatingReport}
                     />
                   </div>
@@ -441,7 +441,7 @@ export default function TaskDetailPage() {
                       onChange={(e) => setInformText(e.target.value)}
                       rows={3}
                       className="w-full mt-1 rounded-md border border-slate-200 p-2 text-sm"
-                      placeholder="連絡事項を入力..."
+                      placeholder="連絡事項を入力... / Nhập nội dung liên lạc..."
                       disabled={mutatingReport}
                     />
                   </div>
@@ -456,7 +456,7 @@ export default function TaskDetailPage() {
                       onChange={(e) => setConsultText(e.target.value)}
                       rows={3}
                       className="w-full mt-1 rounded-md border border-slate-200 p-2 text-sm"
-                      placeholder="相談・課題を入力..."
+                      placeholder="相談・課題を入力... / Nhập tư vấn, vấn đề..."
                       disabled={mutatingReport}
                     />
                   </div>
