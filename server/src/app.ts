@@ -20,6 +20,8 @@ const router = express.Router();
 registerRoutes(router);
 app.use('/api', router);
 
+// Dev debug routes removed
+
 // Health check endpoint
 app.get('/check-db', async (req, res) => {
     const { data, error } = await supabase.from('employees').select('*').limit(1);

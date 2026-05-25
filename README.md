@@ -47,6 +47,13 @@ npm install
 PORT=4000
 SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=
+AUTH_TOKEN_SECRET=
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_USER=
+SMTP_PASS=
+SMTP_FROM_EMAIL=
+SMTP_FROM_NAME=KizunaVN
 ```
 
 3) Start the backend dev server:
@@ -66,4 +73,5 @@ Database ping (uses `employees` table):
 ## Notes
 
 - If the `employees` table does not exist, update the backend route in [server/src/routes/db.ts](server/src/routes/db.ts).
+- For password reset OTP, run [server/password_reset_otps.schema.sql](server/password_reset_otps.schema.sql) in Supabase.
 - For backend details, see [server/README.md](server/README.md).

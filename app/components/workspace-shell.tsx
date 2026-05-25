@@ -14,8 +14,9 @@ import {
   LogOut,
   LayoutDashboard,
 } from "lucide-react";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import Avatar from "./avatar";
+import { CHAT_UNREAD_CHANGED_EVENT, fetchChatRooms } from "../(workspace)/chat/chat-api";
 
 type ThemeMode = "light" | "dark";
 
@@ -129,6 +130,7 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
     count: 0,
     notifications: [] as { id: string; created_at: string; topic: string; title: string; content: string; is_read?: boolean }[],
   });
+  const [chatUnreadCount, setChatUnreadCount] = useState(0);
   const notifRef = useRef<HTMLDivElement>(null);
 
   const refreshNotifications = async () => {
@@ -179,13 +181,23 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
     if (user.role === "admin") {
       setDisplayRole("管理者 / Quản trị viên");
     } else if (user.nationality === "jp") {
-      setDisplayRole("日本人スタッフ");
+      setDisplayRole("日本人スタッフ / Nhân viên Nhật");
     } else if (user.nationality === "vn") {
-      setDisplayRole("日越スタッフ");
+      setDisplayRole("日越スタッフ / Nhân viên Nhật - Việt");
     } else {
-      setDisplayRole("Nhân viên");
+      setDisplayRole("スタッフ / Nhân viên");
     }
   };
+
+  const loadChatUnread = useCallback(async () => {
+    try {
+      const rooms = await fetchChatRooms();
+      const unreadRooms = rooms.reduce((sum, room) => sum + (room.unread > 0 ? 1 : 0), 0);
+      setChatUnreadCount(unreadRooms);
+    } catch {
+      setChatUnreadCount(0);
+    }
+  }, []);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -275,12 +287,24 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
       void heartbeat();
     }, 60_000);
 
+    void loadChatUnread();
+    const handleChatUnreadChanged = () => {
+      void loadChatUnread();
+    };
+    window.addEventListener(CHAT_UNREAD_CHANGED_EVENT, handleChatUnreadChanged);
+    const interval = window.setInterval(() => {
+      if (!active) return;
+      void loadChatUnread();
+    }, 15000);
+
     return () => {
       active = false;
       isMountedRef.current = false;
       clearInterval(heartbeatTimer);
+      window.removeEventListener(CHAT_UNREAD_CHANGED_EVENT, handleChatUnreadChanged);
+      window.clearInterval(interval);
     };
-  }, [API_BASE_URL]);
+  }, [API_BASE_URL, loadChatUnread, pathname]);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", themeMode);
@@ -424,18 +448,23 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
                 >
                   {item.icon}
                 </span>
-                <div>
+                <div className="flex-1">
                   <div className="text-sm">{item.ja}</div>
                   <div
                     className={
                       isActive
-                        ? "text-xs text-blue-500 font-normal"
-                        : "text-xs text-slate-400 font-normal"
+                        ? "text-sm text-blue-500 font-normal"
+                        : "text-sm text-slate-400 font-normal"
                     }
                   >
                     {item.vi}
                   </div>
                 </div>
+                {item.href === "/chat" && chatUnreadCount > 0 && (
+                  <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-100 px-1 text-[11px] font-semibold text-red-600">
+                    {chatUnreadCount}
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -461,8 +490,8 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
             <h1 className="text-lg font-semibold text-slate-800">
               こんにちは、{greetingName}！
             </h1>
-            <p className="text-xs text-slate-500">
-              Xin chào, {friendlyName}! Chúc một ngày làm việc hiệu quả.
+            <p className="text-sm text-slate-500">
+              <span className="block">Xin chào, {friendlyName}! Chúc một ngày làm việc hiệu quả.</span>
             </p>
           </div>
 
@@ -483,12 +512,21 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
               {isNotifOpen && (
                 <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-slate-100 z-50">
                   <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-                    <span className="text-sm font-semibold text-slate-800">通知 / Thông báo</span>
-                    <span className="text-xs text-slate-400">{notifCount} mới</span>
+                    <span className="text-sm font-semibold text-slate-800">
+                      <span className="block">通知</span>
+                      <span className="block">Thông báo</span>
+                    </span>
+                    <span className="text-sm text-slate-400">
+                      <span className="block">{notifCount} 新着</span>
+                      <span className="block">{notifCount} mới</span>
+                    </span>
                   </div>
                   <ul className="max-h-80 overflow-y-auto divide-y divide-slate-50">
                     {notifications.length === 0 ? (
-                      <li className="px-4 py-6 text-center text-sm text-slate-400">Không có thông báo</li>
+                      <li className="px-4 py-6 text-center text-sm text-slate-400">
+                        <span className="block">通知はありません</span>
+                        <span className="block">Không có thông báo</span>
+                      </li>
                     ) : (
                       notifications.map((n) => (
                         <li
@@ -549,14 +587,22 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
                     href="/profile"
                     className="flex items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
                   >
-                    <User className="w-4 h-4 mr-2" /> プロフィール (Profile)
+                    <User className="w-4 h-4 mr-2" />
+                    <span className="leading-tight">
+                      <span className="block">プロフィール</span>
+                      <span className="block">Hồ sơ</span>
+                    </span>
                   </Link>
                   <hr className="my-1 border-slate-100" />
                   <Link
                     href="/login"
                     className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                   >
-                    <LogOut className="w-4 h-4 mr-2" /> ログアウト (Đăng xuất)
+                    <LogOut className="w-4 h-4 mr-2" />
+                    <span className="leading-tight">
+                      <span className="block">ログアウト</span>
+                      <span className="block">Đăng xuất</span>
+                    </span>
                   </Link>
                 </div>
               )}

@@ -95,17 +95,17 @@ const getTodayInputValue = () => {
 
 const columns: TaskColumn[] = [
   {
-    title: "未着手 / To do",
+    title: "未着手 / Chưa làm",
     status: "todo",
     description: "タスクは割り当て済みですが未着手 / Task đã giao nhưng chưa nhận",
   },
   {
-    title: "進行中 / Doing",
+    title: "進行中 / Đang làm",
     status: "doing",
     description: "進行中のタスク / Task đang được xử lý",
   },
   {
-    title: "完了 / Done",
+    title: "完了 / Hoàn thành",
     status: "done",
     description: "完了済みタスク / Task đã hoàn thành",
   },
@@ -128,9 +128,9 @@ const statusBadgeClass: Record<TaskStatus, string> = {
 };
 
 const statusLabel: Record<TaskStatus, string> = {
-  todo: "未着手 / To do",
-  doing: "進行中 / Doing",
-  done: "完了 / Done",
+  todo: "未着手 / Chưa làm",
+  doing: "進行中 / Đang làm",
+  done: "完了 / Hoàn thành",
 };
 
 const readStoredUser = (): CurrentUser | null => {
@@ -163,7 +163,7 @@ export default function TaskBoardPage() {
   const [mutatingId, setMutatingId] = useState<string | null>(null);
   const todayInputValue = useMemo(() => getTodayInputValue(), []);
 
-  const currentUserName = currentUser?.name ?? currentUser?.email?.split("@")[0] ?? "Người dùng";
+  const currentUserName = currentUser?.name ?? currentUser?.email?.split("@")[0] ?? "ユーザー";
   const normalizedQuery = query.trim().toLowerCase();
 
   useEffect(() => {
@@ -183,7 +183,7 @@ export default function TaskBoardPage() {
     const loadData = async () => {
       const token = getAuthToken();
       if (!token) {
-        setError("Chưa có session đăng nhập. Vui lòng đăng nhập lại.");
+        setError("セッションがありません / Chưa có phiên đăng nhập. Vui lòng đăng nhập lại.");
         setLoading(false);
         return;
       }
@@ -203,11 +203,11 @@ export default function TaskBoardPage() {
         const employeesData = await employeesResponse.json();
 
         if (!tasksResponse.ok) {
-          throw new Error(tasksData.error || "Không thể tải task");
+          throw new Error(tasksData.error || "タスクを読み込めません / Không thể tải task");
         }
 
         if (!employeesResponse.ok) {
-          throw new Error(employeesData.error || "Không thể tải danh sách nhân sự");
+          throw new Error(employeesData.error || "社員一覧を読み込めません / Không thể tải danh sách nhân sự");
         }
 
         setTasks((tasksData.tasks ?? []).map(mapTask));
@@ -220,7 +220,7 @@ export default function TaskBoardPage() {
           assigneeId: prev.assigneeId || firstEmployeeId,
         }));
       } catch (loadError) {
-        setError(loadError instanceof Error ? loadError.message : "Có lỗi xảy ra khi tải task");
+        setError(loadError instanceof Error ? loadError.message : "タスク読み込みエラー / Có lỗi xảy ra khi tải task");
       } finally {
         setLoading(false);
       }
@@ -278,12 +278,12 @@ export default function TaskBoardPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Không thể nhận task");
+        throw new Error(data.error || "タスクを受け取れません / Không thể nhận task");
       }
 
       refreshTask(data.task);
     } catch (claimError) {
-      setError(claimError instanceof Error ? claimError.message : "Không thể nhận task");
+      setError(claimError instanceof Error ? claimError.message : "タスクを受け取れません / Không thể nhận task");
     } finally {
       setMutatingId(null);
     }
@@ -306,12 +306,12 @@ export default function TaskBoardPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Không thể cập nhật task");
+        throw new Error(data.error || "タスクを更新できません / Không thể cập nhật task");
       }
 
       refreshTask(data.task);
     } catch (updateError) {
-      setError(updateError instanceof Error ? updateError.message : "Không thể cập nhật task");
+      setError(updateError instanceof Error ? updateError.message : "タスクを更新できません / Không thể cập nhật task");
     } finally {
       setMutatingId(null);
     }
@@ -333,7 +333,7 @@ export default function TaskBoardPage() {
     if (!token) return;
 
     if (draft.deadline && draft.deadline < todayInputValue) {
-      setError("Deadline không được là ngày trong quá khứ");
+      setError("締切日は過去にできません / Deadline không được là ngày trong quá khứ");
       return;
     }
 
@@ -341,7 +341,7 @@ export default function TaskBoardPage() {
       const now = new Date();
       const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
       if (draft.deadlineTime <= currentTime) {
-        setError("Deadline không được là thời gian trong quá khứ");
+        setError("締切時刻は過去にできません / Deadline không được là thời gian trong quá khứ");
         return;
       }
     }
@@ -372,14 +372,14 @@ export default function TaskBoardPage() {
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || "Không thể tạo task");
+        throw new Error(data.error || "タスクを作成できません / Không thể tạo task");
       }
 
       refreshTask(data.task);
       closeCreateModal();
       setError("");
     } catch (createError) {
-      setError(createError instanceof Error ? createError.message : "Không thể tạo task");
+      setError(createError instanceof Error ? createError.message : "タスクを作成できません / Không thể tạo task");
     }
   };
 
@@ -390,8 +390,14 @@ export default function TaskBoardPage() {
       <div className="max-w-7xl mx-auto">
         <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">タスクボード / Task Board</h2>
-            <p className="text-xs text-slate-400 mt-1">こんにちは / Xin chào, {currentUserName}.</p>
+            <h2 className="text-xl font-bold text-slate-900">
+              <span className="block">タスクボード</span>
+              <span className="block">Bảng công việc</span>
+            </h2>
+            <p className="text-xs text-slate-400 mt-1">
+              <span className="block">こんにちは、{currentUserName}。</span>
+              <span className="block">Xin chào, {currentUserName}.</span>
+            </p>
           </div>
           <button
             type="button"
@@ -410,7 +416,11 @@ export default function TaskBoardPage() {
             }}
             className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
           >
-            <Plus className="w-4 h-4" /> タスク作成 / Tạo task
+            <Plus className="w-4 h-4" />
+            <span className="leading-tight">
+              <span className="block">タスク作成</span>
+              <span className="block">Tạo task</span>
+            </span>
           </button>
         </div>
 
@@ -421,14 +431,17 @@ export default function TaskBoardPage() {
         )}
 
         <div className="mb-5 flex flex-wrap items-center gap-3">
-          <div className="flex flex-1 min-w-60 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2">
-            <Search className="w-4 h-4 text-slate-400" />
-            <input
-              className="w-full text-sm outline-none"
-              placeholder="タスク、トピック、依頼者、担当者で検索... / Tìm theo task, topic, người giao, người nhận..."
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-            />
+          <div className="flex flex-1 min-w-60 flex-col gap-1 rounded-lg border border-slate-200 bg-white px-3 py-2">
+            <div className="flex items-center gap-2">
+              <Search className="w-4 h-4 text-slate-400" />
+              <input
+                className="w-full text-sm outline-none"
+                placeholder="タスク、トピック、依頼者、担当者で検索..."
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+              />
+            </div>
+            <span className="text-[11px] text-slate-400">Tìm theo task, topic, người giao, người nhận...</span>
           </div>
           <select
             value={statusFilter}
@@ -436,11 +449,14 @@ export default function TaskBoardPage() {
             className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
           >
             <option value="all">すべて / Tất cả</option>
-            <option value="todo">未着手 / To do</option>
-            <option value="doing">進行中 / Doing</option>
-            <option value="done">完了 / Done</option>
+            <option value="todo">未着手 / Chưa làm</option>
+            <option value="doing">進行中 / Đang làm</option>
+            <option value="done">完了 / Hoàn thành</option>
           </select>
-          <span className="text-xs text-slate-400">{totalVisibleTasks} タスク / tasks</span>
+          <span className="text-xs text-slate-400">
+            <span className="block">{totalVisibleTasks} タスク</span>
+            <span className="block">{totalVisibleTasks} tác vụ</span>
+          </span>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -449,7 +465,10 @@ export default function TaskBoardPage() {
               <div className="mb-3 flex items-start justify-between gap-2">
                 <div>
                   <h3 className="text-sm font-bold text-slate-700">{column.title}</h3>
-                  <p className="text-[11px] text-slate-400">{column.description}</p>
+                  <p className="text-[11px] text-slate-400">
+                    <span className="block">{column.description.split(" / ")[0]}</span>
+                    <span className="block">{column.description.split(" / ")[1] ?? ""}</span>
+                  </p>
                 </div>
                 <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${statusBadgeClass[column.status]}`}>
                   {column.cards.length}
@@ -459,7 +478,8 @@ export default function TaskBoardPage() {
               <div className="space-y-3">
                 {column.cards.length === 0 ? (
                   <div className="rounded-lg border border-dashed border-slate-200 px-3 py-4 text-center text-xs text-slate-500">
-                    該当するタスクがありません。 / Chưa có task phù hợp.
+                    <span className="block">該当するタスクがありません。</span>
+                    <span className="block">Chưa có task phù hợp.</span>
                   </div>
                 ) : (
                   column.cards.map((task) => {
@@ -473,7 +493,8 @@ export default function TaskBoardPage() {
                           <div>
                             <p className="text-sm font-medium text-slate-800">{task.title}</p>
                             <p className="text-[11px] text-slate-500 mt-1">
-                              トピック / Topic: {task.topic || "-"}
+                              <span className="block">トピック</span>
+                              <span className="block">Topic: {task.topic || "-"}</span>
                             </p>
                           </div>
                           <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${statusBadgeClass[task.status]}`}>
@@ -481,10 +502,19 @@ export default function TaskBoardPage() {
                           </span>
                         </div>
 
-                        <p className="text-xs text-slate-500 mt-2">依頼者 / Giao bởi: {task.assigner_name}</p>
-                        <p className="text-xs text-slate-500">担当者 / Nhận bởi: {task.assignee_name}</p>
+                        <p className="text-xs text-slate-500 mt-2">
+                          <span className="block">依頼者</span>
+                          <span className="block">Giao bởi: {task.assigner_name}</span>
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          <span className="block">担当者</span>
+                          <span className="block">Nhận bởi: {task.assignee_name}</span>
+                        </p>
                         {task.deadline && (
-                          <p className="text-xs text-slate-500 mt-1">期限 / Deadline: {formatDeadline(task.deadline)}</p>
+                          <p className="text-xs text-slate-500 mt-1">
+                            <span className="block">期限</span>
+                            <span className="block">Deadline: {formatDeadline(task.deadline)}</span>
+                          </p>
                         )}
                         {task.content && (
                           <p className="text-[11px] text-slate-600 mt-2 rounded-md bg-slate-50 px-2 py-1 border border-slate-200 line-clamp-3">
@@ -497,7 +527,10 @@ export default function TaskBoardPage() {
                           <div className="mt-2 inline-flex items-center gap-1.5 rounded-md bg-indigo-50 border border-indigo-100 px-2 py-1">
                             <FileText className="w-3.5 h-3.5 text-indigo-500" />
                             <span className="text-[11px] font-medium text-indigo-700">
-                              報連相 / HoRenSo: {task.report_count > 0 ? `${task.report_count} 件 / báo cáo` : "未報告 / Chưa có"}
+                              <span className="block">報連相</span>
+                              <span className="block">
+                                HoRenSo: {task.report_count > 0 ? `${task.report_count} 件 / báo cáo` : "未報告 / Chưa có"}
+                              </span>
                             </span>
                           </div>
                         )}
@@ -507,7 +540,8 @@ export default function TaskBoardPage() {
                             href={`/tasks/${task.id}`}
                             className="rounded-md border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
                           >
-                            詳細を見る / Xem chi tiết
+                            <span className="block">詳細を見る</span>
+                            <span className="block">Xem chi tiết</span>
                           </Link>
 
                           {canClaim && (
@@ -517,7 +551,14 @@ export default function TaskBoardPage() {
                               disabled={mutatingId === task.id}
                               className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
                             >
-                              {mutatingId === task.id ? "受信中... / Đang nhận..." : "タスクを引き受ける / Nhận task"}
+                              {mutatingId === task.id ? (
+                                <span className="block">受信中... / Đang nhận...</span>
+                              ) : (
+                                <span className="leading-tight">
+                                  <span className="block">タスクを引き受ける</span>
+                                  <span className="block">Nhận task</span>
+                                </span>
+                              )}
                             </button>
                           )}
 
