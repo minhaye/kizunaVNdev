@@ -13,7 +13,27 @@ import {
   signUpHandler,
 } from "./auth.js";
 import { employeeFeedbacksHandler, employeesHandler } from "./employees.js";
+import {
+  createChatMessageHandler,
+  createChatRoomHandler,
+  getChatFeedbackHandler,
+  getChatRoomDetailHandler,
+  listChatRoomsHandler,
+  markChatRoomReadHandler,
+  pinChatRoomHandler,
+  saveChatFeedbackHandler,
+  unpinChatRoomHandler,
+} from "./chat.js";
 import { createUserHandler, usersHandler } from "./users.js";
+import {
+  getMySettingsHandler,
+  heartbeatHandler,
+  updateMySettingsHandler,
+} from "./settings.js";
+import {
+  listNotificationsHandler,
+  markNotificationsReadHandler,
+} from "./notifications.js";
 import {
   claimTaskHandler,
   createTaskHandler,
@@ -30,6 +50,11 @@ import {
   postsListHandler,
   postReactionsHandler,
 } from "./posts.js";
+import {
+  createWikiArticleHandler,
+  getWikiArticleDetailHandler,
+  listWikiArticlesHandler,
+} from "./wiki.js";
 import {
   createManagedUserHandler,
   deleteManagedUserHandler,
@@ -277,6 +302,11 @@ export const registerRoutes = (router: Router) => {
   router.get("/users", usersHandler);
   router.post("/users", createUserHandler);
   router.get("/employees/:id/feedbacks", employeeFeedbacksHandler);
+  router.get("/settings/me", getMySettingsHandler);
+  router.patch("/settings/me", updateMySettingsHandler);
+  router.post("/presence/heartbeat", heartbeatHandler);
+  router.get("/notifications", listNotificationsHandler);
+  router.post("/notifications/read-all", markNotificationsReadHandler);
   router.get("/tasks", listTasksHandler);
   router.get("/tasks/:id", getTaskHandler);
   router.post("/tasks", createTaskHandler);
@@ -301,6 +331,22 @@ export const registerRoutes = (router: Router) => {
   router.get("/posts/:id/reactions", getPostReactionsHandler);
   router.post("/posts/:id/reactions", postReactionsHandler);
   router.delete("/posts/:id/reactions", deletePostReactionHandler);
+
+  // Wiki routes
+  router.get("/wiki", listWikiArticlesHandler);
+  router.post("/wiki", createWikiArticleHandler);
+  router.get("/wiki/:slug", getWikiArticleDetailHandler);
+
+  // Chat routes
+  router.get("/chat/rooms", listChatRoomsHandler);
+  router.post("/chat/rooms", createChatRoomHandler);
+  router.get("/chat/rooms/:id", getChatRoomDetailHandler);
+  router.post("/chat/rooms/:id/messages", createChatMessageHandler);
+  router.post("/chat/rooms/:id/read", markChatRoomReadHandler);
+  router.post("/chat/rooms/:id/pin", pinChatRoomHandler);
+  router.delete("/chat/rooms/:id/pin", unpinChatRoomHandler);
+  router.get("/chat/rooms/:id/feedback", getChatFeedbackHandler);
+  router.post("/chat/rooms/:id/feedback", saveChatFeedbackHandler);
 
   // Admin management routes
   router.get("/admin/users", listManagedUsersHandler);
