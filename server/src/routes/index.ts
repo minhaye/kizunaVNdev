@@ -1,7 +1,15 @@
 import type { Router } from "express";
 import { healthHandler } from "./health.js";
 import { dbPingHandler } from "./db.js";
-import { loginHandler, signUpHandler, logoutHandler, getMeHandler } from "./auth.js";
+import {
+  forgotPasswordRequestHandler,
+  forgotPasswordResetHandler,
+  forgotPasswordVerifyHandler,
+  getMeHandler,
+  loginHandler,
+  logoutHandler,
+  signUpHandler,
+} from "./auth.js";
 import { employeeFeedbacksHandler, employeesHandler } from "./employees.js";
 import {
   claimTaskHandler,
@@ -54,6 +62,9 @@ export const registerRoutes = (router: Router) => {
   // Auth routes
   router.post("/auth/login", loginHandler);
   router.post("/auth/signup", signUpHandler);
+  router.post("/auth/forgot-password/request", forgotPasswordRequestHandler);
+  router.post("/auth/forgot-password/verify", forgotPasswordVerifyHandler);
+  router.post("/auth/forgot-password/reset", forgotPasswordResetHandler);
   router.post("/auth/logout", logoutHandler);
   router.get("/auth/me", getMeHandler);
   

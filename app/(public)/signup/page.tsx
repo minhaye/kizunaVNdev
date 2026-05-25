@@ -9,6 +9,7 @@ export default function SignupPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -39,7 +40,7 @@ export default function SignupPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ name, email, password }),
       });
 
       const data = await response.json();
@@ -63,17 +64,15 @@ export default function SignupPage() {
 
   return (
     <main className="min-h-screen grid place-items-center bg-gradient-to-br from-slate-100 to-blue-50 px-4">
-      <div className="w-full max-w-md bg-white rounded-2xl border-4 border-red-800 shadow-lg p-8">
-        {/* Header */}
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">KizunaVN 登録</h1>
-          <p className="text-sm text-slate-500 mt-2">
-            <span className="block">登録ページへようこそ！</span>
-            <span className="block">Trang đăng ký</span>
-          </p>
+          <h1 className="text-3xl font-bold text-slate-900">KizunaVN Đăng ký / 新規登録</h1>
+           <p className="text-sm text-slate-500 mt-2">
+           <span className="block">Tạo tài khoản mới để bắt đầu.</span>
+            <span className="block">新しいアカウントを作成します。</span>
+      </p>
         </div>
 
-        {/* Messages */}
         {error && (
           <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
             {error}
@@ -85,8 +84,20 @@ export default function SignupPage() {
           </div>
         )}
 
-        {/* Form */}
         <form onSubmit={handleSignup} className="mt-6 space-y-4">
+          {/* Name Input */}
+          <div>
+            <input
+              type="text"
+              placeholder="Họ và tên / 氏名"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              disabled={loading}
+              required
+              className="w-full border border-gray-200 rounded-lg px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-100"
+            />
+          </div>
+
           {/* Email Input */}
           <div>
             <input
@@ -96,7 +107,7 @@ export default function SignupPage() {
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
               required
-              className="w-full border-2 border-red-800 rounded-lg px-4 py-3 text-base text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-red-400/60 disabled:bg-gray-100"
+              className="w-full border border-gray-200 rounded-lg px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-100"
             />
           </div>
 
@@ -109,7 +120,7 @@ export default function SignupPage() {
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
               required
-              className="w-full border-2 border-red-800 rounded-lg px-4 py-3 pr-12 text-base text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-red-400/60 disabled:bg-gray-100"
+              className="w-full border border-gray-200 rounded-lg px-4 py-3 pr-12 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-100"
             />
             <button
               type="button"
@@ -130,7 +141,7 @@ export default function SignupPage() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               disabled={loading}
               required
-              className="w-full border-2 border-red-800 rounded-lg px-4 py-3 pr-12 text-base text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-red-400/60 disabled:bg-gray-100"
+              className="w-full border border-gray-200 rounded-lg px-4 py-3 pr-12 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-100"
             />
             <button
               type="button"
