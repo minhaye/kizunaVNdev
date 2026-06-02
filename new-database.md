@@ -41,7 +41,8 @@
 | chat_members | chat_room_id | UUID | ID đoạn chat |  | NOT NULL | FK → chat_rooms.id, PRIMARY KEY (employee_id, chat_room_id) |
 | chat_members | role | VARCHAR(20) | Vai trò trong đoạn chat |  | NOT NULL | CHECK (member, chat_admin) |
 | chat_members | joined_at | TIMESTAMP | Thời gian tham gia đoạn chat |  | NOT NULL | DEFAULT now() |
-| chat_members | last_read_at | TIMESTAMP | Thời gian đọc tin nhắn gần nhất |  |  | Dùng để tính unread |
+| chat_members | last_read_at | TIMESTAMP | Thời gian đọc tin nhắn gần nhất | | | Có thể dùng để lưu thời điểm đọc cuối cùng, hiện tại unread chủ yếu dựa vào is_read
+| chat_members | is_read    | BOOLEAN | Trạng thái đã đọc của thành viên trong đoạn chat |         | NOT NULL  | DEFAULT false; true = đã xem, false = chưa xem |
 | tasks | id | UUID | Lưu task được giao | UNIQUE | NOT NULL | PRIMARY KEY |
 | tasks | assigner_id | UUID | ID người giao task |  | NOT NULL | FK → employees.id |
 | tasks | assignee_id | UUID | ID người nhận task |  | NOT NULL | FK → employees.id |
@@ -73,3 +74,13 @@
 | wiki_articles | created_by | UUID | Người tạo bài viết wiki |  | NOT NULL | FK → employees.id |
 | wiki_articles | created_at | TIMESTAMP | Thời gian tạo bài viết wiki |  | NOT NULL | DEFAULT now() |
 | wiki_articles | updated_at | TIMESTAMP | Thời gian cập nhật bài viết wiki |  |  |  |
+| password_reset_otps | id | UUID | Lưu OTP đặt lại mật khẩu | UNIQUE | NOT NULL | PRIMARY KEY |
+| password_reset_otps | email | VARCHAR(100) | Email yêu cầu đặt lại mật khẩu | UNIQUE | NOT NULL |  |
+| password_reset_otps | source | VARCHAR(20) | Nguồn tài khoản |  | NOT NULL | CHECK (employees, admins) |
+| password_reset_otps | otp_hash | TEXT | Mã OTP đã băm |  | NOT NULL |  |
+| password_reset_otps | otp_expires_at | TIMESTAMPTZ | Hạn OTP (3 phút) |  | NOT NULL |  |
+| password_reset_otps | reset_token | TEXT | Token đặt lại mật khẩu |  |  | UNIQUE index |
+| password_reset_otps | reset_expires_at | TIMESTAMPTZ | Hạn reset token |  |  |  |
+| password_reset_otps | used_at | TIMESTAMPTZ | Thời điểm đã dùng token |  |  |  |
+| password_reset_otps | created_at | TIMESTAMPTZ | Thời gian tạo |  | NOT NULL | DEFAULT now() |
+| password_reset_otps | updated_at | TIMESTAMPTZ | Thời gian cập nhật |  | NOT NULL | DEFAULT now() |

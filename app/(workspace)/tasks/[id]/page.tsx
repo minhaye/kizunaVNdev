@@ -64,9 +64,9 @@ const getDeadlineParts = (value: string | null) => {
 };
 
 const statusLabel: Record<TaskStatus, string> = {
-  todo: "未着手 / To do",
-  doing: "進行中 / Doing",
-  done: "完了 / Done",
+  todo: "未着手 / Chưa làm",
+  doing: "進行中 / Đang làm",
+  done: "完了 / Hoàn thành",
 };
 
 const statusClass: Record<TaskStatus, string> = {
@@ -118,7 +118,7 @@ export default function TaskDetailPage() {
     const loadTask = async () => {
       const token = getAuthToken();
       if (!token) {
-        setError("Chưa có session đăng nhập.");
+        setError("セッションがありません / Chưa có phiên đăng nhập.");
         setLoading(false);
         return;
       }
@@ -142,12 +142,12 @@ export default function TaskDetailPage() {
         }
 
         if (!response.ok) {
-          throw new Error(data?.error || "Không thể tải task");
+          throw new Error(data?.error || "タスクを読み込めません / Không thể tải task");
         }
 
         setTask(data.task);
       } catch (loadError) {
-        setError(loadError instanceof Error ? loadError.message : "Không thể tải task");
+        setError(loadError instanceof Error ? loadError.message : "タスクを読み込めません / Không thể tải task");
       } finally {
         setLoading(false);
       }
@@ -178,12 +178,12 @@ export default function TaskDetailPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Không thể nhận task");
+        throw new Error(data.error || "タスクを受け取れません / Không thể nhận task");
       }
 
       refreshTask(data.task);
     } catch (claimError) {
-      setError(claimError instanceof Error ? claimError.message : "Không thể nhận task");
+      setError(claimError instanceof Error ? claimError.message : "タスクを受け取れません / Không thể nhận task");
     } finally {
       setMutating(false);
     }
@@ -207,12 +207,12 @@ export default function TaskDetailPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Không thể hoàn thành task");
+        throw new Error(data.error || "タスクを完了できません / Không thể hoàn thành task");
       }
 
       refreshTask(data.task);
     } catch (updateError) {
-      setError(updateError instanceof Error ? updateError.message : "Không thể hoàn thành task");
+      setError(updateError instanceof Error ? updateError.message : "タスクを完了できません / Không thể hoàn thành task");
     } finally {
       setMutating(false);
     }
@@ -253,15 +253,24 @@ export default function TaskDetailPage() {
       <div className="max-w-4xl mx-auto space-y-4">
         <header className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">タスク詳細 / Task detail</h2>
-            <p className="text-sm text-slate-500">詳細を確認し、タスクを引き受けて完了へ進めます。</p>
+            <h2 className="text-xl font-bold text-slate-900">
+              <span className="block">タスク詳細</span>
+              <span className="block">Chi tiết task</span>
+            </h2>
+            <p className="text-sm text-slate-500">
+              <span className="block">詳細を確認し、タスクを引き受けて完了へ進めます。</span>
+              <span className="block">Xem chi tiết, nhận và hoàn thành task.</span>
+            </p>
           </div>
           <Link
             href="/tasks"
             className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
           >
             <ChevronLeft className="w-4 h-4" />
-            ボードへ戻る / Quay lại board
+            <span className="leading-tight">
+              <span className="block">ボードへ戻る</span>
+              <span className="block">Quay lại board</span>
+            </span>
           </Link>
         </header>
 
@@ -283,36 +292,60 @@ export default function TaskDetailPage() {
                 <span className={`text-xs px-2 py-1 rounded-full font-semibold ${statusClass[task.status]}`}>
                   {statusLabel[task.status]}
                 </span>
-                <span className="text-xs text-slate-400">Task ID: {task.id}</span>
+                <span className="text-xs text-slate-400">
+                  <span className="block">タスクID</span>
+                  <span className="block">Task ID: {task.id}</span>
+                </span>
               </div>
 
               <div>
-                <p className="text-xs text-slate-500">タスク名 / Task title</p>
+                <p className="text-xs text-slate-500">
+                  <span className="block">タスク名</span>
+                  <span className="block">Tên task</span>
+                </p>
                 <p className="font-semibold text-slate-800 text-lg">{task.title}</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs text-slate-500">依頼者 / Giao bởi</p>
+                  <p className="text-xs text-slate-500">
+                    <span className="block">依頼者</span>
+                    <span className="block">Giao bởi</span>
+                  </p>
                   <p className="text-sm font-semibold text-slate-700">{task.assigner_name}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500">担当者 / Nhận bởi</p>
+                  <p className="text-xs text-slate-500">
+                    <span className="block">担当者</span>
+                    <span className="block">Nhận bởi</span>
+                  </p>
                   <p className="text-sm font-semibold text-slate-700">{task.assignee_name}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500">トピック / Topic</p>
+                  <p className="text-xs text-slate-500">
+                    <span className="block">トピック</span>
+                    <span className="block">Topic</span>
+                  </p>
                   <p className="text-sm font-semibold text-slate-700">{task.topic || "-"}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500">期限 / Deadline</p>
+                  <p className="text-xs text-slate-500">
+                    <span className="block">期限</span>
+                    <span className="block">Deadline</span>
+                  </p>
                   <p className="text-sm font-semibold text-slate-700">{deadlineParts.dateText}</p>
-                  <p className="text-xs text-slate-500 mt-1">時刻 / Giờ: {deadlineParts.timeText}</p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    <span className="block">時刻</span>
+                    <span className="block">Giờ: {deadlineParts.timeText}</span>
+                  </p>
                 </div>
               </div>
 
               <div>
-                <p className="text-xs text-slate-500">説明 / Description</p>
+                <p className="text-xs text-slate-500">
+                  <span className="block">説明</span>
+                  <span className="block">Mô tả</span>
+                </p>
                 <p className="text-sm text-slate-700 whitespace-pre-line">
                   {task.content || "説明はまだありません。/ Chưa có mô tả."}
                 </p>
@@ -335,13 +368,15 @@ export default function TaskDetailPage() {
 
                 {task.status === "done" && (
                   <span className="rounded-md bg-emerald-100 px-4 py-2 text-sm font-semibold text-emerald-700">
-                    完了済みタスク / Task đã hoàn thành
+                    <span className="block">完了済みタスク</span>
+                    <span className="block">Task đã hoàn thành</span>
                   </span>
                 )}
 
                 {!canClaim && task.status !== "done" && (
                   <span className="text-sm text-slate-500">
-                    このタスクは閲覧のみ可能です。/ Bạn có thể xem task này nhưng không phải người nhận được gán để thao tác.
+                    <span className="block">このタスクは閲覧のみ可能です。</span>
+                    <span className="block">Bạn có thể xem task này nhưng không phải người nhận được gán để thao tác.</span>
                   </span>
                 )}
               </div>
@@ -350,9 +385,15 @@ export default function TaskDetailPage() {
               {(task.status === "doing" || task.status === "done") && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-white border border-slate-200 rounded-xl p-4">
-                  <h3 className="text-sm font-semibold text-slate-800 mb-3">報連相・進捗報告 (Ho-Ren-Sô)</h3>
+                  <h3 className="text-sm font-semibold text-slate-800 mb-3">
+                    <span className="block">報連相・進捗報告</span>
+                    <span className="block">Ho‑Ren‑So</span>
+                  </h3>
                   {reports.length === 0 ? (
-                    <div className="text-sm text-slate-500">Chưa có báo cáo nào. / まだ報告がありません。</div>
+                    <div className="text-sm text-slate-500">
+                      <span className="block">まだ報告がありません</span>
+                      <span className="block">Chưa có báo cáo nào.</span>
+                    </div>
                   ) : (
                     <div className="space-y-3 max-h-96 overflow-y-auto">
                       {reports.map((r) => (
@@ -370,40 +411,52 @@ export default function TaskDetailPage() {
                 {/* Report form — only for assignee when task is doing */}
                 {task.status === "doing" && currentUser?.id === task.assignee_id ? (
                 <div className="bg-white border border-slate-200 rounded-xl p-4">
-                  <h3 className="text-sm font-semibold text-slate-800 mb-3">Hô‑Ren‑Soを書く / Viết Ho‑Ren‑So</h3>
+                  <h3 className="text-sm font-semibold text-slate-800 mb-3">
+                    <span className="block">報連相を書く</span>
+                    <span className="block">Viết Ho‑Ren‑So</span>
+                  </h3>
 
                   <div>
-                    <label className="text-xs text-slate-500">報告 / Báo cáo (Report) *</label>
+                    <label className="text-xs text-slate-500">
+                      <span className="block">報告</span>
+                      <span className="block">Báo cáo (Report) *</span>
+                    </label>
                     <textarea
                       value={reportText}
                       onChange={(e) => setReportText(e.target.value)}
                       rows={4}
                       className="w-full mt-1 rounded-md border border-slate-200 p-2 text-sm"
-                      placeholder="報告を入力 / Nhập nội dung báo cáo"
+                      placeholder="報告を入力... / Nhập báo cáo..."
                       disabled={mutatingReport}
                     />
                   </div>
 
                   <div className="mt-3">
-                    <label className="text-xs text-slate-500">連絡 / Liên lạc (Inform) *</label>
+                    <label className="text-xs text-slate-500">
+                      <span className="block">連絡</span>
+                      <span className="block">Liên lạc (Inform) *</span>
+                    </label>
                     <textarea
                       value={informText}
                       onChange={(e) => setInformText(e.target.value)}
                       rows={3}
                       className="w-full mt-1 rounded-md border border-slate-200 p-2 text-sm"
-                      placeholder="連絡事項を入力 / Nhập thông tin liên lạc"
+                      placeholder="連絡事項を入力... / Nhập nội dung liên lạc..."
                       disabled={mutatingReport}
                     />
                   </div>
 
                   <div className="mt-3">
-                    <label className="text-xs text-slate-500">相談 / Tương đàm (Consult)</label>
+                    <label className="text-xs text-slate-500">
+                      <span className="block">相談</span>
+                      <span className="block">Tương đàm (Consult)</span>
+                    </label>
                     <textarea
                       value={consultText}
                       onChange={(e) => setConsultText(e.target.value)}
                       rows={3}
                       className="w-full mt-1 rounded-md border border-slate-200 p-2 text-sm"
-                      placeholder="相談・課題を入力 / Nhập vấn đề cần trao đổi"
+                      placeholder="相談・課題を入力... / Nhập tư vấn, vấn đề..."
                       disabled={mutatingReport}
                     />
                   </div>
@@ -414,17 +467,17 @@ export default function TaskDetailPage() {
                       onClick={async () => {
                         setReportError("");
                         if (!currentUser || currentUser.id !== task?.assignee_id) {
-                          setReportError("Chỉ người nhận task mới được gửi báo cáo.");
+                          setReportError("担当者のみ送信可能です / Chỉ người nhận task mới được gửi báo cáo.");
                           return;
                         }
                         if (!reportText.trim() || !informText.trim()) {
-                          setReportError("Vui lòng điền báo cáo và liên lạc.");
+                          setReportError("報告と連絡を入力してください / Vui lòng điền báo cáo và liên lạc.");
                           return;
                         }
 
                         const token = getAuthToken();
                         if (!token) {
-                          setReportError("Không có token xác thực");
+                          setReportError("認証トークンがありません / Không có token xác thực");
                           return;
                         }
 
@@ -448,7 +501,7 @@ export default function TaskDetailPage() {
                             throw new Error(text || `Unexpected response (${res.status})`);
                           }
 
-                          if (!res.ok) throw new Error(data?.error || "Lỗi khi gửi báo cáo");
+                          if (!res.ok) throw new Error(data?.error || "報告の送信に失敗しました / Lỗi khi gửi báo cáo");
 
                           // reload reports and clear inputs
                           setReportText("");
@@ -464,18 +517,37 @@ export default function TaskDetailPage() {
                       disabled={mutatingReport}
                       className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
                     >
-                      {mutatingReport ? "Đang lưu..." : "報連相を送る / Gửi Ho-Ren-So"}
+                      {mutatingReport ? (
+                        <span className="block">送信中... / Đang lưu...</span>
+                      ) : (
+                        <span className="leading-tight">
+                          <span className="block">報連相を送る</span>
+                          <span className="block">Gửi Ho‑Ren‑So</span>
+                        </span>
+                      )}
                     </button>
                     {reportError && <div className="mt-2 text-sm text-red-600">{reportError}</div>}
                   </div>
                 </div>
                 ) : (
                   <div className="bg-white border border-slate-200 rounded-xl p-4">
-                    <h3 className="text-sm font-semibold text-slate-800 mb-2">報連相記録 / Hồ sơ Ho-Ren-So</h3>
+                    <h3 className="text-sm font-semibold text-slate-800 mb-2">
+                      <span className="block">報連相記録</span>
+                      <span className="block">Hồ sơ Ho‑Ren‑So</span>
+                    </h3>
                     <p className="text-xs text-slate-500">
                       {task.status === "done"
-                        ? "このタスクは完了しました。報連相の記録は左側にあります。 / Task đã hoàn thành. Lịch sử báo cáo nằm bên trái."
-                        : "担当者のみが報連相を送ることができます。 / Chỉ người nhận task mới được gửi báo cáo."}
+                        ? (
+                          <>
+                            <span className="block">このタスクは完了しました。報連相の記録は左側にあります。</span>
+                            <span className="block">Task đã hoàn thành. Lịch sử báo cáo nằm bên trái.</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="block">担当者のみが報連相を送ることができます。</span>
+                            <span className="block">Chỉ người nhận task mới được gửi báo cáo.</span>
+                          </>
+                        )}
                     </p>
                   </div>
                 )}
@@ -483,7 +555,10 @@ export default function TaskDetailPage() {
               )}
             </>
           ) : (
-            <div className="text-sm text-slate-500">タスクが見つかりません。/ Không tìm thấy task.</div>
+            <div className="text-sm text-slate-500">
+              <span className="block">タスクが見つかりません。</span>
+              <span className="block">Không tìm thấy task.</span>
+            </div>
           )}
         </section>
       </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 type WikiArticle = {
@@ -27,6 +27,7 @@ export default function WikiListPage() {
   const [newContent, setNewContent] = useState("");
   const [query, setQuery] = useState("");
   const [tagFilter, setTagFilter] = useState("all");
+  const [createOpen, setCreateOpen] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -40,7 +41,7 @@ export default function WikiListPage() {
         const payload = await response.json();
 
         if (!response.ok || !payload?.ok) {
-          throw new Error(payload?.error || "Không thể tải danh sách wiki");
+          throw new Error(payload?.error || "Wiki一覧を読み込めません / Không thể tải danh sách wiki");
         }
 
         if (!active) return;
@@ -58,7 +59,7 @@ export default function WikiListPage() {
         );
       } catch (loadError) {
         if (!active) return;
-        setError(loadError instanceof Error ? loadError.message : "Có lỗi khi tải dữ liệu wiki");
+        setError(loadError instanceof Error ? loadError.message : "Wiki読み込みエラー / Có lỗi khi tải dữ liệu wiki");
       } finally {
         if (active) setLoading(false);
       }
@@ -133,6 +134,7 @@ export default function WikiListPage() {
       setNewTag("");
       setNewContent("");
       setCreateSuccess("Tạo bài viết Wiki thành công.");
+      setCreateOpen(false);
     } catch (submitError) {
       setCreateError(
         submitError instanceof Error ? submitError.message : "Có lỗi khi tạo bài viết Wiki",
@@ -147,10 +149,12 @@ export default function WikiListPage() {
       <div className="max-w-5xl mx-auto">
         <div className="mb-6">
           <h2 className="text-xl font-bold text-slate-900">
-            文化Wiki記事一覧画面
+            <span className="block">文化Wiki記事一覧画面</span>
+            <span className="block">Màn hình danh sách bài viết Wiki</span>
           </h2>
           <p className="text-sm text-slate-500">
-            Wiki記事一覧画面 / Màn hình DS bài viết Wiki
+            <span className="block">Wiki記事一覧画面</span>
+            <span className="block">Màn hình danh sách bài viết Wiki</span>
           </p>
         </div>
 
@@ -159,11 +163,12 @@ export default function WikiListPage() {
             <Search className="w-4 h-4 text-slate-400" />
             <input
               className="w-full text-sm outline-none"
-              placeholder="記事・タグを検索 / Tìm theo bài viết, tag..."
+              placeholder="記事・タグを検索... / Tìm bài viết, tag..."
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
           </div>
+          <span className="text-[11px] text-slate-400">Tìm theo bài viết, tag...</span>
           <select
             value={tagFilter}
             onChange={(event) => setTagFilter(event.target.value)}
@@ -177,52 +182,32 @@ export default function WikiListPage() {
             ))}
           </select>
           <span className="text-xs text-slate-400">
-            {filteredArticles.length} articles
+            <span className="block">{filteredArticles.length} 件</span>
+            <span className="block">{filteredArticles.length} bài viết</span>
           </span>
-        </div>
-
-        <form
-          onSubmit={handleCreateWiki}
-          className="mb-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm space-y-3"
-        >
-          <p className="text-sm font-semibold text-slate-800">
-            Wiki記事作成 / Tạo bài viết Wiki
-          </p>
-          <input
-            value={newTitle}
-            onChange={(event) => setNewTitle(event.target.value)}
-            placeholder="Tiêu đề bài viết"
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
-            required
-          />
-          <input
-            value={newTag}
-            onChange={(event) => setNewTag(event.target.value)}
-            placeholder="Tag / Chủ đề (không bắt buộc)"
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
-          />
-          <textarea
-            value={newContent}
-            onChange={(event) => setNewContent(event.target.value)}
-            placeholder="Nội dung bài viết"
-            className="min-h-28 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
-            required
-          />
-          {createError ? <p className="text-xs text-red-500">{createError}</p> : null}
-          {createSuccess ? <p className="text-xs text-emerald-600">{createSuccess}</p> : null}
           <button
-            type="submit"
-            disabled={creating}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+            type="button"
+            onClick={() => {
+              setCreateError("");
+              setCreateSuccess("");
+              setCreateOpen(true);
+            }}
+            className="ml-auto inline-flex items-center gap-2 rounded-full bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue-700"
           >
-            {creating ? "Đang tạo..." : "作成 / Tạo bài viết"}
+            <Plus className="h-4 w-4" />
+            <span className="leading-tight">
+              <span className="block">新規Wiki</span>
+              <span className="block">Tạo bài viết</span>
+            </span>
           </button>
-        </form>
+        </div>
+        {createSuccess ? <p className="mb-6 text-xs text-emerald-600">{createSuccess}</p> : null}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {loading ? (
             <div className="col-span-full rounded-xl border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500">
-              Đang tải dữ liệu wiki...
+              <span className="block">Wikiを読み込み中...</span>
+              <span className="block">Đang tải dữ liệu wiki...</span>
             </div>
           ) : error ? (
             <div className="col-span-full rounded-xl border border-dashed border-red-200 bg-white p-6 text-center text-sm text-red-500">
@@ -230,7 +215,8 @@ export default function WikiListPage() {
             </div>
           ) : filteredArticles.length === 0 ? (
             <div className="col-span-full rounded-xl border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500">
-              該当する記事がありません / Không có bài viết phù hợp.
+              <span className="block">該当する記事がありません</span>
+              <span className="block">Không có bài viết phù hợp.</span>
             </div>
           ) : (
             filteredArticles.map((item) => (
@@ -244,14 +230,78 @@ export default function WikiListPage() {
                 </p>
                 <h3 className="font-semibold text-slate-800">{item.title}</h3>
                 <p className="text-xs text-slate-500 mt-2">
-                  クリックして記事詳細を表示 / Nhấn để xem chi tiết nội quy/bài
-                  viết.
+                  <span className="block">クリックして記事詳細を表示</span>
+                  <span className="block">Nhấn để xem chi tiết nội quy/bài viết.</span>
                 </p>
               </Link>
             ))
           )}
         </div>
       </div>
+
+      {createOpen && (
+        <div className="fixed inset-0 z-30 flex items-center justify-center bg-slate-950/45 px-4">
+          <div className="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white shadow-2xl">
+            <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-4 py-4">
+              <div>
+                <p className="text-sm font-semibold text-slate-900">
+                  <span className="block">Wiki記事作成</span>
+                  <span className="block">Tạo bài viết Wiki</span>
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCreateOpen(false)}
+                className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                aria-label="Close create wiki dialog"
+              >
+                ×
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateWiki} className="space-y-3 px-4 py-4">
+              <input
+                value={newTitle}
+                onChange={(event) => setNewTitle(event.target.value)}
+                placeholder="記事タイトル / Tiêu đề bài viết"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
+                required
+              />
+              <input
+                value={newTag}
+                onChange={(event) => setNewTag(event.target.value)}
+                placeholder="タグ（任意） / Chủ đề (không bắt buộc)"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
+              />
+              <textarea
+                value={newContent}
+                onChange={(event) => setNewContent(event.target.value)}
+                placeholder="記事内容 / Nội dung bài viết"
+                className="min-h-28 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-400"
+                required
+              />
+              {createError ? <p className="text-xs text-red-500">{createError}</p> : null}
+
+              <div className="flex items-center justify-end gap-2 border-t border-slate-100 pt-3">
+                <button
+                  type="button"
+                  onClick={() => setCreateOpen(false)}
+                  className="rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600"
+                >
+                  キャンセル / Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={creating}
+                  className="rounded-full bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+                >
+                  {creating ? "Đang tạo..." : "作成 / Tạo bài viết"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

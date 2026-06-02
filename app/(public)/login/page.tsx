@@ -34,11 +34,11 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Đăng nhập thất bại");
+        setError(data.error || "ログイン失敗 / Đăng nhập thất bại");
         return;
       }
 
-      setSuccess("Đăng nhập thành công! Đang chuyển hướng...");
+      setSuccess("ログイン成功！/ Đăng nhập thành công! Đang chuyển hướng...");
       
       // Lưu session token
       if (data.session) {
@@ -52,7 +52,7 @@ export default function LoginPage() {
         router.push(targetPath);
       }, 1000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Có lỗi xảy ra");
+      setError(err instanceof Error ? err.message : "エラーが発生しました / Có lỗi xảy ra");
     } finally {
       setLoading(false);
     }
@@ -65,7 +65,8 @@ export default function LoginPage() {
         <div>
           <h1 className="text-3xl font-bold text-slate-900">KizunaVN ログイン</h1>
           <p className="text-sm text-slate-500 mt-2">
-            Trang đăng nhập / ログインページへようこそ！
+            <span className="block">ログインページへようこそ！</span>
+            <span className="block">Trang đăng nhập</span>
           </p>
         </div>
 
@@ -87,7 +88,7 @@ export default function LoginPage() {
           <div>
             <input
               type="email"
-              placeholder="Email"
+              placeholder="メール / Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
@@ -100,7 +101,7 @@ export default function LoginPage() {
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
-              placeholder="Password"
+              placeholder="パスワード / Mật khẩu"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
@@ -109,7 +110,7 @@ export default function LoginPage() {
             />
             <button
               type="button"
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-label={showPassword ? "パスワードを隠す / Ẩn mật khẩu" : "パスワードを表示 / Hiện mật khẩu"}
               onClick={() => setShowPassword((prev) => !prev)}
               disabled={loading}
               className="absolute inset-y-0 right-3 grid place-items-center text-slate-500 hover:text-slate-700 disabled:opacity-50"
@@ -124,8 +125,9 @@ export default function LoginPage() {
               href="/forgot-password"
               className="text-sm text-blue-600 hover:text-blue-700 hover:underline"
             >
-              Quên mật khẩu? <br />
-              <span className="text-xs">パスワードを忘れた方はこちら</span>
+              <span className="block text-sm">パスワードを忘れた方はこちら</span>
+              <span className="block text-sm">Quên mật khẩu?</span>
+              <span className="block text-sm">Nhấn để đặt lại mật khẩu</span>
             </Link>
           </div>
 
@@ -135,15 +137,24 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full bg-blue-600 text-white rounded-lg py-3 text-base font-semibold hover:bg-blue-700 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            {loading ? "Đang đăng nhập..." : "ログイン / Đăng nhập"}
+            {loading ? (
+              <span className="block">ログイン中... / Đang đăng nhập...</span>
+            ) : (
+              <span className="leading-tight">
+                <span className="block">ログイン</span>
+                <span className="block">Đăng nhập</span>
+              </span>
+            )}
           </button>
         </form>
 
         {/* Sign Up Link */}
         <p className="mt-6 text-center text-sm text-slate-600">
-          Chưa có tài khoản?{" "}
+          <span className="block">まだアカウントがありませんか？</span>
+          <span className="block">Chưa có tài khoản?</span>
           <Link href="/signup" className="text-blue-600 hover:underline font-medium">
-            Đăng ký ngay
+            <span className="block">登録する</span>
+            <span className="block">Đăng ký ngay</span>
           </Link>
         </p>
       </div>
