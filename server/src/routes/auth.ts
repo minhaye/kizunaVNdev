@@ -15,6 +15,7 @@ type EmployeeRow = {
   password: string;
   avatar_url: string | null;
   role: "employee" | "leader";
+  status?: "active" | "inactive" | null;
   last_online: string | null;
 };
 
@@ -152,6 +153,9 @@ export const loginHandler = async (req: Request, res: Response) => {
     const admin = adminResult.data;
 
     if (employee && employee.password === password) {
+      if (employee.status === "inactive") {
+        return res.status(403).json({ error: "Tài khoản đã bị vô hiệu hóa." });
+      }
       const nowIso = new Date().toISOString();
       await supabase.from("employees").update({ last_online: nowIso }).eq("id", employee.id);
 

@@ -12,7 +12,7 @@ type ManagedUser = {
   source: "employees" | "admins";
   avatar_url: string | null;
   last_online: string | null;
-  status: "active";
+  status: "active" | "inactive";
   is_online: boolean;
 };
 
@@ -49,6 +49,7 @@ const mapEmployeeRow = (employee: {
   avatar_url: string | null;
   role: "employee" | "leader";
   nationality: "vn" | "jp";
+  status?: "active" | "inactive" | null;
   last_online: string | null;
 }): ManagedUser => ({
   id: employee.id,
@@ -59,7 +60,7 @@ const mapEmployeeRow = (employee: {
   source: "employees",
   avatar_url: employee.avatar_url,
   last_online: employee.last_online,
-  status: "active",
+  status: employee.status === "inactive" ? "inactive" : "active",
   is_online: isRecentOnline(employee.last_online),
 });
 
@@ -94,7 +95,7 @@ export const usersHandler = async (req: Request, res: Response) => {
     const [{ data: employees, error: employeesError }, { data: admins, error: adminsError }] = await Promise.all([
       supabase
         .from("employees")
-        .select("id,name,email,avatar_url,role,nationality,last_online")
+        .select("id,name,email,avatar_url,role,nationality,last_online,status")
         .order("last_online", { ascending: false, nullsFirst: false }),
       supabase
         .from("admins")
@@ -207,6 +208,43 @@ export const createUserHandler = async (req: Request, res: Response) => {
         status: "active" as const,
       },
     });
+  } catch (error) {
+    return res.status(500).json({
+      error: "Lỗi server",
+      details: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
+
+export const updateUserStatusHandler = async (req: Request, res: Response) => {
+  try {
+    const session = requirePrivilegedSession(req, res);
+    if (!session) return;
+
+    const userId = typeof req.params.id === "string" ? req.params.id : "";
+    const source = req.body?.source === "employees" ? "employees" : req.body?.source === "admins" ? "admins" : "";
+    const status = req.body?.status === "inactive" ? "inactive" : req.body?.status === "active" ? "active" : "";
+
+    if (!userId || !source || !status) {
+      return res.status(400).json({ error: "Thiếu thông tin cập nhật." });
+    }
+
+    if (source !== "employees") {
+      return res.status(400).json({ error: "Chỉ hỗ trợ khóa/mở tài khoản nhân viên." });
+    }
+
+    const { data, error } = await supabase
+      .from("employees")
+      .update({ status })
+      .eq("id", userId)
+      .select("id,status")
+      .single();
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.json({ success: true, user: data });
   } catch (error) {
     return res.status(500).json({
       error: "Lỗi server",

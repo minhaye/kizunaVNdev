@@ -11,6 +11,7 @@ create table if not exists public.employees (
   password varchar(100) not null,
   avatar_url text,
   role varchar(20) not null check (role in ('employee', 'leader')),
+  status varchar(20) not null default 'active' check (status in ('active', 'inactive')),
   last_online timestamp
 );
 

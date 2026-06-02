@@ -7,6 +7,7 @@
 | employees | password | VARCHAR(100) | Mật khẩu đăng nhập |  | NOT NULL | Demo nên chưa hash |
 | employees | avatar_url | TEXT | Link ảnh đại diện |  |  |  |
 | employees | role | VARCHAR(20) | Vai trò nhân viên |  | NOT NULL | CHECK (employee, leader) |
+| employees | status | VARCHAR(20) | Trạng thái tài khoản |  | NOT NULL | CHECK (active, inactive), DEFAULT active |
 | employees | last_online | TIMESTAMP | Thời gian online gần nhất để hiển thị trạng thái |  |  |  |
 | feedbacks | id | UUID | Lưu feedback giữa nhân viên | UNIQUE | NOT NULL | PRIMARY KEY |
 | feedbacks | receiver_id | UUID | ID người được feedback |  | NOT NULL | FK → employees.id |

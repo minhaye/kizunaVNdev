@@ -2,16 +2,6 @@
 
 import { useEffect, useState } from "react";
 
-type RoleKey = "staff" | "admin";
-
-type RoleInfo = {
-  key: RoleKey;
-  ja: string;
-  vi: string;
-  description: string;
-  permissions: string[];
-};
-
 type UserRole = "employee" | "leader" | "admin";
 
 type UserRow = {
@@ -23,57 +13,13 @@ type UserRow = {
   source: "employees" | "admins";
   avatar_url: string | null;
   last_online: string | null;
-  status: "active";
+  status: "active" | "inactive";
 };
-
-type CreateUserForm = {
-  name: string;
-  email: string;
-  password: string;
-  nationality: "vn" | "jp";
-  role: "employee" | "leader";
-  avatar_url: string;
-};
-
-const roles: RoleInfo[] = [
-  {
-    key: "staff",
-    ja: "日越スタッフ",
-    vi: "Nhân viên Nhật - Việt",
-    description:
-      "日々のChat/Task/Wiki/掲示板で業務を行うメンバー / Thành viên làm việc hàng ngày trên Chat, Task, Wiki và Bảng tin cộng đồng.",
-    permissions: [
-      "社内チャット・1対1連絡 / Chat nội bộ và trao đổi 1-1",
-      "個人・チームTaskの作成更新 / Tạo/Cập nhật task cá nhân và theo nhóm",
-      "Wikiの閲覧と修正提案 / Đọc và đề xuất chỉnh sửa Wiki",
-      "掲示板通知の閲覧とリアクション / Xem thông báo và react trên bảng tin",
-    ],
-  },
-  {
-    key: "admin",
-    ja: "管理者",
-    vi: "Quản trị viên",
-    description:
-      "システム運用・アカウント管理・権限設定・コンテンツ審査を担当 / Vai trò vận hành hệ thống, quản lý tài khoản, cấu hình quyền và kiểm duyệt nội dung.",
-    permissions: [
-      "ユーザー/ロールのフル管理 / Toàn quyền quản lý user/role",
-      "Wiki・掲示板コンテンツの審査/非表示 / Duyệt và ẩn nội dung Wiki/Bảng tin",
-      "システム通知の管理 / Quản lý thông báo hệ thống",
-      "操作ログ・セキュリティ監査 / Xem nhật ký hoạt động và bảo mật",
-    ],
-  },
-];
 
 const roleLabel = (role: UserRole) => {
   if (role === "admin") return "管理者 / Quản trị viên";
   return "日越スタッフ / Nhân viên";
 };
-
-const sortUsersByName = (list: UserRow[]) =>
-  [...list].sort((left, right) =>
-    left.name.localeCompare(right.name, "vi", { sensitivity: "base" }),
-  );
-
 export default function AdminPage() {
   const API_BASE_URL =
     process.env.NEXT_PUBLIC_API_BASE_URL ??
@@ -92,28 +38,7 @@ export default function AdminPage() {
   const [usersPage, setUsersPage] = useState(1);
   const [usersPageSize] = useState(5);
   const [usersTotal, setUsersTotal] = useState(0);
-  const [isCreateUserOpen, setIsCreateUserOpen] = useState(false);
-  const [createUserSubmitting, setCreateUserSubmitting] = useState(false);
-  const [createUserError, setCreateUserError] = useState<string | null>(null);
-  const [createUserSuccess, setCreateUserSuccess] = useState<string | null>(null);
-  const [createUserForm, setCreateUserForm] = useState<CreateUserForm>({
-    name: "",
-    email: "",
-    password: "",
-    nationality: "vn",
-    role: "employee",
-    avatar_url: "",
-  });
-
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "pending">("all");
-  const [viewMode, setViewMode] = useState<"user" | "admin">("user");
-
-  const switchClass = (m: "user" | "admin") =>
-    `rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-      viewMode === m
-        ? "bg-slate-800 text-white shadow-sm"
-        : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
-    }`;
+  const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
 
   useEffect(() => {
     try {
@@ -150,8 +75,8 @@ export default function AdminPage() {
 
         if (!response.ok || !data.settings || !active) return;
 
-        setThemeMode(data.settings.theme_mode === "dark" ? "dark" : "light");
-  setMessageTaskNotifications(data.settings.message_task_notifications ?? true);
+          setThemeMode(data.settings.theme_mode === "dark" ? "dark" : "light");
+          setMessageTaskNotifications(data.settings.message_task_notifications ?? true);
         setLoginRetentionDays(data.settings.login_retention_days ?? 30);
         setShowActiveStatus(data.settings.show_active_status ?? true);
       } catch {
@@ -207,7 +132,7 @@ export default function AdminPage() {
             avatar_url: string | null;
             last_online: string | null;
             is_online: boolean;
-            status: "active";
+            status: "active" | "inactive";
           }>;
           total?: number;
           page?: number;
@@ -218,7 +143,7 @@ export default function AdminPage() {
         if (!active) return;
 
         if (!response.ok) {
-          setUsersError(data.error ?? "Không tải được danh sách người dùng.");
+          setUsersError(data.error ?? "ユーザー一覧を取得できません。/ Không tải được danh sách người dùng.");
           return;
         }
 
@@ -226,7 +151,7 @@ export default function AdminPage() {
         setUsersTotal(data.total ?? 0);
       } catch {
         if (active) {
-          setUsersError("Không tải được danh sách người dùng.");
+          setUsersError("ユーザー一覧を取得できません。/ Không tải được danh sách người dùng.");
         }
       } finally {
         if (active) {
@@ -241,7 +166,6 @@ export default function AdminPage() {
       active = false;
     };
   }, [API_BASE_URL, userQuery, usersPage, usersPageSize]);
-
   useEffect(() => {
     if (!settingsLoaded) return;
 
@@ -280,441 +204,59 @@ export default function AdminPage() {
   }, [API_BASE_URL, themeMode, messageTaskNotifications, loginRetentionDays, showActiveStatus, settingsLoaded]);
 
   const isPrivilegedRole = currentRole === "admin";
-const isAdminView = isPrivilegedRole;
+  const totalPages = Math.max(1, Math.ceil(usersTotal / usersPageSize));
 
-// 1. Xử lý lọc và sắp xếp người dùng (từ nhánh stable)
-const normalizedUserQuery = userQuery.trim().toLowerCase();
-const filteredUsers = users.filter((user) => {
-  const matchesQuery =
-    normalizedUserQuery.length === 0 ||
-    [user.name, user.team, user.email, roleLabel(user.role)].some((value) =>
-      value.toLowerCase().includes(normalizedUserQuery)
-    );
-  const matchesStatus = statusFilter === "all" || user.status === statusFilter;
-  return matchesQuery && matchesStatus;
-});
+  useEffect(() => {
+    if (usersPage > totalPages) {
+      setUsersPage(totalPages);
+    }
+  }, [usersPage, totalPages]);
 
-const sortedFilteredUsers = [...filteredUsers].sort((left, right) =>
-  left.name.localeCompare(right.name, "vi", { sensitivity: "base" })
-);
+  const handleToggleUserStatus = async (user: UserRow) => {
+    if (user.source !== "employees") return;
+    const token = localStorage.getItem("authToken");
+    if (!token) return;
 
-// 2. Xử lý logic Pagination (từ nhánh setting)
-// LƯU Ý: Nếu bạn đang phân trang hoàn toàn ở phía client, hãy thay `usersTotal` 
-// bằng `sortedFilteredUsers.length` để số trang cập nhật đúng khi tìm kiếm/lọc.
-const totalPages = Math.max(1, Math.ceil(usersTotal / usersPageSize));
+    const nextStatus = user.status === "active" ? "inactive" : "active";
+    setUpdatingUserId(user.id);
 
-useEffect(() => {
-  if (usersPage > totalPages) {
-    setUsersPage(totalPages);
-  }
-}, [usersPage, totalPages]);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/users/${user.id}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ source: user.source, status: nextStatus }),
+      });
+      const data = await response.json() as { user?: { id: string; status: "active" | "inactive" }; error?: string };
 
-// 3. Lấy danh sách người dùng hiển thị cho trang hiện tại 
-// (Thay thế cho logic showAllUsers ? ... : slice(0, 5) cũ)
-const startIndex = (usersPage - 1) * usersPageSize;
-const visibleUsers = sortedFilteredUsers.slice(startIndex, startIndex + usersPageSize);
+      if (!response.ok || !data.user) {
+        setUsersError(data.error ?? "状態を更新できません。/ Không cập nhật được trạng thái.");
+        return;
+      }
+
+      setUsers((prev) => prev.map((item) => (item.id === user.id ? { ...item, status: data.user?.status ?? nextStatus } : item)));
+    } catch {
+      setUsersError("状態を更新できません。/ Không cập nhật được trạng thái.");
+    } finally {
+      setUpdatingUserId(null);
+    }
+  };
 
   return (
     <main className="flex-1 overflow-auto p-8 bg-slate-50/50">
       <div className="max-w-5xl mx-auto space-y-5">
         <header className="flex items-start justify-between gap-3">
-          <select
-            value={statusFilter}
-            onChange={(event) =>
-              setStatusFilter(
-                event.target.value as "all" | "active" | "pending",
-              )
-            }
-            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
-          >
-            <option value="all">すべて / Tất cả</option>
-            <option value="active">有効 / Đang hoạt động</option>
-                <option value="pending">保留 / Chờ xử lý</option>
-          </select>
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-slate-400">
-              <span className="block">{sortedFilteredUsers.length} 件</span>
-              <span className="block">{sortedFilteredUsers.length} người dùng</span>
-            </span>
-            <button
-              type="button"
-              className={switchClass("user")}
-              onClick={() => setViewMode("user")}
-            >
-              ユーザー / Người dùng
-            </button>
-            <button
-              type="button"
-              className={switchClass("admin")}
-              onClick={() => setViewMode("admin")}
-            >
-              管理者 / Admin
-            </button>
+          <div>
+            <h2 className="text-xl font-bold text-slate-900">設定 / Cấu hình</h2>
+            <p className="text-xs text-slate-500 mt-1">
+              {isPrivilegedRole
+                ? "管理者表示 / Admin view: system + content"
+                : "ユーザー表示 / User view: system only"}
+            </p>
           </div>
         </header>
-
-        {viewMode === "admin" && isPrivilegedRole && (
-          <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
-            <h3 className="font-semibold text-slate-800 mb-3">
-               <span className="block">権限ロール</span>
-               <span className="block text-slate-400">Ma trận quyền</span>
-            </h3>
-            <div className="grid md:grid-cols-2 gap-3">
-              {roles.map((role) => (
-                <article
-                  key={role.key}
-                  className="rounded-xl border border-slate-200 p-4 bg-slate-50/40"
-                >
-                  <h4 className="text-sm font-bold text-slate-900">
-                    <span className="block">{role.ja}</span>
-                    <span className="block">{role.vi}</span>
-                  </h4>
-                  <p className="text-xs text-slate-500 mt-1">
-                      <span className="block">{role.description.split(" / ")[0]}</span>
-                      <span className="block">{role.description.split(" / ")[1] ?? ""}</span>
-                  </p>
-                  <ul className="mt-3 space-y-1.5 text-xs text-slate-700">
-                    {role.permissions.map((permission) => {
-                      const [ja, vi] = permission.split(" / ");
-                      return (
-                        <li key={permission}>
-                          <span className="block">- {ja}</span>
-                          <span className="block">{vi}</span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </article>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {viewMode === "user" && isPrivilegedRole && (
-          <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-slate-800">
-                <span className="block">ユーザー管理</span>
-                <span className="block">Quản lý người dùng</span>
-              </h3>
-              <button
-                type="button"
-                className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
-                onClick={() => {
-                  setCreateUserError(null);
-                  setCreateUserSuccess(null);
-                  setIsCreateUserOpen(true);
-                }}
-              >
-                 <span className="block">+ ユーザー追加</span>
-                 <span className="block">Thêm người dùng</span>
-              </button>
-            </div>
-
-            <div className="mb-3 flex flex-wrap items-center gap-3">
-              <input
-                className="flex-1 min-w-55 rounded-lg border border-slate-200 px-3 py-2 text-sm"
-                placeholder="ユーザー検索 / Tìm người dùng..."
-                value={userQuery}
-                onChange={(event) => {
-                  setUserQuery(event.target.value);
-                  setUsersPage(1);
-                }}
-              />
-              <select
-                value={statusFilter}
-                onChange={(event) =>
-                  setStatusFilter(
-                    event.target.value as "all" | "active" | "pending",
-                  )
-                }
-                className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
-              >
-                <option value="all">すべて / Tất cả</option>
-                <option value="active">有効 / Đang hoạt động</option>
-                <option value="pending">保留 / Chờ xử lý</option>
-              </select>
-              <span className="text-xs text-slate-400">
-                <span className="block">{sortedFilteredUsers.length} 件</span>
-                <span className="block">{sortedFilteredUsers.length} người dùng</span>
-              </span>
-            </div>
-
-            {usersLoading ? (
-              <div className="py-6 text-center text-sm text-slate-500">
-                <span className="block">ユーザー一覧を読み込み中...</span>
-                <span className="block">Đang tải danh sách người dùng...</span>
-              </div>
-            ) : usersError ? (
-              <div className="rounded-lg border border-rose-100 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-                {usersError}
-              </div>
-            ) : null}
-
-            <div className="overflow-x-auto mt-3">
-              <table className="min-w-full text-sm">
-                <thead>
-                  <tr className="text-left text-xs text-slate-500 border-b border-slate-100">
-                    <th className="py-2 pr-3 font-medium">
-                      <span className="block">氏名</span>
-                      <span className="block">Tên</span>
-                    </th>
-                    <th className="py-2 pr-3 font-medium">
-                      <span className="block">チーム</span>
-                      <span className="block">Nhóm</span>
-                    </th>
-                    <th className="py-2 pr-3 font-medium">
-                      <span className="block">ロール</span>
-                      <span className="block">Vai trò</span>
-                    </th>
-                    <th className="py-2 font-medium">
-                      <span className="block">状態</span>
-                      <span className="block">Trạng thái</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {!usersLoading && !usersError && users.length === 0 ? (
-                    <tr>
-                      <td
-                              colSpan={4}
-                        className="py-6 text-center text-xs text-slate-500"
-                      >
-                        <span className="block">該当するユーザーがいません</span>
-                        <span className="block">Không có user phù hợp.</span>
-                      </td>
-                    </tr>
-                  ) : (
-                    users.map((u) => (
-                      <tr
-                        key={u.id}
-                        className="border-b border-slate-100 last:border-b-0"
-                      >
-                        <td className="py-3 pr-3 text-slate-800">
-                          <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-semibold text-slate-600 overflow-hidden">
-                              {u.avatar_url ? (
-                                <img src={u.avatar_url} alt={u.name} className="h-full w-full object-cover" />
-                              ) : (
-                                <span>{u.name.slice(0, 2).toUpperCase()}</span>
-                              )}
-                            </div>
-                            <div>
-                              <div className="font-medium text-slate-900">{u.name}</div>
-                              <div className="text-xs text-slate-400">{u.email}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-3 pr-3 text-slate-600">{u.team}</td>
-                        <td className="py-3 pr-3 text-slate-700">
-                          {roleLabel(u.role)}
-                        </td>
-                        <td className="py-3">
-                          <span
-                            className={
-                              u.status === "active"
-                                ? "inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700"
-                                : "inline-flex rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700"
-                            }
-                          >
-                            {u.status === "active" ? "有効 / Đang hoạt động" : "保留 / Chờ xử lý"}
-                          </span>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
-              <span>
-                Trang {usersPage} / {totalPages}
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={() => setUsersPage((page) => Math.max(1, page - 1))}
-                  disabled={usersPage <= 1}
-                >
-                  Trước
-                </button>
-                <button
-                  type="button"
-                  className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={() => setUsersPage((page) => Math.min(totalPages, page + 1))}
-                  disabled={usersPage >= totalPages}
-                >
-                  Sau
-                </button>
-              </div>
-            </div>
-
-            {isCreateUserOpen && (
-              <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
-                <div className="flex items-center justify-between gap-3 mb-3">
-                  <h4 className="text-sm font-semibold text-slate-800">
-                    <span className="block">ユーザー追加</span>
-                    <span className="block">Thêm người dùng</span>
-                  </h4>
-                  <button
-                    type="button"
-                    className="text-xs font-medium text-slate-500 hover:text-slate-700"
-                    onClick={() => setIsCreateUserOpen(false)}
-                  >
-                    閉じる / Đóng
-                  </button>
-                </div>
-
-                {createUserError && (
-                  <div className="mb-3 rounded-lg border border-rose-100 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-                    {createUserError}
-                  </div>
-                )}
-
-                {createUserSuccess && (
-                  <div className="mb-3 rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-                    {createUserSuccess}
-                  </div>
-                )}
-
-                <div className="grid gap-3 md:grid-cols-2">
-                  <label className="flex flex-col gap-1 text-sm">
-                    <span className="text-slate-700">氏名 / Name *</span>
-                    <input
-                      className="rounded-lg border border-slate-200 bg-white px-3 py-2"
-                      value={createUserForm.name}
-                      onChange={(event) => setCreateUserForm((prev) => ({ ...prev, name: event.target.value }))}
-                      placeholder="表示名 / Tên hiển thị"
-                    />
-                  </label>
-
-                  <label className="flex flex-col gap-1 text-sm">
-                    <span className="text-slate-700">Email *</span>
-                    <input
-                      type="email"
-                      className="rounded-lg border border-slate-200 bg-white px-3 py-2"
-                      value={createUserForm.email}
-                      onChange={(event) => setCreateUserForm((prev) => ({ ...prev, email: event.target.value }))}
-                      placeholder="例: user@example.com / VD: user@example.com"
-                    />
-                  </label>
-
-                  <label className="flex flex-col gap-1 text-sm">
-                    <span className="text-slate-700">パスワード / Password *</span>
-                    <input
-                      type="password"
-                      className="rounded-lg border border-slate-200 bg-white px-3 py-2"
-                      value={createUserForm.password}
-                      onChange={(event) => setCreateUserForm((prev) => ({ ...prev, password: event.target.value }))}
-                      placeholder="ログイン用パスワード / Mật khẩu đăng nhập"
-                    />
-                  </label>
-
-                  <label className="flex flex-col gap-1 text-sm">
-                    <span className="text-slate-700">国籍 / Nationality *</span>
-                    <select
-                      className="rounded-lg border border-slate-200 bg-white px-3 py-2"
-                      value={createUserForm.nationality}
-                      onChange={(event) => setCreateUserForm((prev) => ({ ...prev, nationality: event.target.value as "vn" | "jp" }))}
-                    >
-                      <option value="vn">VN</option>
-                      <option value="jp">JP</option>
-                    </select>
-                  </label>
-
-                  <label className="flex flex-col gap-1 text-sm">
-                    <span className="text-slate-700">ロール / Role *</span>
-                    <select
-                      className="rounded-lg border border-slate-200 bg-white px-3 py-2"
-                      value={createUserForm.role}
-                      onChange={(event) => setCreateUserForm((prev) => ({ ...prev, role: event.target.value as "employee" | "leader" }))}
-                    >
-                      <option value="employee">Employee</option>
-                      <option value="leader">Leader</option>
-                    </select>
-                  </label>
-
-                  <label className="flex flex-col gap-1 text-sm md:col-span-2">
-                    <span className="text-slate-700">アバターURL / Avatar URL</span>
-                    <input
-                      className="rounded-lg border border-slate-200 bg-white px-3 py-2"
-                      value={createUserForm.avatar_url}
-                      onChange={(event) => setCreateUserForm((prev) => ({ ...prev, avatar_url: event.target.value }))}
-                      placeholder="例: https://... / VD: https://..."
-                    />
-                  </label>
-                </div>
-
-                <div className="mt-4 flex items-center justify-end gap-2">
-                  <button
-                    type="button"
-                    className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                    onClick={() => setIsCreateUserOpen(false)}
-                    disabled={createUserSubmitting}
-                  >
-                    キャンセル / Hủy
-                  </button>
-                  <button
-                    type="button"
-                    className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-70"
-                    disabled={createUserSubmitting}
-                    onClick={async () => {
-                      const token = localStorage.getItem("authToken");
-                      if (!token) return;
-
-                      setCreateUserError(null);
-                      setCreateUserSuccess(null);
-                      setCreateUserSubmitting(true);
-
-                      try {
-                        const response = await fetch(`${API_BASE_URL}/api/users`, {
-                          method: "POST",
-                          headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${token}`,
-                          },
-                          body: JSON.stringify(createUserForm),
-                        });
-                        const data = await response.json() as { user?: UserRow; error?: string };
-
-                        if (!response.ok) {
-                          setCreateUserError(data.error ?? "Không tạo được user mới.");
-                          return;
-                        }
-
-                        const createdUser = data.user;
-                        if (createdUser) {
-                          setUsersTotal((prev) => prev + 1);
-                          if (usersPage === 1 && userQuery.trim().length === 0 && users.length < usersPageSize) {
-                            setUsers((prev) => sortUsersByName([...prev, createdUser]));
-                          }
-                        }
-
-                        setCreateUserSuccess("Tạo user thành công.");
-                        setCreateUserForm({
-                          name: "",
-                          email: "",
-                          password: "",
-                          nationality: "vn",
-                          role: "employee",
-                          avatar_url: "",
-                        });
-                      } catch {
-                        setCreateUserError("Không tạo được user mới.");
-                      } finally {
-                        setCreateUserSubmitting(false);
-                      }
-                    }}
-                  >
-                    {createUserSubmitting ? "保存中... / Đang lưu..." : "作成 / Tạo người dùng"}
-                  </button>
-                </div>
-              </div>
-            )}
-          </section>
-        )}
 
         <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
           <h3 className="font-semibold text-slate-800 mb-3">
@@ -797,7 +339,182 @@ const visibleUsers = sortedFilteredUsers.slice(startIndex, startIndex + usersPag
           </div>
         </section>
 
-        {viewMode === "admin" && isPrivilegedRole && (
+        {isPrivilegedRole && (
+          <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-slate-800">
+                <span className="block">ユーザー管理</span>
+                <span className="block">Quản lý tài khoản</span>
+              </h3>
+            </div>
+
+            <div className="mb-3 flex flex-wrap items-center gap-3">
+              <input
+                className="flex-1 min-w-55 rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                placeholder="ユーザー検索 / Tìm người dùng..."
+                value={userQuery}
+                onChange={(event) => {
+                  setUserQuery(event.target.value);
+                  setUsersPage(1);
+                }}
+              />
+              <span className="text-xs text-slate-400">
+                <span className="block">{usersTotal} 件</span>
+                <span className="block">{usersTotal} tài khoản</span>
+              </span>
+            </div>
+
+            {usersLoading ? (
+              <div className="py-6 text-center text-sm text-slate-500">
+                <span className="block">ユーザー一覧を読み込み中...</span>
+                <span className="block">Đang tải danh sách người dùng...</span>
+              </div>
+            ) : usersError ? (
+              <div className="rounded-lg border border-rose-100 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+                {usersError}
+              </div>
+            ) : null}
+
+            <div className="overflow-x-auto mt-3">
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-slate-500 border-b border-slate-100">
+                    <th className="py-2 pr-3 font-medium">
+                      <span className="block">氏名</span>
+                      <span className="block">Tên</span>
+                    </th>
+                    <th className="py-2 pr-3 font-medium">
+                      <span className="block">チーム</span>
+                      <span className="block">Nhóm</span>
+                    </th>
+                    <th className="py-2 pr-3 font-medium">
+                      <span className="block">ロール</span>
+                      <span className="block">Vai trò</span>
+                    </th>
+                    <th className="py-2 font-medium">
+                      <span className="block">状態</span>
+                      <span className="block">Trạng thái</span>
+                    </th>
+                    <th className="py-2 font-medium">
+                      <span className="block">操作</span>
+                      <span className="block">Kích hoạt</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {!usersLoading && !usersError && users.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={5}
+                        className="py-6 text-center text-xs text-slate-500"
+                      >
+                        <span className="block">該当するユーザーがいません</span>
+                        <span className="block">Không có user phù hợp.</span>
+                      </td>
+                    </tr>
+                  ) : (
+                    users.map((u) => (
+                      <tr
+                        key={u.id}
+                        className="border-b border-slate-100 last:border-b-0"
+                      >
+                        <td className="py-3 pr-3 text-slate-800">
+                          <div className="flex items-center gap-3">
+                            <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-semibold text-slate-600 overflow-hidden">
+                              {u.avatar_url ? (
+                                <img src={u.avatar_url} alt={u.name} className="h-full w-full object-cover" />
+                              ) : (
+                                <span>{u.name.slice(0, 2).toUpperCase()}</span>
+                              )}
+                            </div>
+                            <div>
+                              <div className="font-medium text-slate-900">{u.name}</div>
+                              <div className="text-xs text-slate-400">{u.email}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-3 pr-3 text-slate-600">{u.team}</td>
+                        <td className="py-3 pr-3 text-slate-700">
+                          {roleLabel(u.role)}
+                        </td>
+                        <td className="py-3">
+                          <span
+                            className={
+                              u.status === "inactive"
+                                ? "inline-flex rounded-full bg-rose-50 px-2.5 py-1 text-xs font-medium text-rose-700"
+                                : "inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700"
+                            }
+                          >
+                            {u.status === "inactive" ? "停止 / Vô hiệu" : "有効 / Đang hoạt động"}
+                          </span>
+                        </td>
+                        <td className="py-3">
+                          {u.source === "admins" ? (
+                            <span className="text-xs text-slate-400">N/A</span>
+                          ) : (
+                            <button
+                              type="button"
+                              className={
+                                u.status === "inactive"
+                                  ? "rounded-md border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100 disabled:opacity-60 disabled:cursor-not-allowed"
+                                  : "rounded-md border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-700 hover:bg-rose-100 disabled:opacity-60 disabled:cursor-not-allowed"
+                              }
+                              onClick={() => void handleToggleUserStatus(u)}
+                              disabled={updatingUserId === u.id}
+                            >
+                              {updatingUserId === u.id
+                                ? "更新中... / Đang cập nhật..."
+                                : u.status === "inactive"
+                                  ? "有効化 / Kích hoạt"
+                                  : "無効 / Vô hiệu"}
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
+              <span>
+                Trang {usersPage} / {totalPages}
+              </span>
+              <div className="flex items-center gap-2">
+                <select
+                  value={usersPage}
+                  onChange={(event) => setUsersPage(Number(event.target.value))}
+                  className="rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700"
+                >
+                  {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                    <option key={page} value={page}>
+                      {page}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => setUsersPage((page) => Math.max(1, page - 1))}
+                  disabled={usersPage <= 1}
+                >
+                  Trước
+                </button>
+                <button
+                  type="button"
+                  className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => setUsersPage((page) => Math.min(totalPages, page + 1))}
+                  disabled={usersPage >= totalPages}
+                >
+                  Sau
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {isPrivilegedRole && (
           <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
             <h3 className="font-semibold text-slate-800 mb-2">
               <span className="block">コンテンツ管理</span>
