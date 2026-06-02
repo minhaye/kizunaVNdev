@@ -85,6 +85,12 @@ export const usersHandler = async (req: Request, res: Response) => {
     const session = requirePrivilegedSession(req, res);
     if (!session) return;
 
+    const rawPage = typeof req.query.page === "string" ? Number.parseInt(req.query.page, 10) : NaN;
+    const rawLimit = typeof req.query.limit === "string" ? Number.parseInt(req.query.limit, 10) : NaN;
+    const page = Number.isFinite(rawPage) && rawPage > 0 ? rawPage : 1;
+    const limit = Number.isFinite(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 50) : 5;
+    const query = typeof req.query.q === "string" ? req.query.q.trim().toLowerCase() : "";
+
     const [{ data: employees, error: employeesError }, { data: admins, error: adminsError }] = await Promise.all([
       supabase
         .from("employees")
@@ -122,7 +128,27 @@ export const usersHandler = async (req: Request, res: Response) => {
       ...((admins ?? []).map((admin, index) => mapAdminRow({ ...admin, last_online: adminSettingsList[index]?.last_online ?? null }))),
     ].sort((left, right) => left.name.localeCompare(right.name, "vi", { sensitivity: "base" }));
 
-    return res.json({ success: true, users });
+    const filteredUsers = query.length > 0
+      ? users.filter((user) => {
+        const name = user.name.toLowerCase();
+        const email = user.email.toLowerCase();
+        const team = user.team.toLowerCase();
+        const role = user.role.toLowerCase();
+        return [name, email, team, role].some((value) => value.includes(query));
+      })
+      : users;
+
+    const total = filteredUsers.length;
+    const offset = (page - 1) * limit;
+    const pagedUsers = filteredUsers.slice(offset, offset + limit);
+
+    return res.json({
+      success: true,
+      users: pagedUsers,
+      total,
+      page,
+      limit,
+    });
   } catch (error) {
     return res.status(500).json({
       error: "Lỗi server",

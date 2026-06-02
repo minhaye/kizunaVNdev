@@ -109,6 +109,7 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
   const [notifCount, setNotifCount] = useState(0);
   const [notifications, setNotifications] = useState<{ id: string; created_at: string; topic: string; title: string; content: string; is_read?: boolean }[]>([]);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [hasHydrated, setHasHydrated] = useState(false);
   const isMountedRef = useRef(false);
   const settingsHydratedRef = useRef(false);
   const notificationCacheRef = useRef({
@@ -187,6 +188,7 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
   useEffect(() => {
     isMountedRef.current = true;
     let active = true;
+    setHasHydrated(true);
     const rawUser = localStorage.getItem("user");
     const token = localStorage.getItem("authToken");
 
@@ -393,7 +395,11 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
   const greetingName = displayName.endsWith("さん") ? displayName : `${displayName}さん`;
   const friendlyName = displayName.includes(" ") ? displayName : displayName;
   const settingsHref = "/admin";
-  const settingsLabel = currentRole === "admin" ? "設定 / Cài đặt admin" : "設定 / Cài đặt user";
+  const settingsLabel = hasHydrated
+    ? currentRole === "admin"
+      ? "設定 / Cài đặt admin"
+      : "設定 / Cài đặt user"
+    : "設定 / Cài đặt";
   const presenceIsOnline = Boolean(lastOnline);
   const presenceDotClass = presenceIsOnline ? "bg-emerald-500" : "bg-amber-400";
   const presenceText = presenceIsOnline ? "Online" : "Offline";

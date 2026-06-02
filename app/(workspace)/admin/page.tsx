@@ -89,7 +89,9 @@ export default function AdminPage() {
   const [users, setUsers] = useState<UserRow[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [usersError, setUsersError] = useState<string | null>(null);
-  const [showAllUsers, setShowAllUsers] = useState(false);
+  const [usersPage, setUsersPage] = useState(1);
+  const [usersPageSize] = useState(5);
+  const [usersTotal, setUsersTotal] = useState(0);
   const [isCreateUserOpen, setIsCreateUserOpen] = useState(false);
   const [createUserSubmitting, setCreateUserSubmitting] = useState(false);
   const [createUserError, setCreateUserError] = useState<string | null>(null);
@@ -182,7 +184,16 @@ export default function AdminPage() {
       setUsersError(null);
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/users`, {
+        const query = userQuery.trim();
+        const params = new URLSearchParams({
+          page: String(usersPage),
+          limit: String(usersPageSize),
+        });
+        if (query.length > 0) {
+          params.set("q", query);
+        }
+
+        const response = await fetch(`${API_BASE_URL}/api/users?${params.toString()}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await response.json() as {
@@ -198,6 +209,9 @@ export default function AdminPage() {
             is_online: boolean;
             status: "active";
           }>;
+          total?: number;
+          page?: number;
+          limit?: number;
           error?: string;
         };
 
@@ -208,11 +222,8 @@ export default function AdminPage() {
           return;
         }
 
-        const nextUsers = (data.users ?? []).map((user) => ({
-          ...user,
-        }));
-
-        setUsers(nextUsers);
+        setUsers((data.users ?? []).map((user) => ({ ...user })));
+        setUsersTotal(data.total ?? 0);
       } catch {
         if (active) {
           setUsersError("Không tải được danh sách người dùng.");
@@ -229,7 +240,7 @@ export default function AdminPage() {
     return () => {
       active = false;
     };
-  }, [API_BASE_URL]);
+  }, [API_BASE_URL, userQuery, usersPage, usersPageSize]);
 
   useEffect(() => {
     if (!settingsLoaded) return;
@@ -269,20 +280,39 @@ export default function AdminPage() {
   }, [API_BASE_URL, themeMode, messageTaskNotifications, loginRetentionDays, showActiveStatus, settingsLoaded]);
 
   const isPrivilegedRole = currentRole === "admin";
-  const normalizedUserQuery = userQuery.trim().toLowerCase();
-  const filteredUsers = users.filter((user) => {
-    const matchesQuery =
-      normalizedUserQuery.length === 0 ||
-      [user.name, user.team, user.email, roleLabel(user.role)].some((value) =>
-        value.toLowerCase().includes(normalizedUserQuery),
-      );
-    const matchesStatus = statusFilter === "all" || user.status === statusFilter;
-    return matchesQuery && matchesStatus;
-  });
-  const sortedFilteredUsers = [...filteredUsers].sort((left, right) =>
-    left.name.localeCompare(right.name, "vi", { sensitivity: "base" }),
-  );
-  const visibleUsers = showAllUsers ? sortedFilteredUsers : sortedFilteredUsers.slice(0, 5);
+const isAdminView = isPrivilegedRole;
+
+// 1. Xử lý lọc và sắp xếp người dùng (từ nhánh stable)
+const normalizedUserQuery = userQuery.trim().toLowerCase();
+const filteredUsers = users.filter((user) => {
+  const matchesQuery =
+    normalizedUserQuery.length === 0 ||
+    [user.name, user.team, user.email, roleLabel(user.role)].some((value) =>
+      value.toLowerCase().includes(normalizedUserQuery)
+    );
+  const matchesStatus = statusFilter === "all" || user.status === statusFilter;
+  return matchesQuery && matchesStatus;
+});
+
+const sortedFilteredUsers = [...filteredUsers].sort((left, right) =>
+  left.name.localeCompare(right.name, "vi", { sensitivity: "base" })
+);
+
+// 2. Xử lý logic Pagination (từ nhánh setting)
+// LƯU Ý: Nếu bạn đang phân trang hoàn toàn ở phía client, hãy thay `usersTotal` 
+// bằng `sortedFilteredUsers.length` để số trang cập nhật đúng khi tìm kiếm/lọc.
+const totalPages = Math.max(1, Math.ceil(usersTotal / usersPageSize));
+
+useEffect(() => {
+  if (usersPage > totalPages) {
+    setUsersPage(totalPages);
+  }
+}, [usersPage, totalPages]);
+
+// 3. Lấy danh sách người dùng hiển thị cho trang hiện tại 
+// (Thay thế cho logic showAllUsers ? ... : slice(0, 5) cũ)
+const startIndex = (usersPage - 1) * usersPageSize;
+const visibleUsers = sortedFilteredUsers.slice(startIndex, startIndex + usersPageSize);
 
   return (
     <main className="flex-1 overflow-auto p-8 bg-slate-50/50">
@@ -386,7 +416,10 @@ export default function AdminPage() {
                 className="flex-1 min-w-55 rounded-lg border border-slate-200 px-3 py-2 text-sm"
                 placeholder="ユーザー検索 / Tìm người dùng..."
                 value={userQuery}
-                onChange={(event) => setUserQuery(event.target.value)}
+                onChange={(event) => {
+                  setUserQuery(event.target.value);
+                  setUsersPage(1);
+                }}
               />
               <select
                 value={statusFilter}
@@ -405,16 +438,6 @@ export default function AdminPage() {
                 <span className="block">{sortedFilteredUsers.length} 件</span>
                 <span className="block">{sortedFilteredUsers.length} người dùng</span>
               </span>
-            </div>
-
-            <div className="mb-3 flex items-center justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setShowAllUsers((value) => !value)}
-                className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
-              >
-                {showAllUsers ? "Thu gọn" : "Xem tất cả"}
-              </button>
             </div>
 
             {usersLoading ? (
@@ -451,7 +474,7 @@ export default function AdminPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {!usersLoading && !usersError && visibleUsers.length === 0 ? (
+                  {!usersLoading && !usersError && users.length === 0 ? (
                     <tr>
                       <td
                               colSpan={4}
@@ -462,7 +485,7 @@ export default function AdminPage() {
                       </td>
                     </tr>
                   ) : (
-                    visibleUsers.map((u) => (
+                    users.map((u) => (
                       <tr
                         key={u.id}
                         className="border-b border-slate-100 last:border-b-0"
@@ -504,11 +527,29 @@ export default function AdminPage() {
               </table>
             </div>
 
-            {!showAllUsers && sortedFilteredUsers.length > 5 && (
-              <p className="mt-2 text-xs text-slate-500">
-                Đang ẩn {sortedFilteredUsers.length - 5} user còn lại.
-              </p>
-            )}
+            <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
+              <span>
+                Trang {usersPage} / {totalPages}
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => setUsersPage((page) => Math.max(1, page - 1))}
+                  disabled={usersPage <= 1}
+                >
+                  Trước
+                </button>
+                <button
+                  type="button"
+                  className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => setUsersPage((page) => Math.min(totalPages, page + 1))}
+                  disabled={usersPage >= totalPages}
+                >
+                  Sau
+                </button>
+              </div>
+            </div>
 
             {isCreateUserOpen && (
               <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
@@ -645,7 +686,10 @@ export default function AdminPage() {
 
                         const createdUser = data.user;
                         if (createdUser) {
-                          setUsers((prev) => sortUsersByName([...prev, createdUser]));
+                          setUsersTotal((prev) => prev + 1);
+                          if (usersPage === 1 && userQuery.trim().length === 0 && users.length < usersPageSize) {
+                            setUsers((prev) => sortUsersByName([...prev, createdUser]));
+                          }
                         }
 
                         setCreateUserSuccess("Tạo user thành công.");
