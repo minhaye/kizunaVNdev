@@ -16,6 +16,16 @@ type UserRow = {
   status: "active" | "inactive";
 };
 
+type PendingItem = {
+  id: string;
+  type: "post" | "wiki";
+  title: string;
+  content: string;
+  topic?: string;
+  created_by: string;
+  created_at: string;
+};
+
 const roleLabel = (role: UserRole) => {
   if (role === "admin") return "管理者 / Quản trị viên";
   return "日越スタッフ / Nhân viên";
@@ -39,6 +49,12 @@ export default function AdminPage() {
   const [usersPageSize] = useState(5);
   const [usersTotal, setUsersTotal] = useState(0);
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
+
+  // Pending review state
+  const [pendingItems, setPendingItems] = useState<PendingItem[]>([]);
+  const [pendingLoading, setPendingLoading] = useState(false);
+  const [previewItem, setPreviewItem] = useState<PendingItem | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   useEffect(() => {
     try {
@@ -166,6 +182,86 @@ export default function AdminPage() {
       active = false;
     };
   }, [API_BASE_URL, userQuery, usersPage, usersPageSize]);
+
+  // Load pending items for review
+  useEffect(() => {
+    if (currentRole !== "admin") return;
+
+    const token = localStorage.getItem("authToken");
+    if (!token) return;
+
+    let active = true;
+
+    const loadPendingItems = async () => {
+      setPendingLoading(true);
+
+      try {
+        const headers: HeadersInit = {
+          Authorization: `Bearer ${token}`,
+        };
+
+        // Fetch pending posts
+        const postsRes = await fetch(`${API_BASE_URL}/api/posts`, { headers });
+        const postsData = await postsRes.json() as { ok?: boolean; data?: Array<{ id: string; title: string; content: string; topic?: string; created_by: string; created_at: string; status: string }> };
+
+        // Fetch pending wiki articles
+        const wikiRes = await fetch(`${API_BASE_URL}/api/wiki`, { headers });
+        const wikiData = await wikiRes.json() as { ok?: boolean; data?: Array<{ id: string; title: string; content: string; tag?: string; created_by: string; created_at: string; status: string }> };
+
+        if (!active) return;
+
+        const combined: PendingItem[] = [];
+
+        if (postsData?.ok && Array.isArray(postsData.data)) {
+          postsData.data
+            .filter((p) => p.status === "pending")
+            .forEach((p) => {
+              combined.push({
+                id: p.id,
+                type: "post",
+                title: p.title,
+                content: p.content,
+                topic: p.topic,
+                created_by: p.created_by,
+                created_at: p.created_at,
+              });
+            });
+        }
+
+        if (wikiData?.ok && Array.isArray(wikiData.data)) {
+          wikiData.data
+            .filter((a) => a.status === "pending")
+            .forEach((a) => {
+              combined.push({
+                id: a.id,
+                type: "wiki",
+                title: a.title,
+                content: a.content,
+                topic: a.tag,
+                created_by: a.created_by,
+                created_at: a.created_at,
+              });
+            });
+        }
+
+        // Sort by newest first
+        combined.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+        setPendingItems(combined);
+      } catch {
+        // Silently fail
+      } finally {
+        if (active) setPendingLoading(false);
+      }
+    };
+
+    void loadPendingItems();
+
+    return () => {
+      active = false;
+    };
+  }, [API_BASE_URL, currentRole]);
+
   useEffect(() => {
     if (!settingsLoaded) return;
 
@@ -244,6 +340,76 @@ export default function AdminPage() {
     }
   };
 
+  const handleApprove = async (item: PendingItem) => {
+    const token = localStorage.getItem("authToken");
+    if (!token) return;
+
+    const endpoint = item.type === "post"
+      ? `${API_BASE_URL}/api/posts/${item.id}/approve`
+      : `${API_BASE_URL}/api/wiki/${item.id}/approve`;
+
+    setActionLoading(item.id);
+
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await response.json() as { ok?: boolean; error?: string };
+
+      if (!response.ok || !data?.ok) {
+        alert(data?.error || "Duyệt bài thất bại");
+        return;
+      }
+
+      // Remove from pending list
+      setPendingItems((prev) => prev.filter((i) => i.id !== item.id));
+      setPreviewItem(null);
+    } catch {
+      alert("Có lỗi khi duyệt bài");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleReject = async (item: PendingItem) => {
+    const token = localStorage.getItem("authToken");
+    if (!token) return;
+
+    const endpoint = item.type === "post"
+      ? `${API_BASE_URL}/api/posts/${item.id}/reject`
+      : `${API_BASE_URL}/api/wiki/${item.id}/reject`;
+
+    setActionLoading(item.id);
+
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await response.json() as { ok?: boolean; error?: string };
+
+      if (!response.ok || !data?.ok) {
+        alert(data?.error || "Từ chối bài thất bại");
+        return;
+      }
+
+      // Remove from pending list
+      setPendingItems((prev) => prev.filter((i) => i.id !== item.id));
+      setPreviewItem(null);
+    } catch {
+      alert("Có lỗi khi từ chối bài");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   return (
     <main className="flex-1 overflow-auto p-8 bg-slate-50/50">
       <div className="max-w-5xl mx-auto space-y-5">
@@ -257,6 +423,77 @@ export default function AdminPage() {
             </p>
           </div>
         </header>
+
+        {isPrivilegedRole && (
+          <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
+            <h3 className="font-semibold text-slate-800 mb-3">
+              <span className="block">審査承認 / Duyệt bài viết</span>
+              <span className="block text-xs font-normal text-slate-500">Duyệt bài đăng (Bảng tin) và bài viết Wiki</span>
+            </h3>
+
+            {pendingLoading ? (
+              <div className="py-6 text-center text-sm text-slate-500">
+                <span className="block">Đang tải danh sách bài chờ duyệt...</span>
+              </div>
+            ) : pendingItems.length === 0 ? (
+              <div className="rounded-lg bg-slate-50 border border-slate-100 p-6 text-center text-sm text-slate-500">
+                <span className="block">Không có bài viết nào đang chờ duyệt</span>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {pendingItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50/50 p-3"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                          item.type === "post"
+                            ? "bg-blue-50 text-blue-700"
+                            : "bg-purple-50 text-purple-700"
+                        }`}>
+                          {item.type === "post" ? "📋 Bảng tin" : "📖 Wiki"}
+                        </span>
+                        <span className="text-sm font-medium text-slate-800 truncate">
+                          {item.title}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-400 mt-1 truncate">
+                        {item.created_by} • {new Date(item.created_at).toLocaleDateString("vi-VN")}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setPreviewItem(item)}
+                        className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                      >
+                        詳細 / Xem
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void handleApprove(item)}
+                        disabled={actionLoading === item.id}
+                        className="rounded-md bg-emerald-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-600 disabled:opacity-60"
+                      >
+                        {actionLoading === item.id ? "..." : "承認 / Duyệt"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void handleReject(item)}
+                        disabled={actionLoading === item.id}
+                        className="rounded-md bg-rose-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-rose-600 disabled:opacity-60"
+                      >
+                        拒否 / Từ chối
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
 
         <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
           <h3 className="font-semibold text-slate-800 mb-3">
@@ -530,7 +767,7 @@ export default function AdminPage() {
                 <div className="text-slate-500">
                   審査待ち記事 / Bài chờ duyệt
                 </div>
-                <div className="mt-1 text-lg font-bold text-slate-900">12</div>
+                <div className="mt-1 text-lg font-bold text-slate-900">{pendingItems.length}</div>
               </div>
               <div className="rounded-lg bg-slate-50 border border-slate-100 p-3">
                 <div className="text-slate-500">
@@ -549,6 +786,71 @@ export default function AdminPage() {
         )}
 
       </div>
+
+      {/* Preview Modal */}
+      {previewItem && (
+        <div
+          className="fixed inset-0 z-50 bg-slate-900/45 px-4 grid place-items-center"
+          onClick={() => setPreviewItem(null)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="w-full max-w-2xl rounded-2xl bg-white border border-slate-200 shadow-xl max-h-[80vh] flex flex-col"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4 p-5 border-b border-slate-100 shrink-0">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                    previewItem.type === "post"
+                      ? "bg-blue-50 text-blue-700"
+                      : "bg-purple-50 text-purple-700"
+                  }`}>
+                    {previewItem.type === "post" ? "📋 Bảng tin" : "📖 Wiki"}
+                  </span>
+                </div>
+                <h3 className="text-lg font-bold text-slate-900">{previewItem.title}</h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  {previewItem.created_by} • {new Date(previewItem.created_at).toLocaleDateString("vi-VN")}
+                  {previewItem.topic ? ` • ${previewItem.topic}` : ""}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewItem(null)}
+                aria-label="閉じる / Đóng"
+                className="p-2 rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-700 shrink-0"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              </button>
+            </div>
+
+            <div className="p-5 text-sm leading-7 text-slate-700 whitespace-pre-wrap overflow-y-auto flex-1">
+              {previewItem.content}
+            </div>
+
+            <div className="p-5 border-t border-slate-100 flex items-center justify-end gap-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => void handleReject(previewItem)}
+                disabled={actionLoading === previewItem.id}
+                className="rounded-lg bg-rose-500 px-4 py-2 text-xs font-semibold text-white hover:bg-rose-600 disabled:opacity-60"
+              >
+                {actionLoading === previewItem.id ? "..." : "拒否 / Từ chối"}
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleApprove(previewItem)}
+                disabled={actionLoading === previewItem.id}
+                className="rounded-lg bg-emerald-500 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-600 disabled:opacity-60"
+              >
+                {actionLoading === previewItem.id ? "..." : "承認 / Duyệt"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

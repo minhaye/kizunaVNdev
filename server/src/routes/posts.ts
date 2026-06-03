@@ -1,7 +1,8 @@
 import type { Request, Response } from "express";
 import crypto from "node:crypto";
 import { supabase } from "../supabase";
-import type { Post, ReactionType } from "../types";
+import type { Post, PostStatus, ReactionType } from "../types";
+import { getSessionFromRequest } from "../lib/session";
 
 type JwtLikePayload = {
   sub: string;
@@ -65,16 +66,44 @@ const firstRelatedEmployee = (value: unknown) => {
   return value ?? null;
 };
 
+/**
+ * Get the visible status filter based on user role.
+ * - Admin: sees all (pending, approved, rejected)
+ * - Staff/leader: sees only approved
+ */
+const getVisibleStatuses = (req: Request): PostStatus[] => {
+  const session = getSessionFromRequest(req);
+  if (session?.role === "admin" || session?.source === "admins") {
+    return ["pending", "approved", "rejected"];
+  }
+  return ["approved"];
+};
+
+/**
+ * Check if the requester is an admin.
+ */
+const isAdmin = (req: Request): boolean => {
+  const session = getSessionFromRequest(req);
+  return session?.role === "admin" || session?.source === "admins";
+};
+
 // GET /posts - Lấy danh sách bài đăng (sắp xếp mới nhất trước)
-export const postsListHandler = async (_req: Request, res: Response) => {
+export const postsListHandler = async (req: Request, res: Response) => {
   try {
-    const { data, error } = await supabase
+    const session = getSessionFromRequest(req);
+    const adminSession = session?.role === "admin" || session?.source === "admins";
+
+    let query = supabase
       .from("posts")
       .select(`
         id,
         topic,
         title,
         content,
+        status,
+        reviewed_by,
+        reviewed_by_admin,
+        reviewed_at,
         created_at,
         created_by,
         employees:created_by(
@@ -84,6 +113,16 @@ export const postsListHandler = async (_req: Request, res: Response) => {
       `)
       .order("created_at", { ascending: false })
       .limit(100);
+
+    if (adminSession) {
+      query = query.in("status", ["pending", "approved", "rejected"]);
+    } else if (session?.source === "employees") {
+      query = query.or(`status.eq.approved,and(status.eq.pending,created_by.eq.${session.sub})`);
+    } else {
+      query = query.eq("status", "approved");
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error("Supabase error:", error);
@@ -108,14 +147,18 @@ export const postsListHandler = async (_req: Request, res: Response) => {
       } | null;
 
       return {
-      id: post.id,
-      topic: post.topic,
-      title: post.title,
-      author: employee?.name || "Unknown",
-      avatar: employee?.avatar_url || "",
-      content: post.content,
-      created_by: post.created_by,
-      created_at: post.created_at,
+        id: post.id,
+        topic: post.topic,
+        title: post.title,
+        author: employee?.name || "Unknown",
+        avatar: employee?.avatar_url || "",
+        content: post.content,
+        status: post.status ?? "approved",
+        reviewed_by: post.reviewed_by ?? null,
+        reviewed_by_admin: post.reviewed_by_admin ?? null,
+        reviewed_at: post.reviewed_at ?? null,
+        created_by: post.created_by,
+        created_at: post.created_at,
       };
     });
 
@@ -133,6 +176,7 @@ export const postsListHandler = async (_req: Request, res: Response) => {
 export const postsDetailHandler = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const session = getSessionFromRequest(req);
 
     // Validate ID
     if (!id || typeof id !== "string") {
@@ -150,6 +194,10 @@ export const postsDetailHandler = async (req: Request, res: Response) => {
         topic,
         title,
         content,
+        status,
+        reviewed_by,
+        reviewed_by_admin,
+        reviewed_at,
         created_at,
         created_by,
         employees:created_by(
@@ -190,6 +238,15 @@ export const postsDetailHandler = async (req: Request, res: Response) => {
       return;
     }
 
+    // Check visibility: non-admin cannot see non-approved posts unless they are the author
+    if (!isAdmin(req) && data.status !== "approved" && data.created_by !== session?.sub) {
+      res.status(404).json({
+        ok: false,
+        error: "Post not found",
+      });
+      return;
+    }
+
     const employee = firstRelatedEmployee(data.employees) as {
       name?: string;
       avatar_url?: string;
@@ -202,6 +259,10 @@ export const postsDetailHandler = async (req: Request, res: Response) => {
       author: employee?.name || "Unknown",
       avatar: employee?.avatar_url || "",
       content: data.content,
+      status: data.status ?? "approved",
+      reviewed_by: data.reviewed_by ?? null,
+      reviewed_by_admin: data.reviewed_by_admin ?? null,
+      reviewed_at: data.reviewed_at ?? null,
       created_by: data.created_by,
       created_at: data.created_at,
       reactions: data.post_reactions || [],
@@ -220,7 +281,17 @@ export const postsDetailHandler = async (req: Request, res: Response) => {
 
 export const createPostHandler = async (req: Request, res: Response) => {
   try {
-    const employeeId = getActorEmployeeId(req);
+    const session = getSessionFromRequest(req);
+
+    // Admin cannot create posts
+    if (session?.role === "admin" || session?.source === "admins") {
+      return res.status(403).json({
+        ok: false,
+        error: "管理者は投稿を作成できません / Admin không thể tạo bài viết",
+      });
+    }
+
+    const employeeId = session?.sub ?? getActorEmployeeId(req);
     const title = typeof req.body?.title === "string" ? req.body.title.trim() : "";
     const topicRaw = typeof req.body?.topic === "string" ? req.body.topic.trim() : "";
     const content = typeof req.body?.content === "string" ? req.body.content.trim() : "";
@@ -247,12 +318,17 @@ export const createPostHandler = async (req: Request, res: Response) => {
         title,
         content,
         created_by: employeeId,
+        status: "pending",
       })
       .select(`
         id,
         topic,
         title,
         content,
+        status,
+        reviewed_by,
+        reviewed_by_admin,
+        reviewed_at,
         created_at,
         created_by,
         employees:created_by(
@@ -280,10 +356,102 @@ export const createPostHandler = async (req: Request, res: Response) => {
         author: employee?.name || "Unknown",
         avatar: employee?.avatar_url || "",
         content: data.content,
+        status: data.status ?? "pending",
+        reviewed_by: data.reviewed_by ?? null,
+        reviewed_by_admin: data.reviewed_by_admin ?? null,
+        reviewed_at: data.reviewed_at ?? null,
         created_by: data.created_by,
         created_at: data.created_at,
       } satisfies Post,
     });
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      error: "Internal server error",
+      details: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
+
+// POST /posts/:id/approve - Admin duyệt bài đăng
+export const approvePostHandler = async (req: Request, res: Response) => {
+  try {
+    const session = getSessionFromRequest(req);
+    if (!session || session.role !== "admin") {
+      return res.status(403).json({
+        ok: false,
+        error: "管理者のみが投稿を承認できます / Chỉ admin mới có thể duyệt bài",
+      });
+    }
+
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ ok: false, error: "Invalid post ID" });
+    }
+
+    const reviewUpdate =
+      session.source === "admins" ? { reviewed_by_admin: session.sub } : { reviewed_by: session.sub };
+
+    const { data, error } = await supabase
+      .from("posts")
+      .update({
+        status: "approved",
+        ...reviewUpdate,
+        reviewed_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select("id, title, status, reviewed_by, reviewed_by_admin, reviewed_at")
+      .single();
+
+    if (error) {
+      return res.status(500).json({ ok: false, error: error.message });
+    }
+
+    return res.json({ ok: true, data });
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      error: "Internal server error",
+      details: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
+
+// POST /posts/:id/reject - Admin từ chối bài đăng
+export const rejectPostHandler = async (req: Request, res: Response) => {
+  try {
+    const session = getSessionFromRequest(req);
+    if (!session || session.role !== "admin") {
+      return res.status(403).json({
+        ok: false,
+        error: "管理者のみが投稿を拒否できます / Chỉ admin mới có thể từ chối bài",
+      });
+    }
+
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ ok: false, error: "Invalid post ID" });
+    }
+
+    const reviewUpdate =
+      session.source === "admins" ? { reviewed_by_admin: session.sub } : { reviewed_by: session.sub };
+
+    const { data, error } = await supabase
+      .from("posts")
+      .update({
+        status: "rejected",
+        ...reviewUpdate,
+        reviewed_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select("id, title, status, reviewed_by, reviewed_by_admin, reviewed_at")
+      .single();
+
+    if (error) {
+      return res.status(500).json({ ok: false, error: error.message });
+    }
+
+    return res.json({ ok: true, data });
   } catch (error) {
     return res.status(500).json({
       ok: false,

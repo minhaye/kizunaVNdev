@@ -20,12 +20,14 @@ import {
   updateTaskStatusHandler,
 } from "./tasks.js";
 import {
+  approvePostHandler,
   createPostHandler,
   deletePostReactionHandler,
   getPostReactionsHandler,
   postsDetailHandler,
   postsListHandler,
   postReactionsHandler,
+  rejectPostHandler,
 } from "./posts.js";
 import {
   createChatRoomHandler,
@@ -43,9 +45,11 @@ import {
   listTaskReportsHandler,
 } from "./report.js";
 import {
+  approveWikiArticleHandler,
   createWikiArticleHandler,
   getWikiArticleDetailHandler,
   listWikiArticlesHandler,
+  rejectWikiArticleHandler,
 } from "./wiki.js";
 import { listNotificationsHandler, markNotificationsReadHandler } from "./notifications.js";
 import { heartbeatHandler, getMySettingsHandler, updateMySettingsHandler } from "./settings.js";
@@ -82,6 +86,8 @@ export const registerRoutes = (router: Router) => {
   router.get("/posts/:id/reactions", getPostReactionsHandler);
   router.post("/posts/:id/reactions", postReactionsHandler);
   router.delete("/posts/:id/reactions", deletePostReactionHandler);
+  router.post("/posts/:id/approve", approvePostHandler);
+  router.post("/posts/:id/reject", rejectPostHandler);
 
   // Chat routes
   router.get("/chat/rooms", listChatRoomsHandler);
@@ -98,6 +104,8 @@ export const registerRoutes = (router: Router) => {
   router.get("/wiki", listWikiArticlesHandler);
   router.post("/wiki", createWikiArticleHandler);
   router.get("/wiki/:slug", getWikiArticleDetailHandler);
+  router.post("/wiki/:id/approve", approveWikiArticleHandler);
+  router.post("/wiki/:id/reject", rejectWikiArticleHandler);
 
   // Notifications routes
   router.get("/notifications", listNotificationsHandler);

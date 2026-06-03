@@ -120,14 +120,12 @@ export default function LoginPage() {
           </div>
 
           {/* Forgot Password */}
-          <div className="text-right pt-2">
+          <div className="text-right pt-1">
             <Link
               href="/forgot-password"
               className="text-sm text-blue-600 hover:text-blue-700 hover:underline"
             >
-              <span className="block text-sm">パスワードを忘れた方はこちら</span>
-              <span className="block text-sm">Quên mật khẩu?</span>
-              <span className="block text-sm">Nhấn để đặt lại mật khẩu</span>
+              パスワードをお忘れですか / Quên mật khẩu
             </Link>
           </div>
 

@@ -62,7 +62,14 @@ function BoardContent() {
   useEffect(() => {
     let mounted = true;
     setLoading(true);
-    fetch(`${apiBase}/api/posts`)
+
+    const headers: HeadersInit = {};
+    const token = getAuthToken();
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    fetch(`${apiBase}/api/posts`, { headers })
       .then((r) => r.json())
       .then((payload) => {
         if (!mounted) return;
@@ -267,7 +274,7 @@ function BoardContent() {
       setNewTitle("");
       setNewTopic("");
       setNewContent("");
-      setCreateSuccess("Đăng bài cộng đồng thành công.");
+      setCreateSuccess("Đăng bài cộng đồng thành công. Bài viết đang chờ admin duyệt.");
       setCreateOpen(false);
     } catch (submitError) {
       setCreateError(submitError instanceof Error ? submitError.message : "Có lỗi khi đăng bài");

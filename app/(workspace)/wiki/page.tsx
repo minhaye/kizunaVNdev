@@ -133,7 +133,7 @@ export default function WikiListPage() {
       setNewTitle("");
       setNewTag("");
       setNewContent("");
-      setCreateSuccess("Tạo bài viết Wiki thành công.");
+      setCreateSuccess("Tạo bài viết Wiki thành công. Bài viết đang chờ admin duyệt.");
       setCreateOpen(false);
     } catch (submitError) {
       setCreateError(
