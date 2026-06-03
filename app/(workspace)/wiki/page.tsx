@@ -29,6 +29,8 @@ export default function WikiListPage() {
   const [query, setQuery] = useState("");
   const [tagFilter, setTagFilter] = useState("all");
   const [activeTab, setActiveTab] = useState<"approved" | "pending">("approved");
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
   const [createOpen, setCreateOpen] = useState(false);
 
   useEffect(() => {
@@ -92,6 +94,12 @@ export default function WikiListPage() {
         return matchesQuery && matchesTag && matchesTab;
       }),
     [articles, normalizedQuery, tagFilter, activeTab],
+  );
+
+  const totalPages = Math.max(1, Math.ceil(filteredArticles.length / pageSize));
+  const displayedArticles = filteredArticles.slice(
+    (page - 1) * pageSize,
+    page * pageSize,
   );
 
   const handleCreateWiki = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -165,7 +173,7 @@ export default function WikiListPage() {
 
         <div className="flex space-x-1 rounded-xl bg-slate-200/50 p-1 mb-4 w-fit">
           <button
-            onClick={() => setActiveTab("approved")}
+            onClick={() => { setActiveTab("approved"); setPage(1); }}
             className={`px-4 py-2 text-sm font-medium rounded-lg ${
               activeTab === "approved"
                 ? "bg-white shadow text-blue-700"
@@ -176,7 +184,7 @@ export default function WikiListPage() {
             <span className="block text-xs opacity-80 mt-0.5">Tất cả Wiki</span>
           </button>
           <button
-            onClick={() => setActiveTab("pending")}
+            onClick={() => { setActiveTab("pending"); setPage(1); }}
             className={`px-4 py-2 text-sm font-medium rounded-lg ${
               activeTab === "pending"
                 ? "bg-white shadow text-blue-700"
@@ -195,13 +203,13 @@ export default function WikiListPage() {
               className="w-full text-sm outline-none"
               placeholder="記事・タグを検索... / Tìm bài viết, tag..."
               value={query}
-              onChange={(event) => setQuery(event.target.value)}
+              onChange={(event) => { setQuery(event.target.value); setPage(1); }}
             />
           </div>
           <span className="text-[11px] text-slate-400">記事、タグで検索... / Tìm theo bài viết, tag...</span>
           <select
             value={tagFilter}
-            onChange={(event) => setTagFilter(event.target.value)}
+            onChange={(event) => { setTagFilter(event.target.value); setPage(1); }}
             className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
           >
             <option value="all">すべてのタグ / Tất cả</option>
@@ -249,7 +257,7 @@ export default function WikiListPage() {
               <span className="block">Không có bài viết phù hợp.</span>
             </div>
           ) : (
-            filteredArticles.map((item) => (
+            displayedArticles.map((item) => (
               <Link
                 key={item.slug}
                 href={`/wiki/${item.slug}`}
@@ -267,6 +275,32 @@ export default function WikiListPage() {
             ))
           )}
         </div>
+
+        {totalPages > 1 && (
+          <div className="mt-6 flex items-center justify-between text-xs text-slate-500">
+            <span>
+              ページ {page} / {totalPages} (Trang)
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1}
+              >
+                前へ / Trước
+              </button>
+              <button
+                type="button"
+                className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages}
+              >
+                次へ / Sau
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {createOpen && (

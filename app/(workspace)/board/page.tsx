@@ -59,6 +59,8 @@ function BoardContent() {
   const [createOpen, setCreateOpen] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"published" | "pending">("published");
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -132,6 +134,12 @@ function BoardContent() {
     const matchesTab = activeTab === "published" ? post.status !== "pending" : post.status === "pending";
     return matchesQuery && matchesAuthor && matchesTab;
   });
+
+  const totalPages = Math.max(1, Math.ceil(filteredPosts.length / pageSize));
+  const displayedPosts = filteredPosts.slice(
+    (page - 1) * pageSize,
+    page * pageSize,
+  );
 
   const reactionButtonClass = (reaction: ReactionType) =>
     selectedPostReactions?.myReaction?.reaction_type === reaction
@@ -306,7 +314,7 @@ function BoardContent() {
 
           <div className="flex space-x-1 rounded-xl bg-slate-200/50 p-1 mb-4 w-fit">
             <button
-              onClick={() => setActiveTab("published")}
+              onClick={() => { setActiveTab("published"); setPage(1); }}
               className={`px-4 py-2 text-sm font-medium rounded-lg ${
                 activeTab === "published"
                   ? "bg-white shadow text-blue-700"
@@ -317,7 +325,7 @@ function BoardContent() {
               <span className="block text-xs opacity-80 mt-0.5">Tất cả bài viết</span>
             </button>
             <button
-              onClick={() => setActiveTab("pending")}
+              onClick={() => { setActiveTab("pending"); setPage(1); }}
               className={`px-4 py-2 text-sm font-medium rounded-lg ${
                 activeTab === "pending"
                   ? "bg-white shadow text-blue-700"
@@ -336,13 +344,13 @@ function BoardContent() {
                 className="w-full text-sm outline-none"
                 placeholder="タイトル・作者を検索... / Tìm tiêu đề, tác giả..."
                 value={query}
-                onChange={(event) => setQuery(event.target.value)}
+                onChange={(event) => { setQuery(event.target.value); setPage(1); }}
               />
             </div>
             <span className="text-[11px] text-slate-400">タイトル、作者で検索... / Tìm theo tiêu đề, tác giả...</span>
             <select
               value={authorFilter}
-              onChange={(event) => setAuthorFilter(event.target.value)}
+              onChange={(event) => { setAuthorFilter(event.target.value); setPage(1); }}
               className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
             >
               <option value="all">すべての作者 / Tất cả</option>
@@ -381,7 +389,7 @@ function BoardContent() {
                 <span className="block">Không có bài viết phù hợp.</span>
               </div>
             ) : (
-              filteredPosts.map((post) => (
+              displayedPosts.map((post) => (
                 <button
                   key={post.id}
                   type="button"
@@ -396,6 +404,32 @@ function BoardContent() {
               ))
             )}
           </div>
+
+          {totalPages > 1 && (
+            <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
+              <span>
+                ページ {page} / {totalPages} (Trang)
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                >
+                  前へ / Trước
+                </button>
+                <button
+                  type="button"
+                  className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages}
+                >
+                  次へ / Sau
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </main>
 

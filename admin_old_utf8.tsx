@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 
@@ -27,8 +27,8 @@ type PendingItem = {
 };
 
 const roleLabel = (role: UserRole) => {
-  if (role === "admin") return "管理者 / Quản trị viên";
-  return "日越スタッフ / Nhân viên";
+  if (role === "admin") return "τ«íτÉåΦÇà / Quß║ún trß╗ï vi├¬n";
+  return "µùÑΦ╢èπé╣πé┐πââπâò / Nh├ón vi├¬n";
 };
 export default function AdminPage() {
   const API_BASE_URL =
@@ -53,8 +53,6 @@ export default function AdminPage() {
   // Pending review state
   const [pendingItems, setPendingItems] = useState<PendingItem[]>([]);
   const [pendingLoading, setPendingLoading] = useState(false);
-  const [pendingPage, setPendingPage] = useState(1);
-  const pendingPageSize = 5;
   const [previewItem, setPreviewItem] = useState<PendingItem | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
@@ -161,7 +159,7 @@ export default function AdminPage() {
         if (!active) return;
 
         if (!response.ok) {
-          setUsersError(data.error ?? "ユーザー一覧を取得できません。/ Không tải được danh sách người dùng.");
+          setUsersError(data.error ?? "πâªπâ╝πé╢πâ╝Σ╕ÇΦªºπéÆσÅûσ╛ùπüºπüìπü╛πü¢πéôπÇé/ Kh├┤ng tß║úi ─æ╞░ß╗úc danh s├ích ng╞░ß╗¥i d├╣ng.");
           return;
         }
 
@@ -169,7 +167,7 @@ export default function AdminPage() {
         setUsersTotal(data.total ?? 0);
       } catch {
         if (active) {
-          setUsersError("ユーザー一覧を取得できません。/ Không tải được danh sách người dùng.");
+          setUsersError("πâªπâ╝πé╢πâ╝Σ╕ÇΦªºπéÆσÅûσ╛ùπüºπüìπü╛πü¢πéôπÇé/ Kh├┤ng tß║úi ─æ╞░ß╗úc danh s├ích ng╞░ß╗¥i d├╣ng.");
         }
       } finally {
         if (active) {
@@ -303,11 +301,6 @@ export default function AdminPage() {
 
   const isPrivilegedRole = currentRole === "admin";
   const totalPages = Math.max(1, Math.ceil(usersTotal / usersPageSize));
-  const pendingTotalPages = Math.max(1, Math.ceil(pendingItems.length / pendingPageSize));
-  const displayedPending = pendingItems.slice(
-    (pendingPage - 1) * pendingPageSize,
-    pendingPage * pendingPageSize,
-  );
 
   useEffect(() => {
     if (usersPage > totalPages) {
@@ -335,13 +328,13 @@ export default function AdminPage() {
       const data = await response.json() as { user?: { id: string; status: "active" | "inactive" }; error?: string };
 
       if (!response.ok || !data.user) {
-        setUsersError(data.error ?? "状態を更新できません。/ Không cập nhật được trạng thái.");
+        setUsersError(data.error ?? "τè╢µàïπéÆµ¢┤µû░πüºπüìπü╛πü¢πéôπÇé/ Kh├┤ng cß║¡p nhß║¡t ─æ╞░ß╗úc trß║íng th├íi.");
         return;
       }
 
       setUsers((prev) => prev.map((item) => (item.id === user.id ? { ...item, status: data.user?.status ?? nextStatus } : item)));
     } catch {
-      setUsersError("状態を更新できません。/ Không cập nhật được trạng thái.");
+      setUsersError("τè╢µàïπéÆµ¢┤µû░πüºπüìπü╛πü¢πéôπÇé/ Kh├┤ng cß║¡p nhß║¡t ─æ╞░ß╗úc trß║íng th├íi.");
     } finally {
       setUpdatingUserId(null);
     }
@@ -368,7 +361,7 @@ export default function AdminPage() {
       const data = await response.json() as { ok?: boolean; error?: string };
 
       if (!response.ok || !data?.ok) {
-        alert(data?.error || "Duyệt bài thất bại");
+        alert(data?.error || "Duyß╗çt b├ái thß║Ñt bß║íi");
         return;
       }
 
@@ -376,7 +369,7 @@ export default function AdminPage() {
       setPendingItems((prev) => prev.filter((i) => i.id !== item.id));
       setPreviewItem(null);
     } catch {
-      alert("Có lỗi khi duyệt bài");
+      alert("C├│ lß╗ùi khi duyß╗çt b├ái");
     } finally {
       setActionLoading(null);
     }
@@ -403,7 +396,7 @@ export default function AdminPage() {
       const data = await response.json() as { ok?: boolean; error?: string };
 
       if (!response.ok || !data?.ok) {
-        alert(data?.error || "Từ chối bài thất bại");
+        alert(data?.error || "Tß╗½ chß╗æi b├ái thß║Ñt bß║íi");
         return;
       }
 
@@ -411,7 +404,7 @@ export default function AdminPage() {
       setPendingItems((prev) => prev.filter((i) => i.id !== item.id));
       setPreviewItem(null);
     } catch {
-      alert("Có lỗi khi từ chối bài");
+      alert("C├│ lß╗ùi khi tß╗½ chß╗æi b├ái");
     } finally {
       setActionLoading(null);
     }
@@ -422,11 +415,11 @@ export default function AdminPage() {
       <div className="max-w-5xl mx-auto space-y-5">
         <header className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">設定 / Cấu hình</h2>
+            <h2 className="text-xl font-bold text-slate-900">Φ¿¡σ«Ü / Cß║Ñu h├¼nh</h2>
             <p className="text-xs text-slate-500 mt-1">
               {isPrivilegedRole
-                ? "管理者表示 / Admin view: system + content"
-                : "ユーザー表示 / User view: system only"}
+                ? "τ«íτÉåΦÇàΦí¿τñ║ / Admin view: system + content"
+                : "πâªπâ╝πé╢πâ╝Φí¿τñ║ / User view: system only"}
             </p>
           </div>
         </header>
@@ -434,21 +427,21 @@ export default function AdminPage() {
         {isPrivilegedRole && (
           <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
             <h3 className="font-semibold text-slate-800 mb-3">
-              <span className="block">審査承認 / Duyệt bài viết</span>
-              <span className="block text-xs font-normal text-slate-500">Duyệt bài đăng (Bảng tin) và bài viết Wiki</span>
+              <span className="block">σ»⌐µƒ╗µë┐Φ¬ì / Duyß╗çt b├ái viß║┐t</span>
+              <span className="block text-xs font-normal text-slate-500">Duyß╗çt b├ái ─æ─âng (Bß║úng tin) v├á b├ái viß║┐t Wiki</span>
             </h3>
 
             {pendingLoading ? (
               <div className="py-6 text-center text-sm text-slate-500">
-                <span className="block">審査待ちの記事を読み込んでいます... / Đang tải danh sách bài chờ duyệt...</span>
+                <span className="block">─Éang tß║úi danh s├ích b├ái chß╗¥ duyß╗çt...</span>
               </div>
             ) : pendingItems.length === 0 ? (
               <div className="rounded-lg bg-slate-50 border border-slate-100 p-6 text-center text-sm text-slate-500">
-                <span className="block">審査待ちの記事はありません / Không có bài viết nào đang chờ duyệt</span>
+                <span className="block">Kh├┤ng c├│ b├ái viß║┐t n├áo ─æang chß╗¥ duyß╗çt</span>
               </div>
             ) : (
               <div className="space-y-2">
-                {displayedPending.map((item) => (
+                {pendingItems.map((item) => (
                   <div
                     key={item.id}
                     className="flex items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50/50 p-3"
@@ -460,14 +453,14 @@ export default function AdminPage() {
                             ? "bg-blue-50 text-blue-700"
                             : "bg-purple-50 text-purple-700"
                         }`}>
-                          {item.type === "post" ? "📋 Bảng tin" : "📖 Wiki"}
+                          {item.type === "post" ? "≡ƒôï Bß║úng tin" : "≡ƒôû Wiki"}
                         </span>
                         <span className="text-sm font-medium text-slate-800 truncate">
                           {item.title}
                         </span>
                       </div>
                       <p className="text-xs text-slate-400 mt-1 truncate">
-                        {item.created_by} • {new Date(item.created_at).toLocaleDateString("vi-VN")}
+                        {item.created_by} ΓÇó {new Date(item.created_at).toLocaleDateString("vi-VN")}
                       </p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
@@ -476,7 +469,7 @@ export default function AdminPage() {
                         onClick={() => setPreviewItem(item)}
                         className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
                       >
-                        詳細 / Xem
+                        Φ⌐│τ┤░ / Xem
                       </button>
                       <button
                         type="button"
@@ -484,7 +477,7 @@ export default function AdminPage() {
                         disabled={actionLoading === item.id}
                         className="rounded-md bg-emerald-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-600 disabled:opacity-60"
                       >
-                        {actionLoading === item.id ? "..." : "承認 / Duyệt"}
+                        {actionLoading === item.id ? "..." : "µë┐Φ¬ì / Duyß╗çt"}
                       </button>
                       <button
                         type="button"
@@ -492,37 +485,11 @@ export default function AdminPage() {
                         disabled={actionLoading === item.id}
                         className="rounded-md bg-rose-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-rose-600 disabled:opacity-60"
                       >
-                        拒否 / Từ chối
+                        µïÆσÉª / Tß╗½ chß╗æi
                       </button>
                     </div>
                   </div>
                 ))}
-                
-                {pendingTotalPages > 1 && (
-                  <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
-                    <span>
-                      ページ {pendingPage} / {pendingTotalPages} (Trang)
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        className="rounded-md border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        onClick={() => setPendingPage((p) => Math.max(1, p - 1))}
-                        disabled={pendingPage <= 1}
-                      >
-                        前へ / Trước
-                      </button>
-                      <button
-                        type="button"
-                        className="rounded-md border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        onClick={() => setPendingPage((p) => Math.min(pendingTotalPages, p + 1))}
-                        disabled={pendingPage >= pendingTotalPages}
-                      >
-                        次へ / Sau
-                      </button>
-                    </div>
-                  </div>
-                )}
               </div>
             )}
           </section>
@@ -530,17 +497,17 @@ export default function AdminPage() {
 
         <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
           <h3 className="font-semibold text-slate-800 mb-3">
-              <span className="block">システム設定</span>
-              <span className="block">Cấu hình hệ thống</span>
+              <span className="block">πé╖πé╣πâåπâáΦ¿¡σ«Ü</span>
+              <span className="block">Cß║Ñu h├¼nh hß╗ç thß╗æng</span>
           </h3>
           <div className="grid md:grid-cols-2 gap-3">
             <label className="rounded-lg border border-slate-100 p-3 flex flex-col gap-2">
               <span>
                 <span className="block text-sm font-medium text-slate-800">
-                  Chế độ sáng tối / テーマ設定
+                  Chß║┐ ─æß╗Ö s├íng tß╗æi / πâåπâ╝πâ₧Φ¿¡σ«Ü
                 </span>
                 <span className="text-xs text-slate-500">
-                  Tùy chỉnh giao diện hiển thị / 表示テーマを選択します。
+                  T├╣y chß╗ënh giao diß╗çn hiß╗ân thß╗ï / Φí¿τñ║πâåπâ╝πâ₧πéÆΘü╕µè₧πüùπü╛πüÖπÇé
                 </span>
               </span>
               <select
@@ -548,8 +515,8 @@ export default function AdminPage() {
                 onChange={(event) => setThemeMode(event.target.value as "light" | "dark")}
                 className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
               >
-                <option value="light">Sáng / ライト</option>
-                <option value="dark">Tối / ダーク</option>
+                <option value="light">S├íng / πâ⌐πéñπâê</option>
+                <option value="dark">Tß╗æi / πâÇπâ╝πé»</option>
               </select>
             </label>
 
@@ -562,10 +529,10 @@ export default function AdminPage() {
               />
               <span className="min-w-0">
                 <span className="block text-sm font-medium text-slate-800">
-                  Bật thông báo tin nhắn / メッセージ通知
+                  Bß║¡t th├┤ng b├ío tin nhß║»n / πâíπââπé╗πâ╝πé╕ΘÇÜτƒÑ
                 </span>
                 <span className="text-xs text-slate-500">
-                  Khi có tin nhắn hoặc task mới, chuông góc phải sẽ hiển thị số chưa đọc.
+                  Khi c├│ tin nhß║»n hoß║╖c task mß╗¢i, chu├┤ng g├│c phß║úi sß║╜ hiß╗ân thß╗ï sß╗æ ch╞░a ─æß╗ìc.
                 </span>
               </span>
             </label>
@@ -573,10 +540,10 @@ export default function AdminPage() {
             <label className="rounded-lg border border-slate-100 p-3 flex flex-col gap-2">
               <span>
                 <span className="block text-sm font-medium text-slate-800">
-                  Lưu đăng nhập / ログイン保持
+                  L╞░u ─æ─âng nhß║¡p / πâ¡πé░πéñπâ│Σ┐¥µîü
                 </span>
                 <span className="text-xs text-slate-500">
-                  Giữ đăng nhập trên thiết bị này trong số ngày bạn chọn.
+                  Giß╗» ─æ─âng nhß║¡p tr├¬n thiß║┐t bß╗ï n├áy trong sß╗æ ng├áy bß║ín chß╗ìn.
                 </span>
               </span>
               <select
@@ -584,9 +551,9 @@ export default function AdminPage() {
                 onChange={(event) => setLoginRetentionDays(Number(event.target.value) as 30 | 60 | 90)}
                 className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
               >
-                <option value={30}>30 ngày</option>
-                <option value={60}>60 ngày</option>
-                <option value={90}>90 ngày</option>
+                <option value={30}>30 ng├áy</option>
+                <option value={60}>60 ng├áy</option>
+                <option value={90}>90 ng├áy</option>
               </select>
             </label>
 
@@ -599,10 +566,10 @@ export default function AdminPage() {
               />
               <span className="min-w-0">
                 <span className="block text-sm font-medium text-slate-800">
-                  Trạng thái hoạt động / オンライン状態
+                  Trß║íng th├íi hoß║ít ─æß╗Öng / πé¬πâ│πâ⌐πéñπâ│τè╢µàï
                 </span>
                 <span className="text-xs text-slate-500">
-                  Hiển thị chấm màu ở góc tài khoản để biết đang online hay offline.
+                  Hiß╗ân thß╗ï chß║Ñm m├áu ß╗ƒ g├│c t├ái khoß║ún ─æß╗â biß║┐t ─æang online hay offline.
                 </span>
               </span>
             </label>
@@ -613,15 +580,15 @@ export default function AdminPage() {
           <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-slate-800">
-                <span className="block">ユーザー管理</span>
-                <span className="block">Quản lý tài khoản</span>
+                <span className="block">πâªπâ╝πé╢πâ╝τ«íτÉå</span>
+                <span className="block">Quß║ún l├╜ t├ái khoß║ún</span>
               </h3>
             </div>
 
             <div className="mb-3 flex flex-wrap items-center gap-3">
               <input
                 className="flex-1 min-w-55 rounded-lg border border-slate-200 px-3 py-2 text-sm"
-                placeholder="ユーザー検索 / Tìm người dùng..."
+                placeholder="πâªπâ╝πé╢πâ╝µñ£τ┤ó / T├¼m ng╞░ß╗¥i d├╣ng..."
                 value={userQuery}
                 onChange={(event) => {
                   setUserQuery(event.target.value);
@@ -629,15 +596,15 @@ export default function AdminPage() {
                 }}
               />
               <span className="text-xs text-slate-400">
-                <span className="block">{usersTotal} 件</span>
-                <span className="block">{usersTotal} tài khoản</span>
+                <span className="block">{usersTotal} Σ╗╢</span>
+                <span className="block">{usersTotal} t├ái khoß║ún</span>
               </span>
             </div>
 
             {usersLoading ? (
               <div className="py-6 text-center text-sm text-slate-500">
-                <span className="block">ユーザー一覧を読み込み中...</span>
-                <span className="block">Đang tải danh sách người dùng...</span>
+                <span className="block">πâªπâ╝πé╢πâ╝Σ╕ÇΦªºπéÆΦ¬¡πü┐Φ╛╝πü┐Σ╕¡...</span>
+                <span className="block">─Éang tß║úi danh s├ích ng╞░ß╗¥i d├╣ng...</span>
               </div>
             ) : usersError ? (
               <div className="rounded-lg border border-rose-100 bg-rose-50 px-3 py-2 text-sm text-rose-700">
@@ -650,24 +617,24 @@ export default function AdminPage() {
                 <thead>
                   <tr className="text-left text-xs text-slate-500 border-b border-slate-100">
                     <th className="py-2 pr-3 font-medium">
-                      <span className="block">氏名</span>
-                      <span className="block">Tên</span>
+                      <span className="block">µ░ÅσÉì</span>
+                      <span className="block">T├¬n</span>
                     </th>
                     <th className="py-2 pr-3 font-medium">
-                      <span className="block">チーム</span>
-                      <span className="block">Nhóm</span>
+                      <span className="block">πâüπâ╝πâá</span>
+                      <span className="block">Nh├│m</span>
                     </th>
                     <th className="py-2 pr-3 font-medium">
-                      <span className="block">ロール</span>
-                      <span className="block">Vai trò</span>
+                      <span className="block">πâ¡πâ╝πâ½</span>
+                      <span className="block">Vai tr├▓</span>
                     </th>
                     <th className="py-2 font-medium">
-                      <span className="block">状態</span>
-                      <span className="block">Trạng thái</span>
+                      <span className="block">τè╢µàï</span>
+                      <span className="block">Trß║íng th├íi</span>
                     </th>
                     <th className="py-2 font-medium">
-                      <span className="block">操作</span>
-                      <span className="block">Kích hoạt</span>
+                      <span className="block">µôìΣ╜£</span>
+                      <span className="block">K├¡ch hoß║ít</span>
                     </th>
                   </tr>
                 </thead>
@@ -678,8 +645,8 @@ export default function AdminPage() {
                         colSpan={5}
                         className="py-6 text-center text-xs text-slate-500"
                       >
-                        <span className="block">該当するユーザーがいません</span>
-                        <span className="block">Không có user phù hợp.</span>
+                        <span className="block">Φ⌐▓σ╜ôπüÖπéïπâªπâ╝πé╢πâ╝πüîπüäπü╛πü¢πéô</span>
+                        <span className="block">Kh├┤ng c├│ user ph├╣ hß╗úp.</span>
                       </td>
                     </tr>
                   ) : (
@@ -715,7 +682,7 @@ export default function AdminPage() {
                                 : "inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700"
                             }
                           >
-                            {u.status === "inactive" ? "停止 / Vô hiệu" : "有効 / Đang hoạt động"}
+                            {u.status === "inactive" ? "σü£µ¡ó / V├┤ hiß╗çu" : "µ£ëσè╣ / ─Éang hoß║ít ─æß╗Öng"}
                           </span>
                         </td>
                         <td className="py-3">
@@ -733,10 +700,10 @@ export default function AdminPage() {
                               disabled={updatingUserId === u.id}
                             >
                               {updatingUserId === u.id
-                                ? "更新中... / Đang cập nhật..."
+                                ? "µ¢┤µû░Σ╕¡... / ─Éang cß║¡p nhß║¡t..."
                                 : u.status === "inactive"
-                                  ? "有効化 / Kích hoạt"
-                                  : "無効 / Vô hiệu"}
+                                  ? "µ£ëσè╣σîû / K├¡ch hoß║ít"
+                                  : "τäíσè╣ / V├┤ hiß╗çu"}
                             </button>
                           )}
                         </td>
@@ -749,7 +716,7 @@ export default function AdminPage() {
 
             <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
               <span>
-                ページ {usersPage} / {totalPages} (Trang)
+                Trang {usersPage} / {totalPages}
               </span>
               <div className="flex items-center gap-2">
                 <select
@@ -769,7 +736,7 @@ export default function AdminPage() {
                   onClick={() => setUsersPage((page) => Math.max(1, page - 1))}
                   disabled={usersPage <= 1}
                 >
-                  前へ / Trước
+                  Tr╞░ß╗¢c
                 </button>
                 <button
                   type="button"
@@ -777,7 +744,7 @@ export default function AdminPage() {
                   onClick={() => setUsersPage((page) => Math.min(totalPages, page + 1))}
                   disabled={usersPage >= totalPages}
                 >
-                  次へ / Sau
+                  Sau
                 </button>
               </div>
             </div>
@@ -787,30 +754,30 @@ export default function AdminPage() {
         {isPrivilegedRole && (
           <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
             <h3 className="font-semibold text-slate-800 mb-2">
-              <span className="block">コンテンツ管理</span>
-              <span className="block">Quản lý nội dung</span>
+              <span className="block">πé│πâ│πâåπâ│πâäτ«íτÉå</span>
+              <span className="block">Quß║ún l├╜ nß╗Öi dung</span>
             </h3>
             <p className="text-sm text-slate-600">
-              Wiki審査フロー、掲示板通知、公開スケジュール、ロール別編集ログを設定
-              / Thiết lập quy trình duyệt bài Wiki, quản lý thông báo bảng tin,
-              lịch xuất bản và nhật ký chỉnh sửa theo từng role.
+              Wikiσ»⌐µƒ╗πâòπâ¡πâ╝πÇüµÄ▓τñ║µ¥┐ΘÇÜτƒÑπÇüσà¼Θûïπé╣πé▒πé╕πâÑπâ╝πâ½πÇüπâ¡πâ╝πâ½σêÑτ╖¿Θ¢åπâ¡πé░πéÆΦ¿¡σ«Ü
+              / Thiß║┐t lß║¡p quy tr├¼nh duyß╗çt b├ái Wiki, quß║ún l├╜ th├┤ng b├ío bß║úng tin,
+              lß╗ïch xuß║Ñt bß║ún v├á nhß║¡t k├╜ chß╗ënh sß╗¡a theo tß╗½ng role.
             </p>
             <div className="mt-3 grid sm:grid-cols-3 gap-3 text-xs">
               <div className="rounded-lg bg-slate-50 border border-slate-100 p-3">
                 <div className="text-slate-500">
-                  審査待ち記事 / Bài chờ duyệt
+                  σ»⌐µƒ╗σ╛àπüíΦ¿ÿΣ║ï / B├ái chß╗¥ duyß╗çt
                 </div>
                 <div className="mt-1 text-lg font-bold text-slate-900">{pendingItems.length}</div>
               </div>
               <div className="rounded-lg bg-slate-50 border border-slate-100 p-3">
                 <div className="text-slate-500">
-                  予約済み通知 / Thông báo đã lên lịch
+                  Σ║êτ┤äµ╕êπü┐ΘÇÜτƒÑ / Th├┤ng b├ío ─æ├ú l├¬n lß╗ïch
                 </div>
                 <div className="mt-1 text-lg font-bold text-slate-900">5</div>
               </div>
               <div className="rounded-lg bg-slate-50 border border-slate-100 p-3">
                 <div className="text-slate-500">
-                  モデレーション警告 / Cảnh báo moderation
+                  πâóπâçπâ¼πâ╝πé╖πâºπâ│Φ¡ªσæè / Cß║únh b├ío moderation
                 </div>
                 <div className="mt-1 text-lg font-bold text-slate-900">2</div>
               </div>
@@ -840,19 +807,19 @@ export default function AdminPage() {
                       ? "bg-blue-50 text-blue-700"
                       : "bg-purple-50 text-purple-700"
                   }`}>
-                    {previewItem.type === "post" ? "📋 Bảng tin" : "📖 Wiki"}
+                    {previewItem.type === "post" ? "≡ƒôï Bß║úng tin" : "≡ƒôû Wiki"}
                   </span>
                 </div>
                 <h3 className="text-lg font-bold text-slate-900">{previewItem.title}</h3>
                 <p className="text-xs text-slate-500 mt-1">
-                  {previewItem.created_by} • {new Date(previewItem.created_at).toLocaleDateString("vi-VN")}
-                  {previewItem.topic ? ` • ${previewItem.topic}` : ""}
+                  {previewItem.created_by} ΓÇó {new Date(previewItem.created_at).toLocaleDateString("vi-VN")}
+                  {previewItem.topic ? ` ΓÇó ${previewItem.topic}` : ""}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setPreviewItem(null)}
-                aria-label="閉じる / Đóng"
+                aria-label="Θûëπüÿπéï / ─É├│ng"
                 className="p-2 rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-700 shrink-0"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
@@ -870,7 +837,7 @@ export default function AdminPage() {
                 disabled={actionLoading === previewItem.id}
                 className="rounded-lg bg-rose-500 px-4 py-2 text-xs font-semibold text-white hover:bg-rose-600 disabled:opacity-60"
               >
-                {actionLoading === previewItem.id ? "..." : "拒否 / Từ chối"}
+                {actionLoading === previewItem.id ? "..." : "µïÆσÉª / Tß╗½ chß╗æi"}
               </button>
               <button
                 type="button"
@@ -878,7 +845,7 @@ export default function AdminPage() {
                 disabled={actionLoading === previewItem.id}
                 className="rounded-lg bg-emerald-500 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-600 disabled:opacity-60"
               >
-                {actionLoading === previewItem.id ? "..." : "承認 / Duyệt"}
+                {actionLoading === previewItem.id ? "..." : "µë┐Φ¬ì / Duyß╗çt"}
               </button>
             </div>
           </div>
