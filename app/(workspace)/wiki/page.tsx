@@ -8,6 +8,7 @@ type WikiArticle = {
   slug: string;
   title: string;
   tag: string;
+  status?: string;
 };
 
 const API_BASE_URL =
@@ -27,6 +28,7 @@ export default function WikiListPage() {
   const [newContent, setNewContent] = useState("");
   const [query, setQuery] = useState("");
   const [tagFilter, setTagFilter] = useState("all");
+  const [activeTab, setActiveTab] = useState<"approved" | "pending">("approved");
   const [createOpen, setCreateOpen] = useState(false);
 
   useEffect(() => {
@@ -47,10 +49,11 @@ export default function WikiListPage() {
         if (!active) return;
 
         const mapped = Array.isArray(payload.data)
-          ? payload.data.map((article: { slug?: string; title?: string; tag?: string }) => ({
+          ? payload.data.map((article: { slug?: string; title?: string; tag?: string; status?: string }) => ({
               slug: article.slug ?? "",
               title: article.title ?? "",
               tag: article.tag ?? "General",
+              status: article.status ?? "approved",
             }))
           : [];
 
@@ -85,9 +88,10 @@ export default function WikiListPage() {
             value.toLowerCase().includes(normalizedQuery),
           );
         const matchesTag = tagFilter === "all" || article.tag === tagFilter;
-        return matchesQuery && matchesTag;
+        const matchesTab = activeTab === "approved" ? article.status !== "pending" : article.status === "pending";
+        return matchesQuery && matchesTag && matchesTab;
       }),
-    [articles, normalizedQuery, tagFilter],
+    [articles, normalizedQuery, tagFilter, activeTab],
   );
 
   const handleCreateWiki = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -119,13 +123,13 @@ export default function WikiListPage() {
       const payload = await response.json();
 
       if (!response.ok || !payload?.ok) {
-        throw new Error(payload?.error || "Không thể tạo bài viết Wiki");
+        throw new Error(payload?.error || "Wikiを作成できません / Không thể tạo bài viết Wiki");
       }
 
-      const created = payload.data as { slug?: string; title?: string; tag?: string };
+      const created = payload.data as { slug?: string; title?: string; tag?: string; status?: string };
       if (created?.slug && created?.title) {
         setArticles((prev) => [
-          { slug: created.slug, title: created.title, tag: created.tag ?? "General" },
+          { slug: created.slug, title: created.title, tag: created.tag ?? "General", status: created.status ?? "pending" },
           ...prev,
         ]);
       }
@@ -133,11 +137,12 @@ export default function WikiListPage() {
       setNewTitle("");
       setNewTag("");
       setNewContent("");
-      setCreateSuccess("Tạo bài viết Wiki thành công. Bài viết đang chờ admin duyệt.");
+      setActiveTab("pending");
+      setCreateSuccess("Wikiを作成しました。管理者の承認待ちです / Tạo bài viết Wiki thành công. Bài viết đang chờ admin duyệt.");
       setCreateOpen(false);
     } catch (submitError) {
       setCreateError(
-        submitError instanceof Error ? submitError.message : "Có lỗi khi tạo bài viết Wiki",
+        submitError instanceof Error ? submitError.message : "Wikiの作成に失敗しました / Có lỗi khi tạo bài viết Wiki",
       );
     } finally {
       setCreating(false);
@@ -158,6 +163,31 @@ export default function WikiListPage() {
           </p>
         </div>
 
+        <div className="flex space-x-1 rounded-xl bg-slate-200/50 p-1 mb-4 w-fit">
+          <button
+            onClick={() => setActiveTab("approved")}
+            className={`px-4 py-2 text-sm font-medium rounded-lg ${
+              activeTab === "approved"
+                ? "bg-white shadow text-blue-700"
+                : "text-slate-600 hover:text-slate-800"
+            }`}
+          >
+            <span className="block">すべてのWiki</span>
+            <span className="block text-xs opacity-80 mt-0.5">Tất cả Wiki</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("pending")}
+            className={`px-4 py-2 text-sm font-medium rounded-lg ${
+              activeTab === "pending"
+                ? "bg-white shadow text-blue-700"
+                : "text-slate-600 hover:text-slate-800"
+            }`}
+          >
+            <span className="block">承認待ち</span>
+            <span className="block text-xs opacity-80 mt-0.5">Chờ duyệt của tôi</span>
+          </button>
+        </div>
+
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <div className="flex flex-1 min-w-60 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2">
             <Search className="w-4 h-4 text-slate-400" />
@@ -168,7 +198,7 @@ export default function WikiListPage() {
               onChange={(event) => setQuery(event.target.value)}
             />
           </div>
-          <span className="text-[11px] text-slate-400">Tìm theo bài viết, tag...</span>
+          <span className="text-[11px] text-slate-400">記事、タグで検索... / Tìm theo bài viết, tag...</span>
           <select
             value={tagFilter}
             onChange={(event) => setTagFilter(event.target.value)}
@@ -295,7 +325,7 @@ export default function WikiListPage() {
                   disabled={creating}
                   className="rounded-full bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
                 >
-                  {creating ? "Đang tạo..." : "作成 / Tạo bài viết"}
+                  {creating ? "作成中... / Đang tạo..." : "作成 / Tạo bài viết"}
                 </button>
               </div>
             </form>

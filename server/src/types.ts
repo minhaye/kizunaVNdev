@@ -1,6 +1,6 @@
 export type Role = "staff" | "admin";
 
-export type PostStatus = "pending" | "approved" | "rejected";
+export type PostStatus = "pending" | "published" | "rejected";
 
 export type Post = {
   id: string;

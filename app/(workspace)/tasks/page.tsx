@@ -161,6 +161,8 @@ export default function TaskBoardPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [draft, setDraft] = useState<TaskDraft>(emptyDraft());
   const [mutatingId, setMutatingId] = useState<string | null>(null);
+  const [taskPages, setTaskPages] = useState<Record<string, number>>({ todo: 1, doing: 1, done: 1 });
+  const taskPageSize = 5;
   const todayInputValue = useMemo(() => getTodayInputValue(), []);
 
   const currentUserName = currentUser?.name ?? currentUser?.email?.split("@")[0] ?? "ユーザー";
@@ -460,8 +462,13 @@ export default function TaskBoardPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {groupedTasks.map((column) => (
-            <section key={column.title} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+          {groupedTasks.map((column) => {
+            const currentPage = taskPages[column.status] ?? 1;
+            const totalColPages = Math.max(1, Math.ceil(column.cards.length / taskPageSize));
+            const paginatedCards = column.cards.slice((currentPage - 1) * taskPageSize, currentPage * taskPageSize);
+
+            return (
+            <section key={column.title} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col h-full">
               <div className="mb-3 flex items-start justify-between gap-2">
                 <div>
                   <h3 className="text-sm font-bold text-slate-700">{column.title}</h3>
@@ -475,14 +482,14 @@ export default function TaskBoardPage() {
                 </span>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-3 flex-1">
                 {column.cards.length === 0 ? (
                   <div className="rounded-lg border border-dashed border-slate-200 px-3 py-4 text-center text-xs text-slate-500">
                     <span className="block">該当するタスクがありません。</span>
                     <span className="block">Chưa có task phù hợp.</span>
                   </div>
                 ) : (
-                  column.cards.map((task) => {
+                  paginatedCards.map((task) => {
                     const isAssignee = currentUser?.id === task.assignee_id;
                     const canClaim = task.status === "todo" && (isAssignee || currentUser?.role === "admin");
                     const canComplete = task.status === "doing" && (isAssignee || currentUser?.role === "admin");
@@ -586,8 +593,32 @@ export default function TaskBoardPage() {
                   })
                 )}
               </div>
+
+              {totalColPages > 1 && (
+                <div className="flex items-center justify-between text-[11px] text-slate-500 pt-3 mt-3 border-t border-slate-100">
+                  <span>ページ {currentPage} / {totalColPages} (Trang)</span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      className="rounded border border-slate-200 bg-white px-2 py-1 font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={() => setTaskPages((prev) => ({ ...prev, [column.status]: Math.max(1, currentPage - 1) }))}
+                      disabled={currentPage <= 1}
+                    >
+                      前へ / Trước
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded border border-slate-200 bg-white px-2 py-1 font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={() => setTaskPages((prev) => ({ ...prev, [column.status]: Math.min(totalColPages, currentPage + 1) }))}
+                      disabled={currentPage >= totalColPages}
+                    >
+                      次へ / Sau
+                    </button>
+                  </div>
+                </div>
+              )}
             </section>
-          ))}
+          )})}
         </div>
       </div>
 

@@ -50,7 +50,7 @@ export default function SignupPage() {
         return;
       }
 
-      setSuccess(data.message || "登録完了！/ Đăng ký thành công! Vui lòng kiểm tra email để xác nhận.");
+      setSuccess(data.message || "登録完了！確認メールをご確認ください。/ Đăng ký thành công! Vui lòng kiểm tra email để xác nhận.");
 
       setTimeout(() => {
         router.push("/login");

@@ -88,6 +88,16 @@ const menuItems: MenuItem[] = [
   },
 ];
 
+const adminMenuItems: MenuItem[] = [
+  {
+    href: "/admin",
+    ja: "管理者ダッシュボード",
+    vi: "Quản trị hệ thống",
+    icon: <Settings className="w-5 h-5 mr-3" />,
+    matcher: (pathname) => pathname.startsWith("/admin"),
+  },
+];
+
 export default function WorkspaceShell({ children }: { children: ReactNode }) {
   const API_BASE_URL =
     process.env.NEXT_PUBLIC_API_BASE_URL ??
@@ -417,7 +427,7 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
         </div>
 
         <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
-          {menuItems.map((item) => {
+          {(currentRole === "admin" ? adminMenuItems : menuItems).map((item) => {
             const isActive = item.matcher(pathname);
 
             return (
@@ -461,25 +471,27 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
           })}
         </nav>
 
-        <div className="p-3 border-t border-slate-200">
-          <Link
-            href={settingsHref}
-            className="flex items-center px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg group transition-colors"
-          >
-            <Settings className="w-5 h-5 mr-3 text-slate-400 group-hover:text-slate-600" />
-            <div>
-              <div className="text-sm">設定</div>
-              <div className="text-xs text-slate-400 font-normal">{settingsLabel}</div>
-            </div>
-          </Link>
-        </div>
+        {currentRole !== "admin" && (
+          <div className="p-3 border-t border-slate-200">
+            <Link
+              href={settingsHref}
+              className="flex items-center px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg group transition-colors"
+            >
+              <Settings className="w-5 h-5 mr-3 text-slate-400 group-hover:text-slate-600" />
+              <div>
+                <div className="text-sm">設定</div>
+                <div className="text-xs text-slate-400 font-normal">{settingsLabel}</div>
+              </div>
+            </Link>
+          </div>
+        )}
       </aside>
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shadow-sm z-10">
           <div>
             <h1 className="text-lg font-semibold text-slate-800">
-              こんにちは、{greetingName}！
+              こんにちは、{greetingName}！今日も一日頑張りましょう。
             </h1>
             <p className="text-sm text-slate-500">
               <span className="block">Xin chào, {friendlyName}! Chúc một ngày làm việc hiệu quả.</span>

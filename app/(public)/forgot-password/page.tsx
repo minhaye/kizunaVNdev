@@ -29,7 +29,7 @@ export default function ForgotPasswordPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Không thể gửi mã xác nhận");
+        setError(data.error || "確認コードを送信できません / Không thể gửi mã xác nhận");
         return;
       }
 
@@ -41,7 +41,7 @@ export default function ForgotPasswordPage() {
 
       router.push(`/forgot-password/otp?email=${encodeURIComponent(email.trim())}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Có lỗi xảy ra");
+      setError(err instanceof Error ? err.message : "エラーが発生しました / Có lỗi xảy ra");
     } finally {
       setLoading(false);
     }

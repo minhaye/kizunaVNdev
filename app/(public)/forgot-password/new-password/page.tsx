@@ -27,7 +27,7 @@ function NewPasswordContent() {
     setSuccess("");
 
     if (password !== confirmPassword) {
-      setError("Mật khẩu xác nhận không khớp");
+      setError("パスワードが一致しません / Mật khẩu xác nhận không khớp");
       return;
     }
 
@@ -47,7 +47,7 @@ function NewPasswordContent() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Đặt lại mật khẩu thất bại");
+        setError(data.error || "パスワードのリセットに失敗しました / Đặt lại mật khẩu thất bại");
         return;
       }
 
@@ -58,7 +58,7 @@ function NewPasswordContent() {
         router.push("/login");
       }, 1200);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Có lỗi xảy ra");
+      setError(err instanceof Error ? err.message : "エラーが発生しました / Có lỗi xảy ra");
     } finally {
       setLoading(false);
     }

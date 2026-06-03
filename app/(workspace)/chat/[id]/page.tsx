@@ -51,7 +51,7 @@ export default function ChatDetailPage() {
 
   useEffect(() => {
     if (!roomId) {
-      setError("Invalid chat room ID");
+      setError("無効なチャットルームID / ID phòng chat không hợp lệ");
       setLoading(false);
       return;
     }

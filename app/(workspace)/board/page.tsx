@@ -13,6 +13,7 @@ type Post = {
   postedAt: string;
   avatar: string;
   content: string;
+  status?: string;
 };
 
 type ReactionType = "like" | "heart" | "useful";
@@ -57,6 +58,7 @@ function BoardContent() {
   const [newContent, setNewContent] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<"published" | "pending">("published");
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -93,6 +95,7 @@ function BoardContent() {
               postedAt,
               avatar: p.avatar || p.avatar_url || "",
               content: p.content,
+              status: p.status || "published",
             } as Post;
           });
           setPosts(mapped);
@@ -126,7 +129,8 @@ function BoardContent() {
       );
     const matchesAuthor =
       authorFilter === "all" || post.author === authorFilter;
-    return matchesQuery && matchesAuthor;
+    const matchesTab = activeTab === "published" ? post.status !== "pending" : post.status === "pending";
+    return matchesQuery && matchesAuthor && matchesTab;
   });
 
   const reactionButtonClass = (reaction: ReactionType) =>
@@ -268,16 +272,18 @@ function BoardContent() {
         postedAt: Number.isNaN(createdDate.getTime()) ? "" : createdDate.toTimeString().slice(0, 5),
         avatar: p.avatar || "",
         content: p.content,
+        status: p.status || "pending",
       };
 
       setPosts((prev) => [mappedPost, ...prev]);
       setNewTitle("");
       setNewTopic("");
       setNewContent("");
-      setCreateSuccess("Đăng bài cộng đồng thành công. Bài viết đang chờ admin duyệt.");
+      setActiveTab("pending");
+      setCreateSuccess("コミュニティ投稿を作成しました。管理者の承認待ちです / Đăng bài cộng đồng thành công. Bài viết đang chờ admin duyệt.");
       setCreateOpen(false);
     } catch (submitError) {
-      setCreateError(submitError instanceof Error ? submitError.message : "Có lỗi khi đăng bài");
+      setCreateError(submitError instanceof Error ? submitError.message : "投稿エラーが発生しました / Có lỗi khi đăng bài");
     } finally {
       setCreating(false);
     }
@@ -298,6 +304,31 @@ function BoardContent() {
             </p>
           </div>
 
+          <div className="flex space-x-1 rounded-xl bg-slate-200/50 p-1 mb-4 w-fit">
+            <button
+              onClick={() => setActiveTab("published")}
+              className={`px-4 py-2 text-sm font-medium rounded-lg ${
+                activeTab === "published"
+                  ? "bg-white shadow text-blue-700"
+                  : "text-slate-600 hover:text-slate-800"
+              }`}
+            >
+              <span className="block">すべての投稿</span>
+              <span className="block text-xs opacity-80 mt-0.5">Tất cả bài viết</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("pending")}
+              className={`px-4 py-2 text-sm font-medium rounded-lg ${
+                activeTab === "pending"
+                  ? "bg-white shadow text-blue-700"
+                  : "text-slate-600 hover:text-slate-800"
+              }`}
+            >
+              <span className="block">承認待ち</span>
+              <span className="block text-xs opacity-80 mt-0.5">Chờ duyệt của tôi</span>
+            </button>
+          </div>
+
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <div className="flex flex-1 min-w-60 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2">
               <Search className="w-4 h-4 text-slate-400" />
@@ -308,7 +339,7 @@ function BoardContent() {
                 onChange={(event) => setQuery(event.target.value)}
               />
             </div>
-            <span className="text-[11px] text-slate-400">Tìm theo tiêu đề, tác giả...</span>
+            <span className="text-[11px] text-slate-400">タイトル、作者で検索... / Tìm theo tiêu đề, tác giả...</span>
             <select
               value={authorFilter}
               onChange={(event) => setAuthorFilter(event.target.value)}
@@ -352,7 +383,7 @@ function BoardContent() {
             ) : (
               filteredPosts.map((post) => (
                 <button
-                  key={post.title}
+                  key={post.id}
                   type="button"
                     onClick={() => void openPostDetail(post)}
                   className="w-full text-left p-5 hover:bg-slate-50 transition-colors"
@@ -512,7 +543,7 @@ function BoardContent() {
                   disabled={creating}
                   className="rounded-full bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
                 >
-                  {creating ? "Đang đăng..." : "投稿する / Đăng bài"}
+                  {creating ? "投稿中... / Đang đăng..." : "投稿する / Đăng bài"}
                 </button>
               </div>
             </form>

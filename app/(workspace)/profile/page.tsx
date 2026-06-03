@@ -91,7 +91,7 @@ export default function ProfilePage() {
         const payload = await response.json();
 
         if (!response.ok || !payload?.success || !active) {
-          throw new Error(payload?.error || "Failed to load feedbacks");
+          throw new Error(payload?.error || "フィードバックの取得に失敗しました / Không thể tải danh sách phản hồi");
         }
 
         setFeedbacks((payload.feedbacks ?? []) as FeedbackItem[]);

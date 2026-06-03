@@ -37,11 +37,7 @@ export default function AdminPage() {
     "http://localhost:4000";
   const [currentRole, setCurrentRole] = useState<"employee" | "admin" | null>(null);
   const [userQuery, setUserQuery] = useState("");
-  const [themeMode, setThemeMode] = useState<"light" | "dark">("light");
-  const [messageTaskNotifications, setMessageTaskNotifications] = useState(true);
-  const [loginRetentionDays, setLoginRetentionDays] = useState<30 | 60 | 90>(30);
-  const [showActiveStatus, setShowActiveStatus] = useState(true);
-  const [settingsLoaded, setSettingsLoaded] = useState(false);
+
   const [users, setUsers] = useState<UserRow[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [usersError, setUsersError] = useState<string | null>(null);
@@ -53,6 +49,8 @@ export default function AdminPage() {
   // Pending review state
   const [pendingItems, setPendingItems] = useState<PendingItem[]>([]);
   const [pendingLoading, setPendingLoading] = useState(false);
+  const [pendingPage, setPendingPage] = useState(1);
+  const pendingPageSize = 5;
   const [previewItem, setPreviewItem] = useState<PendingItem | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
@@ -69,51 +67,7 @@ export default function AdminPage() {
     }
   }, []);
 
-  useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    if (!token) return;
 
-    let active = true;
-
-    const loadSettings = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/settings/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await response.json() as {
-          settings?: {
-            theme_mode?: "light" | "dark";
-            message_task_notifications?: boolean;
-            login_retention_days?: 30 | 60 | 90;
-            show_active_status?: boolean;
-          };
-        };
-
-        if (!response.ok || !data.settings || !active) return;
-
-          setThemeMode(data.settings.theme_mode === "dark" ? "dark" : "light");
-          setMessageTaskNotifications(data.settings.message_task_notifications ?? true);
-        setLoginRetentionDays(data.settings.login_retention_days ?? 30);
-        setShowActiveStatus(data.settings.show_active_status ?? true);
-      } catch {
-        // Keep local defaults if the backend is unavailable.
-      } finally {
-        if (active) {
-          setSettingsLoaded(true);
-        }
-      }
-    };
-
-    void loadSettings();
-
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    document.documentElement.setAttribute("data-theme", themeMode);
-  }, [themeMode]);
 
   useEffect(() => {
     const token = localStorage.getItem("authToken");
@@ -262,45 +216,12 @@ export default function AdminPage() {
     };
   }, [API_BASE_URL, currentRole]);
 
-  useEffect(() => {
-    if (!settingsLoaded) return;
 
-    const token = localStorage.getItem("authToken");
-    if (!token) return;
-
-    const timer = window.setTimeout(() => {
-      const payload = {
-        theme_mode: themeMode,
-        message_task_notifications: messageTaskNotifications,
-        login_retention_days: loginRetentionDays,
-        show_active_status: showActiveStatus,
-      };
-
-      window.dispatchEvent(
-        new CustomEvent("account-settings-updated", {
-          detail: {
-            themeMode,
-            messageTaskNotifications,
-            showActiveStatus,
-          },
-        }),
-      );
-
-      void fetch(`${API_BASE_URL}/api/settings/me`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-    }, 250);
-
-    return () => window.clearTimeout(timer);
-  }, [API_BASE_URL, themeMode, messageTaskNotifications, loginRetentionDays, showActiveStatus, settingsLoaded]);
 
   const isPrivilegedRole = currentRole === "admin";
   const totalPages = Math.max(1, Math.ceil(usersTotal / usersPageSize));
+  const pendingTotalPages = Math.max(1, Math.ceil(pendingItems.length / pendingPageSize));
+  const paginatedPendingItems = pendingItems.slice((pendingPage - 1) * pendingPageSize, pendingPage * pendingPageSize);
 
   useEffect(() => {
     if (usersPage > totalPages) {
@@ -361,7 +282,7 @@ export default function AdminPage() {
       const data = await response.json() as { ok?: boolean; error?: string };
 
       if (!response.ok || !data?.ok) {
-        alert(data?.error || "Duyệt bài thất bại");
+        alert(data?.error || "承認に失敗しました / Duyệt bài thất bại");
         return;
       }
 
@@ -369,7 +290,7 @@ export default function AdminPage() {
       setPendingItems((prev) => prev.filter((i) => i.id !== item.id));
       setPreviewItem(null);
     } catch {
-      alert("Có lỗi khi duyệt bài");
+      alert("承認エラーが発生しました / Có lỗi khi duyệt bài");
     } finally {
       setActionLoading(null);
     }
@@ -396,7 +317,7 @@ export default function AdminPage() {
       const data = await response.json() as { ok?: boolean; error?: string };
 
       if (!response.ok || !data?.ok) {
-        alert(data?.error || "Từ chối bài thất bại");
+        alert(data?.error || "拒否に失敗しました / Từ chối bài thất bại");
         return;
       }
 
@@ -404,7 +325,7 @@ export default function AdminPage() {
       setPendingItems((prev) => prev.filter((i) => i.id !== item.id));
       setPreviewItem(null);
     } catch {
-      alert("Có lỗi khi từ chối bài");
+      alert("拒否エラーが発生しました / Có lỗi khi từ chối bài");
     } finally {
       setActionLoading(null);
     }
@@ -415,7 +336,7 @@ export default function AdminPage() {
       <div className="max-w-5xl mx-auto space-y-5">
         <header className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">設定 / Cấu hình</h2>
+            <h2 className="text-xl font-bold text-slate-900">管理者ダッシュボード / Quản trị hệ thống</h2>
             <p className="text-xs text-slate-500 mt-1">
               {isPrivilegedRole
                 ? "管理者表示 / Admin view: system + content"
@@ -433,17 +354,20 @@ export default function AdminPage() {
 
             {pendingLoading ? (
               <div className="py-6 text-center text-sm text-slate-500">
+                <span className="block">審査待ちの記事を読み込み中...</span>
                 <span className="block">Đang tải danh sách bài chờ duyệt...</span>
               </div>
             ) : pendingItems.length === 0 ? (
               <div className="rounded-lg bg-slate-50 border border-slate-100 p-6 text-center text-sm text-slate-500">
+                <span className="block">審査待ちの記事はありません</span>
                 <span className="block">Không có bài viết nào đang chờ duyệt</span>
               </div>
             ) : (
-              <div className="space-y-2">
-                {pendingItems.map((item) => (
-                  <div
-                    key={item.id}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  {paginatedPendingItems.map((item) => (
+                    <div
+                      key={item.id}
                     className="flex items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50/50 p-3"
                   >
                     <div className="min-w-0 flex-1">
@@ -490,91 +414,36 @@ export default function AdminPage() {
                     </div>
                   </div>
                 ))}
+                </div>
+                {pendingTotalPages > 1 && (
+                  <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100 mt-2">
+                    <span>ページ {pendingPage} / {pendingTotalPages} (Trang)</span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        className="rounded-md border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={() => setPendingPage((p) => Math.max(1, p - 1))}
+                        disabled={pendingPage <= 1}
+                      >
+                        前へ / Trước
+                      </button>
+                      <button
+                        type="button"
+                        className="rounded-md border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={() => setPendingPage((p) => Math.min(pendingTotalPages, p + 1))}
+                        disabled={pendingPage >= pendingTotalPages}
+                      >
+                        次へ / Sau
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </section>
         )}
 
-        <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
-          <h3 className="font-semibold text-slate-800 mb-3">
-              <span className="block">システム設定</span>
-              <span className="block">Cấu hình hệ thống</span>
-          </h3>
-          <div className="grid md:grid-cols-2 gap-3">
-            <label className="rounded-lg border border-slate-100 p-3 flex flex-col gap-2">
-              <span>
-                <span className="block text-sm font-medium text-slate-800">
-                  Chế độ sáng tối / テーマ設定
-                </span>
-                <span className="text-xs text-slate-500">
-                  Tùy chỉnh giao diện hiển thị / 表示テーマを選択します。
-                </span>
-              </span>
-              <select
-                value={themeMode}
-                onChange={(event) => setThemeMode(event.target.value as "light" | "dark")}
-                className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
-              >
-                <option value="light">Sáng / ライト</option>
-                <option value="dark">Tối / ダーク</option>
-              </select>
-            </label>
 
-            <label className="flex items-start gap-3 rounded-lg border border-slate-100 p-3">
-              <input
-                type="checkbox"
-                checked={messageTaskNotifications}
-                onChange={(event) => setMessageTaskNotifications(event.target.checked)}
-                className="mt-0.5"
-              />
-              <span className="min-w-0">
-                <span className="block text-sm font-medium text-slate-800">
-                  Bật thông báo tin nhắn / メッセージ通知
-                </span>
-                <span className="text-xs text-slate-500">
-                  Khi có tin nhắn hoặc task mới, chuông góc phải sẽ hiển thị số chưa đọc.
-                </span>
-              </span>
-            </label>
-
-            <label className="rounded-lg border border-slate-100 p-3 flex flex-col gap-2">
-              <span>
-                <span className="block text-sm font-medium text-slate-800">
-                  Lưu đăng nhập / ログイン保持
-                </span>
-                <span className="text-xs text-slate-500">
-                  Giữ đăng nhập trên thiết bị này trong số ngày bạn chọn.
-                </span>
-              </span>
-              <select
-                value={loginRetentionDays}
-                onChange={(event) => setLoginRetentionDays(Number(event.target.value) as 30 | 60 | 90)}
-                className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
-              >
-                <option value={30}>30 ngày</option>
-                <option value={60}>60 ngày</option>
-                <option value={90}>90 ngày</option>
-              </select>
-            </label>
-
-            <label className="flex items-start gap-3 rounded-lg border border-slate-100 p-3">
-              <input
-                type="checkbox"
-                checked={showActiveStatus}
-                onChange={(event) => setShowActiveStatus(event.target.checked)}
-                className="mt-0.5"
-              />
-              <span className="min-w-0">
-                <span className="block text-sm font-medium text-slate-800">
-                  Trạng thái hoạt động / オンライン状態
-                </span>
-                <span className="text-xs text-slate-500">
-                  Hiển thị chấm màu ở góc tài khoản để biết đang online hay offline.
-                </span>
-              </span>
-            </label>
-          </div>
-        </section>
 
         {isPrivilegedRole && (
           <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
@@ -716,7 +585,7 @@ export default function AdminPage() {
 
             <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
               <span>
-                Trang {usersPage} / {totalPages}
+                ページ {usersPage} / {totalPages} (Trang)
               </span>
               <div className="flex items-center gap-2">
                 <select
@@ -736,7 +605,7 @@ export default function AdminPage() {
                   onClick={() => setUsersPage((page) => Math.max(1, page - 1))}
                   disabled={usersPage <= 1}
                 >
-                  Trước
+                  前へ / Trước
                 </button>
                 <button
                   type="button"
@@ -744,46 +613,14 @@ export default function AdminPage() {
                   onClick={() => setUsersPage((page) => Math.min(totalPages, page + 1))}
                   disabled={usersPage >= totalPages}
                 >
-                  Sau
+                  次へ / Sau
                 </button>
               </div>
             </div>
           </section>
         )}
 
-        {isPrivilegedRole && (
-          <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
-            <h3 className="font-semibold text-slate-800 mb-2">
-              <span className="block">コンテンツ管理</span>
-              <span className="block">Quản lý nội dung</span>
-            </h3>
-            <p className="text-sm text-slate-600">
-              Wiki審査フロー、掲示板通知、公開スケジュール、ロール別編集ログを設定
-              / Thiết lập quy trình duyệt bài Wiki, quản lý thông báo bảng tin,
-              lịch xuất bản và nhật ký chỉnh sửa theo từng role.
-            </p>
-            <div className="mt-3 grid sm:grid-cols-3 gap-3 text-xs">
-              <div className="rounded-lg bg-slate-50 border border-slate-100 p-3">
-                <div className="text-slate-500">
-                  審査待ち記事 / Bài chờ duyệt
-                </div>
-                <div className="mt-1 text-lg font-bold text-slate-900">{pendingItems.length}</div>
-              </div>
-              <div className="rounded-lg bg-slate-50 border border-slate-100 p-3">
-                <div className="text-slate-500">
-                  予約済み通知 / Thông báo đã lên lịch
-                </div>
-                <div className="mt-1 text-lg font-bold text-slate-900">5</div>
-              </div>
-              <div className="rounded-lg bg-slate-50 border border-slate-100 p-3">
-                <div className="text-slate-500">
-                  モデレーション警告 / Cảnh báo moderation
-                </div>
-                <div className="mt-1 text-lg font-bold text-slate-900">2</div>
-              </div>
-            </div>
-          </section>
-        )}
+
 
       </div>
 

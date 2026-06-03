@@ -46,7 +46,7 @@ function ForgotPasswordOtpContent() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Xác minh OTP thất bại");
+        setError(data.error || "OTP認証に失敗しました / Xác minh OTP thất bại");
         return;
       }
 
@@ -55,7 +55,7 @@ function ForgotPasswordOtpContent() {
         `/forgot-password/new-password?email=${encodeURIComponent(email)}&resetToken=${encodeURIComponent(data.resetToken)}`,
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Có lỗi xảy ra");
+      setError(err instanceof Error ? err.message : "エラーが発生しました / Có lỗi xảy ra");
     } finally {
       setLoading(false);
     }
@@ -76,7 +76,7 @@ function ForgotPasswordOtpContent() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Không thể gửi lại mã OTP");
+        setError(data.error || "OTPを再送信できません / Không thể gửi lại mã OTP");
         return;
       }
 
@@ -87,7 +87,7 @@ function ForgotPasswordOtpContent() {
       setSuccess("Đã gửi lại mã OTP mới.");
       setOtp(data.debugOtp ?? "");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Có lỗi xảy ra");
+      setError(err instanceof Error ? err.message : "エラーが発生しました / Có lỗi xảy ra");
     } finally {
       setResendLoading(false);
     }

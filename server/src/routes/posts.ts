@@ -74,9 +74,9 @@ const firstRelatedEmployee = (value: unknown) => {
 const getVisibleStatuses = (req: Request): PostStatus[] => {
   const session = getSessionFromRequest(req);
   if (session?.role === "admin" || session?.source === "admins") {
-    return ["pending", "approved", "rejected"];
+    return ["pending", "published", "rejected"];
   }
-  return ["approved"];
+  return ["published"];
 };
 
 /**
@@ -115,11 +115,11 @@ export const postsListHandler = async (req: Request, res: Response) => {
       .limit(100);
 
     if (adminSession) {
-      query = query.in("status", ["pending", "approved", "rejected"]);
+      query = query.in("status", ["pending", "published", "rejected"]);
     } else if (session?.source === "employees") {
-      query = query.or(`status.eq.approved,and(status.eq.pending,created_by.eq.${session.sub})`);
+      query = query.or(`status.eq.published,and(status.eq.pending,created_by.eq.${session.sub})`);
     } else {
-      query = query.eq("status", "approved");
+      query = query.eq("status", "published");
     }
 
     const { data, error } = await query;
@@ -153,7 +153,7 @@ export const postsListHandler = async (req: Request, res: Response) => {
         author: employee?.name || "Unknown",
         avatar: employee?.avatar_url || "",
         content: post.content,
-        status: post.status ?? "approved",
+        status: post.status ?? "published",
         reviewed_by: post.reviewed_by ?? null,
         reviewed_by_admin: post.reviewed_by_admin ?? null,
         reviewed_at: post.reviewed_at ?? null,
@@ -238,8 +238,8 @@ export const postsDetailHandler = async (req: Request, res: Response) => {
       return;
     }
 
-    // Check visibility: non-admin cannot see non-approved posts unless they are the author
-    if (!isAdmin(req) && data.status !== "approved" && data.created_by !== session?.sub) {
+    // Check visibility: non-admin cannot see non-published posts unless they are the author
+    if (!isAdmin(req) && data.status !== "published" && data.created_by !== session?.sub) {
       res.status(404).json({
         ok: false,
         error: "Post not found",
@@ -259,7 +259,7 @@ export const postsDetailHandler = async (req: Request, res: Response) => {
       author: employee?.name || "Unknown",
       avatar: employee?.avatar_url || "",
       content: data.content,
-      status: data.status ?? "approved",
+      status: data.status ?? "published",
       reviewed_by: data.reviewed_by ?? null,
       reviewed_by_admin: data.reviewed_by_admin ?? null,
       reviewed_at: data.reviewed_at ?? null,
@@ -395,7 +395,7 @@ export const approvePostHandler = async (req: Request, res: Response) => {
     const { data, error } = await supabase
       .from("posts")
       .update({
-        status: "approved",
+        status: "published",
         ...reviewUpdate,
         reviewed_at: new Date().toISOString(),
       })

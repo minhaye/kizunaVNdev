@@ -38,7 +38,7 @@ export default function LoginPage() {
         return;
       }
 
-      setSuccess("ログイン成功！/ Đăng nhập thành công! Đang chuyển hướng...");
+      setSuccess("ログイン成功！リダイレクトしています... / Đăng nhập thành công! Đang chuyển hướng...");
       
       // Lưu session token
       if (data.session) {

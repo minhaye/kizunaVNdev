@@ -62,7 +62,7 @@ export default function ChatListPage() {
       const data = await fetchEmployees();
       setEmployees(data);
     } catch (loadError) {
-      setCreateError(loadError instanceof Error ? loadError.message : "Failed to load employees");
+      setCreateError(loadError instanceof Error ? loadError.message : "社員情報の取得に失敗しました / Lỗi tải danh sách nhân viên");
     }
   }, [employees.length]);
 
@@ -139,17 +139,17 @@ export default function ChatListPage() {
 
   const handleCreateRoom = async () => {
     if (!actorEmployeeId) {
-      setCreateError("Bạn cần đăng nhập để tạo phòng chat.");
+      setCreateError("ログインが必要です / Bạn cần đăng nhập để tạo phòng chat.");
       return;
     }
 
     if (createType === "direct" && selectedMembers.length !== 1) {
-      setCreateError("Chọn đúng 1 người để tạo chat cá nhân.");
+      setCreateError("個人チャットを作成するには1人選択してください / Chọn đúng 1 người để tạo chat cá nhân.");
       return;
     }
 
     if (createType === "group" && selectedMembers.length === 0) {
-      setCreateError("Chọn ít nhất 1 thành viên để tạo nhóm.");
+      setCreateError("グループを作成するには1人以上選択してください / Chọn ít nhất 1 thành viên để tạo nhóm.");
       return;
     }
 
@@ -166,7 +166,7 @@ export default function ChatListPage() {
       await loadRooms();
       router.push(`/chat/${result.data.id}`);
     } catch (createError) {
-      setCreateError(createError instanceof Error ? createError.message : "Failed to create chat room");
+      setCreateError(createError instanceof Error ? createError.message : "チャットルームの作成に失敗しました / Có lỗi khi tạo phòng chat");
     } finally {
       setCreateLoading(false);
     }
