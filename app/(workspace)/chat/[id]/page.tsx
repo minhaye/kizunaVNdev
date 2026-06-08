@@ -420,10 +420,6 @@ export default function ChatDetailPage() {
                 </span>
               </button>
             </div>
-            <p className="text-[11px] text-slate-500 mt-2 px-1">
-              <span className="block">送信時にAI翻訳とトーン提案を適用</span>
-              <span className="block">AI dịch và gợi ý sắc thái sẽ áp dụng khi gửi.</span>
-            </p>
           </footer>
         </section>
       </div>
