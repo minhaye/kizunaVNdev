@@ -12,8 +12,23 @@ create table if not exists public.employees (
   avatar_url text,
   role varchar(20) not null check (role in ('employee', 'leader')),
   status varchar(20) not null default 'active' check (status in ('active', 'inactive')),
-  last_online timestamp
+  last_online timestamptz
 );
+
+do $$
+begin
+  if exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'employees'
+      and column_name = 'last_online'
+      and data_type = 'timestamp without time zone'
+  ) then
+    alter table public.employees
+      alter column last_online type timestamptz using last_online at time zone 'UTC';
+  end if;
+end $$;
 
 comment on table public.employees is 'Luu thong tin nhan vien';
 comment on column public.employees.nationality is 'Quoc tich nhan vien: vn, jp';

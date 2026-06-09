@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import crypto from "node:crypto";
 import { env } from "../env.js";
 import { insertUserNotifications } from "../lib/notifications.js";
+import { isRecentlyOnline, normalizePresenceTimestamp } from "../lib/presence.js";
 import { supabase } from "../supabase.js";
 
 type ChatRoomRow = {
@@ -63,6 +64,14 @@ const firstEmployee = (value: unknown) => {
   return value ?? null;
 };
 
+const normalizeEmployeePresence = <T extends { last_online: string | null } | null | undefined>(employee: T): T => {
+  if (!employee) return employee;
+  return {
+    ...employee,
+    last_online: normalizePresenceTimestamp(employee.last_online),
+  } as T;
+};
+
 const verifyToken = (token: string) => {
   const [encodedPayload, signature] = token.split(".");
   if (!encodedPayload || !signature) return null;
@@ -104,14 +113,20 @@ const getActorEmployeeId = (req: Request) => {
   return null;
 };
 
-const isRecentOnline = (lastOnline: string | null) => {
-  if (!lastOnline) return false;
-  const timestamp = new Date(lastOnline).getTime();
-  if (Number.isNaN(timestamp)) return false;
-  return Date.now() - timestamp <= 5 * 60 * 1000;
+const touchActorPresence = async (actorEmployeeId: string | null) => {
+  if (!actorEmployeeId) return;
+
+  const { error } = await supabase
+    .from("employees")
+    .update({ last_online: new Date().toISOString() })
+    .eq("id", actorEmployeeId);
+
+  if (error) {
+    console.warn("Failed to update chat presence", error.message);
+  }
 };
 
-const isMemberOnline = (member: ChatMemberRow) => isRecentOnline(member.employees?.last_online ?? null);
+const isMemberOnline = (member: ChatMemberRow) => isRecentlyOnline(member.employees?.last_online ?? null);
 
 const formatRoomName = (room: ChatRoomRow, members: ChatMemberRow[], actorEmployeeId: string) => {
   const explicitName = room.name?.trim();
@@ -157,7 +172,7 @@ const loadMembershipsForRooms = async (roomIds: string[]) => {
 
   return (data ?? []).map((member) => ({
     ...member,
-    employees: firstEmployee(member.employees) as ChatMemberRow["employees"],
+    employees: normalizeEmployeePresence(firstEmployee(member.employees) as ChatMemberRow["employees"]),
   })) as ChatMemberRow[];
 };
 
@@ -211,7 +226,7 @@ const loadMessagesForRooms = async (roomIds: string[]) => {
 
   return (data ?? []).map((message) => ({
     ...message,
-    employees: firstEmployee(message.employees) as MessageRow["employees"],
+    employees: normalizeEmployeePresence(firstEmployee(message.employees) as MessageRow["employees"]),
   })) as MessageRow[];
 };
 
@@ -252,11 +267,9 @@ const buildRoomSummary = (
   const hasUnreadActivity = actorEmployeeId !== null && isRoomUnread(actorMembership);
   const unreadMessages = hasUnreadActivity ? 1 : 0;
 
-  const online = room.room_type === "group"
-    ? members.some((member) => isMemberOnline(member))
-    : members.some(
-        (member) => member.employee_id !== actorEmployeeId && isMemberOnline(member),
-      );
+  const online = members.some(
+    (member) => member.employee_id !== actorEmployeeId && isMemberOnline(member),
+  );
 
   return {
     id: room.id,
@@ -278,6 +291,7 @@ export const listChatRoomsHandler = async (req: Request, res: Response) => {
     if (!actorEmployeeId) {
       return res.status(401).json({ ok: false, error: "employee_id or Bearer token is required" });
     }
+    await touchActorPresence(actorEmployeeId);
 
     const allMembershipsResult = await supabase
       .from("chat_members")
@@ -340,6 +354,7 @@ export const listChatRoomsHandler = async (req: Request, res: Response) => {
 export const getChatRoomDetailHandler = async (req: Request, res: Response) => {
   try {
     const actorEmployeeId = getActorEmployeeId(req);
+    await touchActorPresence(actorEmployeeId);
 
     const { id } = req.params;
     if (!id || typeof id !== "string") {
@@ -405,11 +420,11 @@ export const getChatRoomDetailHandler = async (req: Request, res: Response) => {
     const room = roomResult.data;
     const members = (membersResult.data ?? []).map((member) => ({
       ...member,
-      employees: firstEmployee(member.employees) as ChatMemberRow["employees"],
+      employees: normalizeEmployeePresence(firstEmployee(member.employees) as ChatMemberRow["employees"]),
     })) as ChatMemberRow[];
     const messages = (messagesResult.data ?? []).map((message) => ({
       ...message,
-      employees: firstEmployee(message.employees) as MessageRow["employees"],
+      employees: normalizeEmployeePresence(firstEmployee(message.employees) as MessageRow["employees"]),
     })) as MessageRow[];
     const visibleMessages = messages.filter((message) => message.deleted_at === null);
     const latestMessage = visibleMessages[0] ?? null;
@@ -417,7 +432,7 @@ export const getChatRoomDetailHandler = async (req: Request, res: Response) => {
     const actorMembership = getRoomActorMembership(members, actorEmployeeId);
     const hasUnreadActivity = actorEmployeeId !== null && isRoomUnread(actorMembership);
     const online = members.some(
-      (member) => member.employee_id !== actorEmployeeId && isRecentOnline(member.employees?.last_online ?? null),
+      (member) => member.employee_id !== actorEmployeeId && isMemberOnline(member),
     );
 
     if (actorMembership && hasUnreadActivity) {
@@ -463,6 +478,7 @@ export const createChatMessageHandler = async (req: Request, res: Response) => {
     if (!actorEmployeeId) {
       return res.status(401).json({ ok: false, error: "employee_id or Bearer token is required" });
     }
+    await touchActorPresence(actorEmployeeId);
 
     const { id } = req.params;
     const content = typeof req.body?.content === "string" ? req.body.content.trim() : "";
@@ -581,6 +597,7 @@ export const markChatRoomReadHandler = async (req: Request, res: Response) => {
     if (!actorEmployeeId) {
       return res.status(401).json({ ok: false, error: "employee_id or Bearer token is required" });
     }
+    await touchActorPresence(actorEmployeeId);
 
     const { id } = req.params;
     if (!id || typeof id !== "string") {
@@ -657,6 +674,7 @@ export const pinChatRoomHandler = async (req: Request, res: Response) => {
     if (!actorEmployeeId) {
       return res.status(401).json({ ok: false, error: "employee_id or Bearer token is required" });
     }
+    await touchActorPresence(actorEmployeeId);
 
     const { id } = req.params;
     if (!id || typeof id !== "string") {
@@ -694,6 +712,7 @@ export const unpinChatRoomHandler = async (req: Request, res: Response) => {
     if (!actorEmployeeId) {
       return res.status(401).json({ ok: false, error: "employee_id or Bearer token is required" });
     }
+    await touchActorPresence(actorEmployeeId);
 
     const { id } = req.params;
     if (!id || typeof id !== "string") {
@@ -726,6 +745,7 @@ export const getChatFeedbackHandler = async (req: Request, res: Response) => {
     if (!actorEmployeeId) {
       return res.status(401).json({ ok: false, error: "employee_id or Bearer token is required" });
     }
+    await touchActorPresence(actorEmployeeId);
 
     const { id } = req.params;
     if (!id || typeof id !== "string") {
@@ -777,6 +797,7 @@ export const saveChatFeedbackHandler = async (req: Request, res: Response) => {
     if (!actorEmployeeId) {
       return res.status(401).json({ ok: false, error: "employee_id or Bearer token is required" });
     }
+    await touchActorPresence(actorEmployeeId);
 
     const { id } = req.params;
     if (!id || typeof id !== "string") {
@@ -914,6 +935,7 @@ export const createChatRoomHandler = async (req: Request, res: Response) => {
     if (!actorEmployeeId) {
       return res.status(401).json({ ok: false, error: "employee_id or Bearer token is required" });
     }
+    await touchActorPresence(actorEmployeeId);
 
     const roomType = req.body?.room_type === "direct" ? "direct" : "group";
     const name = typeof req.body?.name === "string" ? req.body.name.trim() : "";

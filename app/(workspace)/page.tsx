@@ -16,6 +16,8 @@ import {
   type ChatRoomSummary,
 } from "./chat/chat-api";
 
+const CHAT_REFRESH_INTERVAL_MS = 5_000;
+
 type CurrentUser = {
   id: string;
   name?: string;
@@ -224,13 +226,13 @@ export default function DashboardPage() {
     void loadTasks();
   }, [currentUser?.id]);
 
-  const loadMessages = useCallback(async () => {
+  const loadMessages = useCallback(async (showLoading = true) => {
     const requestId = ++messagesRequestRef.current;
     try {
-      setLoadingMessages(true);
-      setMessageError("");
+      if (showLoading) setLoadingMessages(true);
       const rooms = await fetchChatRooms();
       if (requestId !== messagesRequestRef.current) return;
+      setMessageError("");
       const unreadRooms = rooms
         .filter((room) => room.unread > 0)
         .filter((room) => room.latest_at)
@@ -243,13 +245,14 @@ export default function DashboardPage() {
       setUnreadCount(unreadRooms.length);
     } catch (error) {
       if (requestId !== messagesRequestRef.current) return;
-      setMessageError(
-        error instanceof Error ? error.message : "メッセージを読み込めません / Không thể tải tin nhắn",
-      );
-      setUnreadCount(0);
+      if (showLoading) {
+        setMessageError(
+          error instanceof Error ? error.message : "メッセージを読み込めません / Không thể tải tin nhắn",
+        );
+        setUnreadCount(0);
+      }
     } finally {
-      if (requestId !== messagesRequestRef.current) return;
-      setLoadingMessages(false);
+      if (showLoading) setLoadingMessages(false);
     }
   }, []);
 
@@ -261,9 +264,13 @@ export default function DashboardPage() {
     };
 
     window.addEventListener(CHAT_UNREAD_CHANGED_EVENT, handleChatUnreadChanged);
+    const timer = window.setInterval(() => {
+      void loadMessages(false);
+    }, CHAT_REFRESH_INTERVAL_MS);
 
     return () => {
       window.removeEventListener(CHAT_UNREAD_CHANGED_EVENT, handleChatUnreadChanged);
+      window.clearInterval(timer);
     };
   }, [loadMessages, pathname]);
 

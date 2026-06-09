@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { normalizePresenceTimestamp } from "../lib/presence.js";
 import { supabase } from "../supabase.js";
 
 type FeedbackRow = {
@@ -33,7 +34,10 @@ export const employeesHandler = async (_req: Request, res: Response) => {
 
   return res.json({
     success: true,
-    employees: data ?? [],
+    employees: (data ?? []).map((employee) => ({
+      ...employee,
+      last_online: normalizePresenceTimestamp(employee.last_online),
+    })),
   });
 };
 

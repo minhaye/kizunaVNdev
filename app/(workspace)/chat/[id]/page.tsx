@@ -32,6 +32,9 @@ type TranslationEntry = {
   error?: string;
 };
 
+const CHAT_REFRESH_INTERVAL_MS = 5_000;
+const ONLINE_WINDOW_MS = 15_000;
+
 export default function ChatDetailPage() {
   const params = useParams<{ id: string }>();
   const roomId = Array.isArray(params?.id) ? params.id[0] : params?.id;
@@ -81,6 +84,28 @@ export default function ChatDetailPage() {
 
     return () => {
       active = false;
+    };
+  }, [roomId]);
+
+  useEffect(() => {
+    if (!roomId) return;
+
+    let active = true;
+    const timer = window.setInterval(() => {
+      void fetchChatRoomDetail(roomId)
+        .then((data) => {
+          if (!active) return;
+          setRoom(data);
+          notifyChatUnreadChanged();
+        })
+        .catch(() => {
+          // Keep the last successfully loaded room during transient network issues.
+        });
+    }, CHAT_REFRESH_INTERVAL_MS);
+
+    return () => {
+      active = false;
+      window.clearInterval(timer);
     };
   }, [roomId]);
 
@@ -230,7 +255,7 @@ export default function ChatDetailPage() {
     if (!value) return false;
     const timestamp = new Date(value).getTime();
     if (Number.isNaN(timestamp)) return false;
-    return Date.now() - timestamp <= 5 * 60 * 1000;
+    return Date.now() - timestamp <= ONLINE_WINDOW_MS;
   };
 
   return (

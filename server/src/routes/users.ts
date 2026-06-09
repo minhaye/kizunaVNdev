@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { loadAccountSettings } from "../lib/account-settings.js";
+import { isRecentlyOnline, normalizePresenceTimestamp } from "../lib/presence.js";
 import { getSessionFromRequest, type SessionPayload } from "../lib/session.js";
 import { supabase } from "../supabase.js";
 
@@ -14,17 +15,6 @@ type ManagedUser = {
   last_online: string | null;
   status: "active" | "inactive";
   is_online: boolean;
-};
-
-const recentOnlineWindowMs = 5 * 60 * 1000;
-
-const isRecentOnline = (lastOnline: string | null) => {
-  if (!lastOnline) return false;
-
-  const timestamp = new Date(lastOnline).getTime();
-  if (Number.isNaN(timestamp)) return false;
-
-  return Date.now() - timestamp <= recentOnlineWindowMs;
 };
 
 const requirePrivilegedSession = (req: Request, res: Response) => {
@@ -51,35 +41,43 @@ const mapEmployeeRow = (employee: {
   nationality: "vn" | "jp";
   status?: "active" | "inactive" | null;
   last_online: string | null;
-}): ManagedUser => ({
-  id: employee.id,
-  name: employee.name,
-  email: employee.email,
-  team: employee.nationality === "jp" ? "JP Staff" : "VN Staff",
-  role: employee.role,
-  source: "employees",
-  avatar_url: employee.avatar_url,
-  last_online: employee.last_online,
-  status: employee.status === "inactive" ? "inactive" : "active",
-  is_online: isRecentOnline(employee.last_online),
-});
+}): ManagedUser => {
+  const lastOnline = normalizePresenceTimestamp(employee.last_online);
+
+  return {
+    id: employee.id,
+    name: employee.name,
+    email: employee.email,
+    team: employee.nationality === "jp" ? "JP Staff" : "VN Staff",
+    role: employee.role,
+    source: "employees",
+    avatar_url: employee.avatar_url,
+    last_online: lastOnline,
+    status: employee.status === "inactive" ? "inactive" : "active",
+    is_online: isRecentlyOnline(lastOnline),
+  };
+};
 
 const mapAdminRow = (admin: {
   id: string;
   email: string;
   last_online: string | null;
-}): ManagedUser => ({
-  id: admin.id,
-  name: admin.email.split("@")[0] || "Admin",
-  email: admin.email,
-  team: "Core",
-  role: "admin",
-  source: "admins",
-  avatar_url: null,
-  last_online: admin.last_online,
-  status: "active",
-  is_online: isRecentOnline(admin.last_online),
-});
+}): ManagedUser => {
+  const lastOnline = normalizePresenceTimestamp(admin.last_online);
+
+  return {
+    id: admin.id,
+    name: admin.email.split("@")[0] || "Admin",
+    email: admin.email,
+    team: "Core",
+    role: "admin",
+    source: "admins",
+    avatar_url: null,
+    last_online: lastOnline,
+    status: "active",
+    is_online: isRecentlyOnline(lastOnline),
+  };
+};
 
 export const usersHandler = async (req: Request, res: Response) => {
   try {
