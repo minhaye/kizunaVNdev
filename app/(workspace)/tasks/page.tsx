@@ -396,10 +396,6 @@ export default function TaskBoardPage() {
               <span className="block">タスクボード</span>
               <span className="block">Bảng công việc</span>
             </h2>
-            <p className="text-xs text-slate-400 mt-1">
-              <span className="block">こんにちは、{currentUserName}。</span>
-              <span className="block">Xin chào, {currentUserName}.</span>
-            </p>
           </div>
           <button
             type="button"
@@ -443,7 +439,6 @@ export default function TaskBoardPage() {
                 onChange={(event) => setQuery(event.target.value)}
               />
             </div>
-            <span className="text-[11px] text-slate-400">Tìm theo task, topic, người giao, người nhận...</span>
           </div>
           <select
             value={statusFilter}

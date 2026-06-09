@@ -207,9 +207,11 @@ export default function ChatListPage() {
                 <span className="block">Tạo chat</span>
               </span>
             </button>
-            <div className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-700">
-              <span className="block">{allUnread} 未読チャット</span>
-              <span className="block">{allUnread} đoạn chat chưa đọc</span>
+            <div className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-700 text-center">
+              <span className="leading-tight">
+                <span className="block">{allUnread} 未読チャット</span>
+                <span className="block">{allUnread} đoạn chat chưa đọc</span>
+              </span>
             </div>
           </div>
         </div>
