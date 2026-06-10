@@ -339,7 +339,9 @@ export default function TaskDetailPage() {
                   <p className="text-sm font-semibold text-slate-700">{deadlineParts.dateText}</p>
                   <p className="text-xs text-slate-500 mt-1">
                     <span className="block">時刻</span>
-                    <span className="block">Giờ: {deadlineParts.timeText}</span>
+                  </p>
+                  <p className="text-lg font-bold text-slate-800 mt-0.5">
+                    Giờ: {deadlineParts.timeText}
                   </p>
                 </div>
               </div>
