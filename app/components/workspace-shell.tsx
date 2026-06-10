@@ -98,17 +98,21 @@ const adminMenuItems: MenuItem[] = [
   },
 ];
 
+const PRESENCE_HEARTBEAT_INTERVAL_MS = 5_000;
+const ONLINE_WINDOW_MS = 15_000;
+
 export default function WorkspaceShell({ children }: { children: ReactNode }) {
   const API_BASE_URL =
     process.env.NEXT_PUBLIC_API_BASE_URL ??
     process.env.NEXT_PUBLIC_API_BASE ??
-    "http://localhost:4000";
+    "https://kizunavn-server.onrender.com";
   const pathname = usePathname();
   const router = useRouter();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [displayName, setDisplayName] = useState("Tanaka K.");
   const [displayRole, setDisplayRole] = useState("日本人スタッフ");
   const [lastOnline, setLastOnline] = useState<string | null>(null);
+  const [presenceNow, setPresenceNow] = useState(() => Date.now());
   // Keep the first render deterministic for SSR/CSR; role is hydrated in effects.
   const [currentRole, setCurrentRole] = useState<"employee" | "admin" | null>(null);
   const [avatarSeed, setAvatarSeed] = useState("Tanaka");
@@ -198,7 +202,9 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
   useEffect(() => {
     isMountedRef.current = true;
     let active = true;
-    setHasHydrated(true);
+    queueMicrotask(() => {
+      if (active) setHasHydrated(true);
+    });
     const rawUser = localStorage.getItem("user");
     const token = localStorage.getItem("authToken");
 
@@ -212,7 +218,9 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
           avatar_url?: string | null;
           last_online?: string | null;
         };
-        applyUser(user);
+        queueMicrotask(() => {
+          if (active) applyUser(user);
+        });
       } catch {
         // Ignore invalid localStorage data.
       }
@@ -261,10 +269,13 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
 
     void fetchSettings();
 
-    void refreshNotifications();
+    queueMicrotask(() => {
+      if (active) void refreshNotifications();
+    });
 
     const heartbeat = async () => {
       if (!token) return;
+      if (active) setPresenceNow(Date.now());
 
       try {
         const response = await fetch(`${API_BASE_URL}/api/presence/heartbeat`, {
@@ -274,17 +285,23 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
         const data = await response.json() as { last_online?: string };
         if (!response.ok || !data.last_online || !active) return;
         setLastOnline(data.last_online);
+        setPresenceNow(Date.now());
       } catch {
+        if (active) setPresenceNow(Date.now());
         // Keep the last known value.
       }
     };
 
-    void heartbeat();
+    queueMicrotask(() => {
+      if (active) void heartbeat();
+    });
     const heartbeatTimer = setInterval(() => {
       void heartbeat();
-    }, 60_000);
+    }, PRESENCE_HEARTBEAT_INTERVAL_MS);
 
-    void loadChatUnread();
+    queueMicrotask(() => {
+      if (active) void loadChatUnread();
+    });
     const handleChatUnreadChanged = () => {
       void loadChatUnread();
     };
@@ -292,7 +309,7 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
     const interval = window.setInterval(() => {
       if (!active) return;
       void loadChatUnread();
-    }, 15000);
+    }, PRESENCE_HEARTBEAT_INTERVAL_MS);
 
     return () => {
       active = false;
@@ -343,8 +360,10 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
         count: notifCount,
         notifications,
       };
-      setNotifications([]);
-      setNotifCount(0);
+      queueMicrotask(() => {
+        setNotifications([]);
+        setNotifCount(0);
+      });
       return;
     }
 
@@ -410,7 +429,8 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
       ? "設定 / Cài đặt admin"
       : "設定 / Cài đặt user"
     : "設定 / Cài đặt";
-  const presenceIsOnline = Boolean(lastOnline);
+  const lastOnlineTime = lastOnline ? new Date(lastOnline).getTime() : Number.NaN;
+  const presenceIsOnline = Number.isFinite(lastOnlineTime) && presenceNow - lastOnlineTime <= ONLINE_WINDOW_MS;
   const presenceDotClass = presenceIsOnline ? "bg-emerald-500" : "bg-amber-400";
   const presenceText = presenceIsOnline ? "Online" : "Offline";
 

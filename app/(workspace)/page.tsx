@@ -16,6 +16,8 @@ import {
   type ChatRoomSummary,
 } from "./chat/chat-api";
 
+const CHAT_REFRESH_INTERVAL_MS = 5_000;
+
 type CurrentUser = {
   id: string;
   name?: string;
@@ -72,7 +74,7 @@ type Post = {
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ??
   process.env.NEXT_PUBLIC_API_BASE ??
-  "http://localhost:4000";
+  "https://kizunavn-server.onrender.com";
 
 const statusLabel: Record<TaskStatus, string> = {
   todo: "未着手 / Chưa làm",
@@ -224,13 +226,13 @@ export default function DashboardPage() {
     void loadTasks();
   }, [currentUser?.id]);
 
-  const loadMessages = useCallback(async () => {
+  const loadMessages = useCallback(async (showLoading = true) => {
     const requestId = ++messagesRequestRef.current;
     try {
-      setLoadingMessages(true);
-      setMessageError("");
+      if (showLoading) setLoadingMessages(true);
       const rooms = await fetchChatRooms();
       if (requestId !== messagesRequestRef.current) return;
+      setMessageError("");
       const unreadRooms = rooms
         .filter((room) => room.unread > 0)
         .filter((room) => room.latest_at)
@@ -243,13 +245,14 @@ export default function DashboardPage() {
       setUnreadCount(unreadRooms.length);
     } catch (error) {
       if (requestId !== messagesRequestRef.current) return;
-      setMessageError(
-        error instanceof Error ? error.message : "メッセージを読み込めません / Không thể tải tin nhắn",
-      );
-      setUnreadCount(0);
+      if (showLoading) {
+        setMessageError(
+          error instanceof Error ? error.message : "メッセージを読み込めません / Không thể tải tin nhắn",
+        );
+        setUnreadCount(0);
+      }
     } finally {
-      if (requestId !== messagesRequestRef.current) return;
-      setLoadingMessages(false);
+      if (showLoading) setLoadingMessages(false);
     }
   }, []);
 
@@ -261,9 +264,13 @@ export default function DashboardPage() {
     };
 
     window.addEventListener(CHAT_UNREAD_CHANGED_EVENT, handleChatUnreadChanged);
+    const timer = window.setInterval(() => {
+      void loadMessages(false);
+    }, CHAT_REFRESH_INTERVAL_MS);
 
     return () => {
       window.removeEventListener(CHAT_UNREAD_CHANGED_EVENT, handleChatUnreadChanged);
+      window.clearInterval(timer);
     };
   }, [loadMessages, pathname]);
 
@@ -299,16 +306,13 @@ export default function DashboardPage() {
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-            <div className="flex justify-between items-center mb-4">
-              <div>
-                <h2 className="text-base font-bold flex items-center text-slate-800">
-                  <CheckSquare className="w-5 h-5 mr-2 text-blue-600" />{" "}
-                  マイタスク
-                </h2>
-                <p className="text-xs text-slate-500 mt-0.5">
+            <div className="flex justify-between items-start mb-4">
+              <div className="flex items-start">
+                <CheckSquare className="w-5 h-5 mr-2 text-blue-600 mt-0.5" />
+                <h2 className="text-base font-bold text-slate-800 leading-tight">
                   <span className="block">マイタスク</span>
                   <span className="block">Task của tôi</span>
-                </p>
+                </h2>
               </div>
               <Link
                 href="/tasks"
@@ -370,16 +374,13 @@ export default function DashboardPage() {
           </div>
 
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-            <div className="flex justify-between items-center mb-4">
-              <div>
-                <h2 className="text-base font-bold flex items-center text-slate-800">
-                  <MessageSquare className="w-5 h-5 mr-2 text-blue-600" />{" "}
-                  最新メッセージ
-                </h2>
-                <p className="text-xs text-slate-500 mt-0.5">
+            <div className="flex justify-between items-start mb-4">
+              <div className="flex items-start">
+                <MessageSquare className="w-5 h-5 mr-2 text-blue-600 mt-0.5" />
+                <h2 className="text-base font-bold text-slate-800 leading-tight">
                   <span className="block">最新メッセージ</span>
                   <span className="block">Tin nhắn mới nhất</span>
-                </p>
+                </h2>
               </div>
               <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
                 <span className="block">{unreadCount} 未読</span>
@@ -446,15 +447,12 @@ export default function DashboardPage() {
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-          <div className="mb-4">
-            <h2 className="text-base font-bold flex items-center text-slate-800">
-              <AlertCircle className="w-5 h-5 mr-2 text-blue-600" />{" "}
-              最新のお知らせ
-            </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              <span className="block">最新通知</span>
+          <div className="flex items-start mb-4">
+            <AlertCircle className="w-5 h-5 mr-2 text-blue-600 mt-0.5" />
+            <h2 className="text-base font-bold text-slate-800 leading-tight">
+              <span className="block">最新のお知らせ</span>
               <span className="block">Thông báo / Bảng tin mới</span>
-            </p>
+            </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -21,6 +21,8 @@ import {
 
 type ChatFilter = "all" | "unread" | "pinned" | "online";
 
+const CHAT_REFRESH_INTERVAL_MS = 5_000;
+
 export default function ChatListPage() {
   const [rooms, setRooms] = useState<ChatRoomSummary[]>([]);
   const [query, setQuery] = useState("");
@@ -39,21 +41,28 @@ export default function ChatListPage() {
   const pathname = usePathname();
   const actorEmployeeId = useMemo(() => getStoredEmployeeId(), []);
 
-  const loadRooms = useCallback(async () => {
+  const loadRooms = useCallback(async (showLoading = true) => {
     try {
-      setLoading(true);
-      setError("");
+      if (showLoading) setLoading(true);
       const data = await fetchChatRooms();
+      setError("");
       setRooms(data);
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "チャット一覧を読み込めません / Không thể tải danh sách chat");
+      if (showLoading) {
+        setError(loadError instanceof Error ? loadError.message : "チャット一覧を読み込めません / Không thể tải danh sách chat");
+      }
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   }, []);
 
   useEffect(() => {
     void loadRooms();
+    const timer = window.setInterval(() => {
+      void loadRooms(false);
+    }, CHAT_REFRESH_INTERVAL_MS);
+
+    return () => window.clearInterval(timer);
   }, [loadRooms, pathname]);
 
   const loadEmployees = useCallback(async () => {
@@ -198,9 +207,11 @@ export default function ChatListPage() {
                 <span className="block">Tạo chat</span>
               </span>
             </button>
-            <div className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-700">
-              <span className="block">{allUnread} 未読チャット</span>
-              <span className="block">{allUnread} đoạn chat chưa đọc</span>
+            <div className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-700 text-center">
+              <span className="leading-tight">
+                <span className="block">{allUnread} 未読チャット</span>
+                <span className="block">{allUnread} đoạn chat chưa đọc</span>
+              </span>
             </div>
           </div>
         </div>

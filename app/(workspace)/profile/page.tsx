@@ -45,7 +45,7 @@ export default function ProfilePage() {
     const API_BASE_URL =
       process.env.NEXT_PUBLIC_API_BASE_URL ??
       process.env.NEXT_PUBLIC_API_BASE ??
-      "http://localhost:4000";
+      "https://kizunavn-server.onrender.com";
 
     const refreshUser = async () => {
       if (!token) return;
@@ -79,7 +79,7 @@ export default function ProfilePage() {
     const API_BASE_URL =
       process.env.NEXT_PUBLIC_API_BASE_URL ??
       process.env.NEXT_PUBLIC_API_BASE ??
-      "http://localhost:4000";
+      "https://kizunavn-server.onrender.com";
 
     const loadFeedbacks = async () => {
       try {
@@ -135,11 +135,12 @@ export default function ProfilePage() {
         </section>
 
         <section className="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
-          <h3 className="font-bold text-slate-900">プロフィール・評価画面</h3>
-          <p className="text-sm text-slate-500 mb-3">
-            <span className="block">プロフィールと評価画面</span>
-            <span className="block">Màn hình hồ sơ & đánh giá</span>
-          </p>
+          <div className="mb-3">
+            <h3 className="font-bold text-slate-900 leading-tight">
+              <span className="block">プロフィール・評価画面</span>
+              <span className="block">Màn hình hồ sơ & đánh giá</span>
+            </h3>
+          </div>
           {feedbackLoading ? (
             <p className="text-sm text-slate-500">
               <span className="block">評価を読み込み中...</span>

@@ -16,7 +16,7 @@ const nextConfig: NextConfig = {
               "default-src 'self'; " +
               "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
               "style-src 'self' 'unsafe-inline'; " +
-              "connect-src 'self' http://localhost:4000 http://localhost:3000 ws://localhost:3000 ws://localhost:3001 https://kizunavn-server.onrender.com",
+              "connect-src 'self' http://localhost:3000 ws://localhost:3000 ws://localhost:3001 https://kizunavn-server.onrender.com",
           },
         ],
       },

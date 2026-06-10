@@ -4,6 +4,7 @@ import { env } from "../env.js";
 import { sendOtpEmail } from "../mailer.js";
 import { supabase } from "../supabase.js";
 import { loadAccountSettings, touchAccountHeartbeat } from "../lib/account-settings.js";
+import { normalizePresenceTimestamp } from "../lib/presence.js";
 
 type AuthRole = "employee" | "leader" | "admin";
 
@@ -56,7 +57,7 @@ const toPublicEmployee = (employee: EmployeeRow) => ({
   email: employee.email,
   avatar_url: employee.avatar_url,
   role: employee.role,
-  last_online: employee.last_online,
+  last_online: normalizePresenceTimestamp(employee.last_online),
 });
 
 const toPublicAdmin = (admin: AdminRow) => ({
@@ -119,9 +120,8 @@ const generateOtp = () => String(Math.floor(100000 + Math.random() * 900000));
 const hashOtp = (otp: string) => crypto.createHash("sha256").update(otp).digest("hex");
 
 const parseDbTime = (value: string | null) => {
-  if (!value) return null;
-  const hasTimezone = /z$|[+-]\d{2}:\d{2}$/i.test(value);
-  return new Date(hasTimezone ? value : `${value}Z`);
+  const normalized = normalizePresenceTimestamp(value);
+  return normalized ? new Date(normalized) : null;
 };
 
 // simplified: direct fetch helpers are used by other auth handlers
@@ -553,7 +553,7 @@ export const getMeHandler = async (req: Request, res: Response) => {
 
     return res.json({
       success: true,
-      user: employee,
+      user: toPublicEmployee(employee),
     });
   } catch (error) {
     return res.status(500).json({

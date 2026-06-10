@@ -14,7 +14,7 @@ type WikiArticle = {
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ??
   process.env.NEXT_PUBLIC_API_BASE ??
-  "http://localhost:4000";
+  "https://kizunavn-server.onrender.com";
 
 export default function WikiListPage() {
   const [articles, setArticles] = useState<WikiArticle[]>([]);
@@ -165,10 +165,6 @@ export default function WikiListPage() {
             <span className="block">文化Wiki記事一覧画面</span>
             <span className="block">Màn hình danh sách bài viết Wiki</span>
           </h2>
-          <p className="text-sm text-slate-500">
-            <span className="block">Wiki記事一覧画面</span>
-            <span className="block">Màn hình danh sách bài viết Wiki</span>
-          </p>
         </div>
 
         <div className="flex space-x-1 rounded-xl bg-slate-200/50 p-1 mb-4 w-fit">
@@ -206,7 +202,6 @@ export default function WikiListPage() {
               onChange={(event) => { setQuery(event.target.value); setPage(1); }}
             />
           </div>
-          <span className="text-[11px] text-slate-400">記事、タグで検索... / Tìm theo bài viết, tag...</span>
           <select
             value={tagFilter}
             onChange={(event) => { setTagFilter(event.target.value); setPage(1); }}

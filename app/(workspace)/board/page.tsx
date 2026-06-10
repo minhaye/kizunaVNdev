@@ -37,7 +37,9 @@ const reactionMeta: Record<
 };
 
 const apiBase =
-  (process.env.NEXT_PUBLIC_API_BASE as string) || "http://localhost:4000";
+  process.env.NEXT_PUBLIC_API_BASE_URL ??
+  process.env.NEXT_PUBLIC_API_BASE ??
+  "https://kizunavn-server.onrender.com";
 
 const getAuthToken = () => {
   if (typeof window === "undefined") return null;
@@ -306,10 +308,6 @@ function BoardContent() {
               <span className="block">掲示板（コミュニティ）画面</span>
               <span className="block">Màn hình Bảng tin Cộng đồng</span>
             </h2>
-            <p className="text-sm text-slate-500">
-              <span className="block">コミュニティ掲示板画面</span>
-              <span className="block">Màn hình Bảng tin Cộng đồng</span>
-            </p>
           </div>
 
           <div className="flex space-x-1 rounded-xl bg-slate-200/50 p-1 mb-4 w-fit">
@@ -347,7 +345,6 @@ function BoardContent() {
                 onChange={(event) => { setQuery(event.target.value); setPage(1); }}
               />
             </div>
-            <span className="text-[11px] text-slate-400">タイトル、作者で検索... / Tìm theo tiêu đề, tác giả...</span>
             <select
               value={authorFilter}
               onChange={(event) => { setAuthorFilter(event.target.value); setPage(1); }}
