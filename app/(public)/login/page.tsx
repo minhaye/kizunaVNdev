@@ -21,13 +21,40 @@ export default function LoginPage() {
   const [sessionChecked, setSessionChecked] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    if (token) {
-      router.replace("/");
-      return;
-    }
+    let active = true;
 
-    setSessionChecked(true);
+    const validateSession = async () => {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        setSessionChecked(true);
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await response.json();
+
+        if (response.ok && data?.user) {
+          const targetPath = data.user.role === "admin" ? "/admin" : "/";
+          router.replace(targetPath);
+          return;
+        }
+      } catch {
+        // Invalid or unreachable sessions are cleared so the login form is shown.
+      }
+
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("user");
+      if (active) setSessionChecked(true);
+    };
+
+    void validateSession();
+
+    return () => {
+      active = false;
+    };
   }, [router]);
 
   const handleLogin = async (e: React.FormEvent) => {
