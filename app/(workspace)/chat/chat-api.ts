@@ -66,7 +66,7 @@ export type ChatRoomDetail = {
 const getApiBaseUrl = () =>
   process.env.NEXT_PUBLIC_API_BASE_URL ??
   process.env.NEXT_PUBLIC_API_BASE ??
-  "http://localhost:4000";
+  "https://kizunavn-server.onrender.com";
 
 export const CHAT_UNREAD_CHANGED_EVENT = "kizunavn:chat-unread-changed";
 

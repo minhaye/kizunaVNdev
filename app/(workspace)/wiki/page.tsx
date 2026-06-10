@@ -14,7 +14,7 @@ type WikiArticle = {
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ??
   process.env.NEXT_PUBLIC_API_BASE ??
-  "http://localhost:4000";
+  "https://kizunavn-server.onrender.com";
 
 export default function WikiListPage() {
   const [articles, setArticles] = useState<WikiArticle[]>([]);
