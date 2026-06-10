@@ -124,6 +124,7 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
   const [notifications, setNotifications] = useState<{ id: string; created_at: string; topic: string; title: string; content: string; is_read?: boolean }[]>([]);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [hasHydrated, setHasHydrated] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
   const isMountedRef = useRef(false);
   const settingsHydratedRef = useRef(false);
   const notificationCacheRef = useRef({
@@ -133,7 +134,7 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
   const [chatUnreadCount, setChatUnreadCount] = useState(0);
   const notifRef = useRef<HTMLDivElement>(null);
 
-  const refreshNotifications = async () => {
+  const refreshNotifications = useCallback(async () => {
     const token = localStorage.getItem("authToken");
     if (!token) return;
 
@@ -161,7 +162,7 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
     } catch {
       // Keep default 0 on error.
     }
-  };
+  }, [API_BASE_URL, messageTaskNotifications]);
 
   const applyUser = (user: {
     name?: string;
@@ -202,11 +203,24 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
   useEffect(() => {
     isMountedRef.current = true;
     let active = true;
+    const token = localStorage.getItem("authToken");
+
+    if (!token) {
+      localStorage.removeItem("user");
+      router.replace("/login");
+      return () => {
+        active = false;
+        isMountedRef.current = false;
+      };
+    }
+
+    queueMicrotask(() => {
+      if (active) setAuthChecked(true);
+    });
     queueMicrotask(() => {
       if (active) setHasHydrated(true);
     });
     const rawUser = localStorage.getItem("user");
-    const token = localStorage.getItem("authToken");
 
     if (rawUser) {
       try {
@@ -234,12 +248,20 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await response.json();
-        if (!response.ok || !data?.user) return;
+        if (!response.ok || !data?.user) {
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("user");
+          router.replace("/login");
+          return;
+        }
         if (!active) return;
         applyUser(data.user);
         localStorage.setItem("user", JSON.stringify(data.user));
       } catch {
-        // Ignore refresh errors.
+        if (!active) return;
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("user");
+        router.replace("/login");
       }
     };
 
@@ -318,7 +340,7 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
       window.removeEventListener(CHAT_UNREAD_CHANGED_EVENT, handleChatUnreadChanged);
       window.clearInterval(interval);
     };
-  }, [API_BASE_URL, loadChatUnread, pathname]);
+  }, [API_BASE_URL, loadChatUnread, pathname, refreshNotifications, router]);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", themeMode);
@@ -352,6 +374,7 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("account-settings-updated", handleSettingsUpdated as EventListener);
   }, []);
 
+  /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
     if (!settingsHydratedRef.current) return;
 
@@ -370,6 +393,7 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
     setNotifications(notificationCacheRef.current.notifications);
     setNotifCount(notificationCacheRef.current.count);
   }, [messageTaskNotifications]);
+  /* eslint-enable react-hooks/exhaustive-deps */
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -433,6 +457,14 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
   const presenceIsOnline = Number.isFinite(lastOnlineTime) && presenceNow - lastOnlineTime <= ONLINE_WINDOW_MS;
   const presenceDotClass = presenceIsOnline ? "bg-emerald-500" : "bg-amber-400";
   const presenceText = presenceIsOnline ? "Online" : "Offline";
+
+  if (!authChecked) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-slate-50 text-slate-500">
+        <div className="text-sm">Dang kiem tra phien dang nhap...</div>
+      </main>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-slate-50 font-sans text-slate-800">
