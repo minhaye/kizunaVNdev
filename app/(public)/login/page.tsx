@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 const API_BASE_URL =
@@ -18,6 +18,44 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [sessionChecked, setSessionChecked] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    const validateSession = async () => {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        setSessionChecked(true);
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await response.json();
+
+        if (response.ok && data?.user) {
+          const targetPath = data.user.role === "admin" ? "/admin" : "/";
+          router.replace(targetPath);
+          return;
+        }
+      } catch {
+        // Invalid or unreachable sessions are cleared so the login form is shown.
+      }
+
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("user");
+      if (active) setSessionChecked(true);
+    };
+
+    void validateSession();
+
+    return () => {
+      active = false;
+    };
+  }, [router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,6 +100,11 @@ export default function LoginPage() {
   };
 
   return (
+    !sessionChecked ? (
+      <main className="grid min-h-screen place-items-center bg-slate-50 text-slate-500">
+        <div className="text-sm">Dang tai trang...</div>
+      </main>
+    ) : (
     <main className="min-h-screen grid place-items-center bg-gradient-to-br from-slate-100 to-blue-50 px-4">
       <div className="w-full max-w-md bg-white rounded-2xl border-4 border-red-800 shadow-lg p-8">
         {/* Header */}
@@ -160,5 +203,6 @@ export default function LoginPage() {
         </p>
       </div>
     </main>
+    )
   );
 }

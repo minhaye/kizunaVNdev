@@ -109,13 +109,13 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [displayName, setDisplayName] = useState("Tanaka K.");
-  const [displayRole, setDisplayRole] = useState("日本人スタッフ");
+  const [displayName, setDisplayName] = useState("");
+  const [displayRole, setDisplayRole] = useState("");
   const [lastOnline, setLastOnline] = useState<string | null>(null);
   const [presenceNow, setPresenceNow] = useState(() => Date.now());
   // Keep the first render deterministic for SSR/CSR; role is hydrated in effects.
   const [currentRole, setCurrentRole] = useState<"employee" | "admin" | null>(null);
-  const [avatarSeed, setAvatarSeed] = useState("Tanaka");
+  const [avatarSeed, setAvatarSeed] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [themeMode, setThemeMode] = useState<ThemeMode>("light");
   const [messageTaskNotifications, setMessageTaskNotifications] = useState(true);
@@ -124,6 +124,7 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
   const [notifications, setNotifications] = useState<{ id: string; created_at: string; topic: string; title: string; content: string; is_read?: boolean }[]>([]);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [hasHydrated, setHasHydrated] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
   const isMountedRef = useRef(false);
   const settingsHydratedRef = useRef(false);
   const notificationCacheRef = useRef({
@@ -133,7 +134,15 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
   const [chatUnreadCount, setChatUnreadCount] = useState(0);
   const notifRef = useRef<HTMLDivElement>(null);
 
-  const refreshNotifications = async () => {
+  const clearSessionAndRedirect = useCallback(() => {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("user");
+    setAuthChecked(false);
+    setHasHydrated(false);
+    router.replace("/login");
+  }, [router]);
+
+  const refreshNotifications = useCallback(async () => {
     const token = localStorage.getItem("authToken");
     if (!token) return;
 
@@ -161,7 +170,7 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
     } catch {
       // Keep default 0 on error.
     }
-  };
+  }, [API_BASE_URL, messageTaskNotifications]);
 
   const applyUser = (user: {
     name?: string;
@@ -202,11 +211,17 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
   useEffect(() => {
     isMountedRef.current = true;
     let active = true;
-    queueMicrotask(() => {
-      if (active) setHasHydrated(true);
-    });
-    const rawUser = localStorage.getItem("user");
     const token = localStorage.getItem("authToken");
+
+    if (!token) {
+      clearSessionAndRedirect();
+      return () => {
+        active = false;
+        isMountedRef.current = false;
+      };
+    }
+
+    const rawUser = localStorage.getItem("user");
 
     if (rawUser) {
       try {
@@ -234,12 +249,18 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await response.json();
-        if (!response.ok || !data?.user) return;
+        if (!response.ok || !data?.user) {
+          clearSessionAndRedirect();
+          return;
+        }
         if (!active) return;
         applyUser(data.user);
         localStorage.setItem("user", JSON.stringify(data.user));
+        setAuthChecked(true);
+        setHasHydrated(true);
       } catch {
-        // Ignore refresh errors.
+        if (!active) return;
+        clearSessionAndRedirect();
       }
     };
 
@@ -318,7 +339,7 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
       window.removeEventListener(CHAT_UNREAD_CHANGED_EVENT, handleChatUnreadChanged);
       window.clearInterval(interval);
     };
-  }, [API_BASE_URL, loadChatUnread, pathname]);
+  }, [API_BASE_URL, clearSessionAndRedirect, loadChatUnread, pathname, refreshNotifications]);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", themeMode);
@@ -352,6 +373,7 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("account-settings-updated", handleSettingsUpdated as EventListener);
   }, []);
 
+  /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
     if (!settingsHydratedRef.current) return;
 
@@ -370,6 +392,7 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
     setNotifications(notificationCacheRef.current.notifications);
     setNotifCount(notificationCacheRef.current.count);
   }, [messageTaskNotifications]);
+  /* eslint-enable react-hooks/exhaustive-deps */
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -421,6 +444,23 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
     }
   };
 
+  const handleLogout = async () => {
+    const token = localStorage.getItem("authToken");
+
+    if (token) {
+      try {
+        await fetch(`${API_BASE_URL}/api/auth/logout`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } catch {
+        // Local logout still succeeds if the API call fails.
+      }
+    }
+
+    clearSessionAndRedirect();
+  };
+
   const greetingName = displayName.endsWith("さん") ? displayName : `${displayName}さん`;
   const friendlyName = displayName.includes(" ") ? displayName : displayName;
   const settingsHref = "/admin";
@@ -433,6 +473,14 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
   const presenceIsOnline = Number.isFinite(lastOnlineTime) && presenceNow - lastOnlineTime <= ONLINE_WINDOW_MS;
   const presenceDotClass = presenceIsOnline ? "bg-emerald-500" : "bg-amber-400";
   const presenceText = presenceIsOnline ? "Online" : "Offline";
+
+  if (!authChecked) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-slate-50 text-slate-500">
+        <div className="text-sm">Dang kiem tra phien dang nhap...</div>
+      </main>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-slate-50 font-sans text-slate-800">
@@ -617,16 +665,17 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
                     </span>
                   </Link>
                   <hr className="my-1 border-slate-100" />
-                  <Link
-                    href="/login"
-                    className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                  <button
+                    type="button"
+                    onClick={() => void handleLogout()}
+                    className="flex w-full items-center px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
                   >
                     <LogOut className="w-4 h-4 mr-2" />
                     <span className="leading-tight">
                       <span className="block">ログアウト</span>
                       <span className="block">Đăng xuất</span>
                     </span>
-                  </Link>
+                  </button>
                 </div>
               )}
             </div>
