@@ -5,7 +5,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { ForgotPasswordShell } from "../_components/forgot-password-shell";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ??
+  process.env.NEXT_PUBLIC_API_BASE ??
+  "https://kizunavn-server.onrender.com";
 
 function ForgotPasswordOtpContent() {
   const router = useRouter();

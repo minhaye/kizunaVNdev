@@ -74,7 +74,7 @@ type Post = {
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ??
   process.env.NEXT_PUBLIC_API_BASE ??
-  "http://localhost:4000";
+  "https://kizunavn-server.onrender.com";
 
 const statusLabel: Record<TaskStatus, string> = {
   todo: "未着手 / Chưa làm",

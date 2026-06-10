@@ -37,7 +37,9 @@ const reactionMeta: Record<
 };
 
 const apiBase =
-  (process.env.NEXT_PUBLIC_API_BASE as string) || "http://localhost:4000";
+  process.env.NEXT_PUBLIC_API_BASE_URL ??
+  process.env.NEXT_PUBLIC_API_BASE ??
+  "https://kizunavn-server.onrender.com";
 
 const getAuthToken = () => {
   if (typeof window === "undefined") return null;

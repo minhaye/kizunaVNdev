@@ -59,7 +59,10 @@ type TaskColumn = {
   description: string;
 };
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ??
+  process.env.NEXT_PUBLIC_API_BASE ??
+  "https://kizunavn-server.onrender.com";
 
 const formatDeadline = (value: string | null) => {
   if (!value) return "-";

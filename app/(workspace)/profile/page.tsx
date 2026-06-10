@@ -45,7 +45,7 @@ export default function ProfilePage() {
     const API_BASE_URL =
       process.env.NEXT_PUBLIC_API_BASE_URL ??
       process.env.NEXT_PUBLIC_API_BASE ??
-      "http://localhost:4000";
+      "https://kizunavn-server.onrender.com";
 
     const refreshUser = async () => {
       if (!token) return;
@@ -79,7 +79,7 @@ export default function ProfilePage() {
     const API_BASE_URL =
       process.env.NEXT_PUBLIC_API_BASE_URL ??
       process.env.NEXT_PUBLIC_API_BASE ??
-      "http://localhost:4000";
+      "https://kizunavn-server.onrender.com";
 
     const loadFeedbacks = async () => {
       try {
