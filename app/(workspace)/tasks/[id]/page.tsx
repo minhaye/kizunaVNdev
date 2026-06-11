@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { CheckCircle2, ChevronLeft, CircleCheckBig, Loader2 } from "lucide-react";
+import { ChevronLeft, CircleCheckBig, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 type TaskStatus = "todo" | "doing" | "done";
@@ -192,35 +192,6 @@ export default function TaskDetailPage() {
     }
   };
 
-  const completeTask = async () => {
-    if (!task) return;
-    const token = getAuthToken();
-    if (!token) return;
-
-    try {
-      setMutating(true);
-      const response = await fetch(`${API_BASE_URL}/api/tasks/${task.id}/status`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ status: "done" }),
-      });
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "タスクを完了できません / Không thể hoàn thành task");
-      }
-
-      refreshTask(data.task);
-    } catch (updateError) {
-      setError(updateError instanceof Error ? updateError.message : "タスクを完了できません / Không thể hoàn thành task");
-    } finally {
-      setMutating(false);
-    }
-  };
-
   const canClaim = task?.status === "todo" && (currentUser?.id === task.assignee_id || currentUser?.role === "admin");
   const deadlineParts = getDeadlineParts(task?.deadline ?? null);
 
@@ -311,47 +282,47 @@ export default function TaskDetailPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-sm font-medium text-slate-500">
                     <span className="block">依頼者</span>
                     <span className="block">Giao bởi</span>
                   </p>
-                  <p className="text-sm font-semibold text-slate-700">{task.assigner_name}</p>
+                  <p className="text-sm font-semibold text-slate-800">{task.assigner_name}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-sm font-medium text-slate-500">
                     <span className="block">担当者</span>
                     <span className="block">Nhận bởi</span>
                   </p>
-                  <p className="text-sm font-semibold text-slate-700">{task.assignee_name}</p>
+                  <p className="text-sm font-semibold text-slate-800">{task.assignee_name}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-sm font-medium text-slate-500">
                     <span className="block">トピック</span>
                     <span className="block">Topic</span>
                   </p>
-                  <p className="text-sm font-semibold text-slate-700">{task.topic || "-"}</p>
+                  <p className="text-sm font-semibold text-slate-800">{task.topic || "-"}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-sm font-medium text-slate-500">
                     <span className="block">期限</span>
                     <span className="block">Deadline</span>
                   </p>
-                  <p className="text-sm font-semibold text-slate-700">{deadlineParts.dateText}</p>
-                  <p className="text-xs text-slate-500 mt-1">
-                    <span className="block">時刻</span>
+                  <p className="text-sm font-semibold text-slate-800">{deadlineParts.dateText}</p>
+                  <p className="text-xs font-medium text-slate-500 mt-1">
+                    <span className="block">時刻 / Giờ</span>
                   </p>
-                  <p className="text-lg font-bold text-slate-800 mt-0.5">
-                    Giờ: {deadlineParts.timeText}
+                  <p className="text-base font-bold text-slate-800 mt-0.5">
+                    {deadlineParts.timeText}
                   </p>
                 </div>
               </div>
 
               <div>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs font-medium text-slate-500">
                   <span className="block">説明</span>
                   <span className="block">Mô tả</span>
                 </p>
-                <p className="text-sm text-slate-700 whitespace-pre-line">
+                <p className="text-sm font-medium text-slate-700 whitespace-pre-line">
                   {task.content || "説明はまだありません。/ Chưa có mô tả."}
                 </p>
               </div>

@@ -205,6 +205,28 @@ body {
   background-image: linear-gradient(90deg, #111a2e 0%, #0f172a 100%) !important;
 }
 
+[data-theme="dark"] .bg-indigo-50,
+[data-theme="dark"] .bg-indigo-100 {
+  background-color: #1e1b4b !important;
+}
+
+[data-theme="dark"] .text-indigo-700,
+[data-theme="dark"] .text-indigo-600,
+[data-theme="dark"] .text-indigo-500 {
+  color: #a5b4fc !important;
+}
+
+[data-theme="dark"] .border-indigo-100,
+[data-theme="dark"] .border-indigo-200 {
+  border-color: #3730a3 !important;
+}
+
+[data-theme="dark"] .hover\:bg-blue-50\/40:hover,
+[data-theme="dark"] .hover\:border-blue-200:hover {
+  background-color: #172554 !important;
+  border-color: #1d4ed8 !important;
+}
+
 [data-theme="dark"] .chat-bubble-other {
   background-color: #162238 !important;
   border-color: #31435f !important;

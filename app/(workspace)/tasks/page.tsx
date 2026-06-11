@@ -469,8 +469,8 @@ export default function TaskBoardPage() {
             <section key={column.title} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col h-full">
               <div className="mb-3 flex items-start justify-between gap-2">
                 <div>
-                  <h3 className="text-sm font-bold text-slate-700">{column.title}</h3>
-                  <p className="text-[11px] text-slate-400">
+                  <h3 className="text-base font-bold text-slate-700">{column.title}</h3>
+                  <p className="text-xs text-slate-500">
                     <span className="block">{column.description.split(" / ")[0]}</span>
                     <span className="block">{column.description.split(" / ")[1] ?? ""}</span>
                   </p>
@@ -496,8 +496,8 @@ export default function TaskBoardPage() {
                       <article key={task.id} className="rounded-lg border border-slate-100 p-3 hover:border-blue-200 hover:bg-blue-50/40 transition-colors">
                         <div className="flex items-start justify-between gap-2">
                           <div>
-                            <p className="text-sm font-medium text-slate-800">{task.title}</p>
-                            <p className="text-[11px] text-slate-500 mt-1">
+                            <p className="text-base font-semibold text-slate-800">{task.title}</p>
+                            <p className="text-xs text-slate-500 mt-1">
                               <span className="block">トピック</span>
                               <span className="block">Topic: {task.topic || "-"}</span>
                             </p>
@@ -507,22 +507,22 @@ export default function TaskBoardPage() {
                           </span>
                         </div>
 
-                        <p className="text-xs text-slate-500 mt-2">
+                        <p className="text-sm text-slate-600 mt-2 font-medium">
                           <span className="block">依頼者</span>
                           <span className="block">Giao bởi: {task.assigner_name}</span>
                         </p>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-sm text-slate-600 font-medium">
                           <span className="block">担当者</span>
                           <span className="block">Nhận bởi: {task.assignee_name}</span>
                         </p>
                         {task.deadline && (
-                          <p className="text-xs text-slate-500 mt-1">
+                          <p className="text-sm text-slate-600 mt-1 font-medium">
                             <span className="block">期限</span>
                             <span className="block">Deadline: {formatDeadline(task.deadline)}</span>
                           </p>
                         )}
                         {task.content && (
-                          <p className="text-[11px] text-slate-600 mt-2 rounded-md bg-slate-50 px-2 py-1 border border-slate-200 line-clamp-3">
+                          <p className="text-sm text-slate-700 mt-2 rounded-md bg-slate-50 px-2 py-1 border border-slate-200 line-clamp-3">
                             {task.content}
                           </p>
                         )}
@@ -531,7 +531,7 @@ export default function TaskBoardPage() {
                         {(task.status === "doing" || task.status === "done") && (
                           <div className="mt-2 inline-flex items-center gap-1.5 rounded-md bg-indigo-50 border border-indigo-100 px-2 py-1">
                             <FileText className="w-3.5 h-3.5 text-indigo-500" />
-                            <span className="text-[11px] font-medium text-indigo-700">
+                            <span className="text-sm font-semibold text-indigo-700">
                               <span className="block">報連相</span>
                               <span className="block">
                                 HoRenSo: {task.report_count > 0 ? `${task.report_count} 件 / báo cáo` : "未報告 / Chưa có"}
