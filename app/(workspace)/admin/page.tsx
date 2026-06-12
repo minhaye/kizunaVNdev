@@ -114,6 +114,7 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
+    localStorage.setItem("kizuna_theme", themeMode);
     document.documentElement.setAttribute("data-theme", themeMode);
   }, [themeMode]);
 

@@ -117,7 +117,10 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
   const [currentRole, setCurrentRole] = useState<"employee" | "admin" | null>(null);
   const [avatarSeed, setAvatarSeed] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [themeMode, setThemeMode] = useState<ThemeMode>("light");
+  const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
+    if (typeof window === "undefined") return "light";
+    return (localStorage.getItem("kizuna_theme") as ThemeMode) ?? "light";
+  });
   const [messageTaskNotifications, setMessageTaskNotifications] = useState(true);
   const [showActiveStatus, setShowActiveStatus] = useState(true);
   const [notifCount, setNotifCount] = useState(0);
@@ -277,7 +280,9 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
         if (!response.ok || !data.settings || !active) return;
 
         settingsHydratedRef.current = true;
-        setThemeMode(data.settings.theme_mode === "dark" ? "dark" : "light");
+        const resolvedTheme = data.settings.theme_mode === "dark" ? "dark" : "light";
+        localStorage.setItem("kizuna_theme", resolvedTheme);
+        setThemeMode(resolvedTheme);
         setMessageTaskNotifications(data.settings.message_task_notifications ?? true);
         setShowActiveStatus(data.settings.show_active_status ?? true);
         if (data.settings.last_online) {
@@ -339,7 +344,9 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
       window.removeEventListener(CHAT_UNREAD_CHANGED_EVENT, handleChatUnreadChanged);
       window.clearInterval(interval);
     };
-  }, [API_BASE_URL, clearSessionAndRedirect, loadChatUnread, pathname, refreshNotifications]);
+  // pathname excluded intentionally — re-fetching settings on every nav causes theme to reset
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [API_BASE_URL, clearSessionAndRedirect, loadChatUnread, refreshNotifications]);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", themeMode);
@@ -353,6 +360,7 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
       if (!detail) return;
 
       if (detail.themeMode) {
+        localStorage.setItem("kizuna_theme", detail.themeMode);
         setThemeMode(detail.themeMode);
       }
 
