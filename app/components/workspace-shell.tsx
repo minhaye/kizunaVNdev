@@ -126,7 +126,6 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
   const [notifCount, setNotifCount] = useState(0);
   const [notifications, setNotifications] = useState<{ id: string; created_at: string; topic: string; title: string; content: string; is_read?: boolean }[]>([]);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
-  const [hasHydrated, setHasHydrated] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const isMountedRef = useRef(false);
   const settingsHydratedRef = useRef(false);
@@ -141,7 +140,6 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
     localStorage.removeItem("authToken");
     localStorage.removeItem("user");
     setAuthChecked(false);
-    setHasHydrated(false);
     router.replace("/login");
   }, [router]);
 
@@ -260,7 +258,6 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
         applyUser(data.user);
         localStorage.setItem("user", JSON.stringify(data.user));
         setAuthChecked(true);
-        setHasHydrated(true);
       } catch {
         if (!active) return;
         clearSessionAndRedirect();
@@ -472,11 +469,7 @@ export default function WorkspaceShell({ children }: { children: ReactNode }) {
   const greetingName = displayName.endsWith("さん") ? displayName : `${displayName}さん`;
   const friendlyName = displayName.includes(" ") ? displayName : displayName;
   const settingsHref = "/admin";
-  const settingsLabel = hasHydrated
-    ? currentRole === "admin"
-      ? "設定 / Cài đặt admin"
-      : "設定 / Cài đặt user"
-    : "設定 / Cài đặt";
+  const settingsLabel = "Cài đặt";
   const lastOnlineTime = lastOnline ? new Date(lastOnline).getTime() : Number.NaN;
   const presenceIsOnline = Number.isFinite(lastOnlineTime) && presenceNow - lastOnlineTime <= ONLINE_WINDOW_MS;
   const presenceDotClass = presenceIsOnline ? "bg-emerald-500" : "bg-amber-400";

@@ -82,7 +82,6 @@ export default function WikiDetailPage() {
       <article className="max-w-4xl mx-auto bg-white border border-slate-200 rounded-xl shadow-sm p-6">
         <p className="text-xs text-slate-500">
           <span className="block">記事・ルール詳細画面</span>
-          <span className="block">{article?.slug ?? slug ?? "-"}</span>
         </p>
         <h2 className="text-xl font-bold text-slate-900 mt-2">
           {article?.title ?? "Wiki記事"}
