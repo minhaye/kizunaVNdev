@@ -495,8 +495,8 @@ export default function TaskBoardPage() {
                     return (
                       <article key={task.id} className="rounded-lg border border-slate-100 p-3 hover:border-blue-200 hover:bg-blue-50/40 transition-colors">
                         <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <p className="text-base font-semibold text-slate-800">{task.title}</p>
+                          <div className="min-w-0">
+                            <p className="text-base font-semibold text-slate-800 break-words">{task.title}</p>
                             <p className="text-xs text-slate-500 mt-1">
                               <span className="block">トピック</span>
                               <span className="block">Topic: {task.topic || "-"}</span>
@@ -522,7 +522,7 @@ export default function TaskBoardPage() {
                           </p>
                         )}
                         {task.content && (
-                          <p className="text-sm text-slate-700 mt-2 rounded-md bg-slate-50 px-2 py-1 border border-slate-200 line-clamp-3">
+                          <p className="text-sm leading-6 text-slate-700 mt-2 rounded-md bg-slate-50 px-3 py-2 border border-slate-200 whitespace-pre-wrap break-words">
                             {task.content}
                           </p>
                         )}

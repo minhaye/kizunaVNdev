@@ -468,7 +468,8 @@ export default function AdminPage() {
                         </span>
                       </div>
                       <p className="text-xs text-slate-400 mt-1 truncate">
-                        {item.created_by} • {new Date(item.created_at).toLocaleDateString("vi-VN")}
+                        {new Date(item.created_at).toLocaleDateString("vi-VN")}
+                        {item.topic ? ` • ${item.topic}` : ""}
                       </p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
@@ -846,7 +847,7 @@ export default function AdminPage() {
                 </div>
                 <h3 className="text-lg font-bold text-slate-900">{previewItem.title}</h3>
                 <p className="text-xs text-slate-500 mt-1">
-                  {previewItem.created_by} • {new Date(previewItem.created_at).toLocaleDateString("vi-VN")}
+                  {new Date(previewItem.created_at).toLocaleDateString("vi-VN")}
                   {previewItem.topic ? ` • ${previewItem.topic}` : ""}
                 </p>
               </div>
